@@ -36,7 +36,7 @@ public class AdmittanceEquationTermX2 extends AbstractAdmittanceEquationTerm {
     }
 
     @Override
-    public double getCoefficient(Variable<VariableType> variable) {
+    public double der(Variable<VariableType> variable) {
         if (variable.equals(v1rVar)) {
             return -g21;
         } else if (variable.equals(v2rVar)) {

@@ -22,7 +22,7 @@ import java.util.Objects;
  *
  * @author Jean-Baptiste Heyberger <jbheyberger at gmail.com>
  */
-public class AdmittanceEquationTermShunt extends AbstractElementEquationTerm<LfBus, VariableType, EquationType> implements LinearEquationTerm {
+public class AdmittanceEquationTermShunt extends AbstractElementEquationTerm<LfBus, VariableType, EquationType> {
 
     protected final Variable<VariableType> v1rVar;
 
@@ -60,11 +60,6 @@ public class AdmittanceEquationTermShunt extends AbstractElementEquationTerm<LfB
 
     @Override
     public double der(Variable<VariableType> variable) {
-        throw new UnsupportedOperationException("Not needed");
-    }
-
-    @Override
-    public double getCoefficient(Variable<VariableType> variable) {
         if (variable.equals(v1rVar)) {
             return real ? g : b;
         } else if (variable.equals(v1iVar)) {

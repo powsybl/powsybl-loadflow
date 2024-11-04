@@ -19,7 +19,7 @@ import java.util.Objects;
 /**
  * @author Jean-Baptiste Heyberger <jbheyberger at gmail.com>
  */
-public abstract class AbstractAdmittanceEquationTerm extends AbstractElementEquationTerm<LfBranch, VariableType, EquationType> implements LinearEquationTerm {
+public abstract class AbstractAdmittanceEquationTerm extends AbstractElementEquationTerm<LfBranch, VariableType, EquationType> {
 
     protected final Variable<VariableType> v1rVar;
 
@@ -95,11 +95,6 @@ public abstract class AbstractAdmittanceEquationTerm extends AbstractElementEqua
 
     @Override
     public double eval() {
-        throw new UnsupportedOperationException("Not needed");
-    }
-
-    @Override
-    public double der(Variable<VariableType> variable) {
         throw new UnsupportedOperationException("Not needed");
     }
 }

@@ -61,7 +61,7 @@ public final class AdmittanceEquationSystem {
                 Variable<VariableType> v = entry.getKey();
                 int row = v.getRow();
                 for (EquationTerm<VariableType, EquationType> equationTerm : entry.getValue()) {
-                    double value = ((LinearEquationTerm) equationTerm).getCoefficient(v);
+                    double value = equationTerm.der(v);
                     matrix.add(row, col, value);
                 }
             }
