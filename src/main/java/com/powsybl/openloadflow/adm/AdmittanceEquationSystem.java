@@ -6,15 +6,15 @@
  */
 package com.powsybl.openloadflow.adm;
 
-import com.powsybl.math.matrix.Matrix;
-import com.powsybl.math.matrix.MatrixFactory;
-import com.powsybl.openloadflow.equations.*;
+import com.powsybl.openloadflow.equations.EquationSystem;
+import com.powsybl.openloadflow.equations.VariableSet;
 import com.powsybl.openloadflow.network.*;
 import net.jafama.FastMath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Objects;
 
 /**
  * @author Jean-Baptiste Heyberger <jbheyberger at gmail.com>
@@ -23,7 +23,7 @@ public final class AdmittanceEquationSystem {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AdmittanceEquationSystem.class);
 
-    private static final double EPSILON = 0.00000001;
+    private static final double B_EPSILON = 0.00000001;
 
     private final EquationSystem<VariableType, EquationType> equationSystem;
 
@@ -33,41 +33,6 @@ public final class AdmittanceEquationSystem {
 
     public EquationSystem<VariableType, EquationType> getEquationSystem() {
         return equationSystem;
-    }
-
-    private Map<Variable<VariableType>, List<EquationTerm<VariableType, EquationType>>> indexTermsByVariable(Equation<VariableType, EquationType> eq) {
-        Map<Variable<VariableType>, List<EquationTerm<VariableType, EquationType>>> termsByVariable = new TreeMap<>();
-        for (EquationTerm<VariableType, EquationType> term : eq.getTerms()) {
-            for (Variable<VariableType> v : term.getVariables()) {
-                termsByVariable.computeIfAbsent(v, k -> new ArrayList<>())
-                        .add(term);
-            }
-        }
-        return termsByVariable;
-    }
-
-    public Matrix createTransposedMatrix(MatrixFactory matrixFactory) {
-        Objects.requireNonNull(matrixFactory);
-
-        int rowCount = equationSystem.getIndex().getSortedEquationsToSolve().size();
-        int columnCount = equationSystem.getIndex().getSortedVariablesToFind().size();
-
-        int estimatedNonZeroValueCount = rowCount * 3;
-        Matrix matrix = matrixFactory.create(columnCount, rowCount, estimatedNonZeroValueCount);
-
-        for (var eq : equationSystem.getIndex().getSortedEquationsToSolve()) {
-            int col = eq.getColumn();
-            for (Map.Entry<Variable<VariableType>, List<EquationTerm<VariableType, EquationType>>> entry : indexTermsByVariable(eq).entrySet()) {
-                Variable<VariableType> v = entry.getKey();
-                int row = v.getRow();
-                for (EquationTerm<VariableType, EquationType> equationTerm : entry.getValue()) {
-                    double value = equationTerm.der(v);
-                    matrix.add(row, col, value);
-                }
-            }
-        }
-
-        return matrix;
     }
 
     //Equations are created based on the branches connections
@@ -121,7 +86,7 @@ public final class AdmittanceEquationSystem {
     private static void createShunts(Collection<LfBus> buses, VariableSet<VariableType> variableSet, EquationSystem<VariableType, EquationType> equationSystem) {
         for (LfBus bus : buses) {
             double b = getShuntB(bus);
-            if (Math.abs(b) > EPSILON) {
+            if (Math.abs(b) > B_EPSILON) {
                 equationSystem.createEquation(bus.getNum(), EquationType.BUS_YR)
                         .addTerm(new AdmittanceEquationTermShunt(bus, variableSet, 0, b, true));
                 equationSystem.createEquation(bus.getNum(), EquationType.BUS_YI)
