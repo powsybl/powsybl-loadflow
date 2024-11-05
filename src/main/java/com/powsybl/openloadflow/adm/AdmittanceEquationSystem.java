@@ -41,16 +41,16 @@ public final class AdmittanceEquationSystem {
         if (bus1 != null && bus2 != null) {
             // Equation system Y*V = I (expressed in cartesian coordinates x,y)
             equationSystem.createEquation(bus1.getNum(), EquationType.BUS_YR)
-                    .addTerm(new AdmittanceEquationTermX1(branch, bus1, bus2, variableSet));
+                    .addTerm(new AdmittanceEquationTermBranchX1(branch, bus1, bus2, variableSet));
 
             equationSystem.createEquation(bus1.getNum(), EquationType.BUS_YI)
-                    .addTerm(new AdmittanceEquationTermY1(branch, bus1, bus2, variableSet));
+                    .addTerm(new AdmittanceEquationTermBranchY1(branch, bus1, bus2, variableSet));
 
             equationSystem.createEquation(bus2.getNum(), EquationType.BUS_YR)
-                    .addTerm(new AdmittanceEquationTermX2(branch, bus1, bus2, variableSet));
+                    .addTerm(new AdmittanceEquationTermBranchX2(branch, bus1, bus2, variableSet));
 
             equationSystem.createEquation(bus2.getNum(), EquationType.BUS_YI)
-                    .addTerm(new AdmittanceEquationTermY2(branch, bus1, bus2, variableSet));
+                    .addTerm(new AdmittanceEquationTermBranchY2(branch, bus1, bus2, variableSet));
         }
     }
 

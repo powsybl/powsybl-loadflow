@@ -12,38 +12,39 @@ import com.powsybl.openloadflow.network.LfBranch;
 import com.powsybl.openloadflow.network.LfBus;
 
 /**
- * I1y = (b1 + b12)V1x + (g1 + g12)V1y - b12 * V2x - g12 * V2y
+ * I2y = -b21 * V1x - g21 * V1y + (b2 + b21)V2x + (g2 + g21)V2y
  *
  * @author Jean-Baptiste Heyberger <jbheyberger at gmail.com>
  */
-public class AdmittanceEquationTermY1 extends AbstractAdmittanceEquationTerm {
+public class AdmittanceEquationTermBranchY2 extends AbstractAdmittanceEquationTerm {
 
-    private final double g12;
+    private final double g21;
 
-    private final double b12;
+    private final double b21;
 
-    private final double g1g12sum;
+    private final double g2g21sum;
 
-    private final double b1b12sum;
+    private final double b2b21sum;
 
-    public AdmittanceEquationTermY1(LfBranch branch, LfBus bus1, LfBus bus2, VariableSet<VariableType> variableSet) {
+    public AdmittanceEquationTermBranchY2(LfBranch branch, LfBus bus1, LfBus bus2, VariableSet<VariableType> variableSet) {
         super(branch, bus1, bus2, variableSet);
-        g12 = rho * zInvSquare * (r * cosA + x * sinA);
-        b12 = -rho * zInvSquare * (x * cosA + r * sinA);
-        g1g12sum = rho * rho * (gPi1 + r * zInvSquare);
-        b1b12sum = rho * rho * (bPi1 - x * zInvSquare);
+        double g12 = rho * zInvSquare * (r * cosA + x * sinA);
+        g21 = g12;
+        b21 = rho * zInvSquare * (r * sinA - x * cosA);
+        g2g21sum = r * zInvSquare + gPi2;
+        b2b21sum = -x * zInvSquare + bPi2;
     }
 
     @Override
     public double der(Variable<VariableType> variable) {
         if (variable.equals(v1rVar)) {
-            return b1b12sum;
+            return -b21;
         } else if (variable.equals(v2rVar)) {
-            return -b12;
+            return b2b21sum;
         } else if (variable.equals(v1iVar)) {
-            return g1g12sum;
+            return -g21;
         } else if (variable.equals(v2iVar)) {
-            return -g12;
+            return g2g21sum;
         } else {
             throw new IllegalArgumentException("Unknown variable " + variable);
         }
@@ -51,6 +52,6 @@ public class AdmittanceEquationTermY1 extends AbstractAdmittanceEquationTerm {
 
     @Override
     protected String getName() {
-        return "yi1";
+        return "yi2";
     }
 }

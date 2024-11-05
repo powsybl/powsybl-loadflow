@@ -16,7 +16,7 @@ import com.powsybl.openloadflow.network.LfBus;
  *
  * @author Jean-Baptiste Heyberger <jbheyberger at gmail.com>
  */
-public class AdmittanceEquationTermX2 extends AbstractAdmittanceEquationTerm {
+public class AdmittanceEquationTermBranchX2 extends AbstractAdmittanceEquationTerm {
 
     private final double g21;
 
@@ -26,7 +26,7 @@ public class AdmittanceEquationTermX2 extends AbstractAdmittanceEquationTerm {
 
     private final double b2b21sum;
 
-    public AdmittanceEquationTermX2(LfBranch branch, LfBus bus1, LfBus bus2, VariableSet<VariableType> variableSet) {
+    public AdmittanceEquationTermBranchX2(LfBranch branch, LfBus bus1, LfBus bus2, VariableSet<VariableType> variableSet) {
         super(branch, bus1, bus2, variableSet);
         double g12 = rho * zInvSquare * (r * cosA + x * sinA);
         g21 = g12;
