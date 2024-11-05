@@ -6,13 +6,12 @@ import com.powsybl.math.matrix.DenseMatrix;
 import com.powsybl.math.matrix.DenseMatrixFactory;
 import com.powsybl.openloadflow.equations.VariableSet;
 import com.powsybl.openloadflow.network.FirstSlackBusSelector;
-import com.powsybl.openloadflow.network.LfBranch;
+import com.powsybl.openloadflow.network.LfBus;
 import com.powsybl.openloadflow.network.LfNetwork;
-import com.powsybl.openloadflow.network.TwoBusNetworkFactory;
 import com.powsybl.openloadflow.network.impl.LfNetworkLoaderImpl;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AdmittanceMatrixTest {
 
@@ -34,32 +33,13 @@ class AdmittanceMatrixTest {
         }).transpose();
         assertEquals(yRef, y.getMatrix());
 
-        for (LfBranch branch : lfNetwork.getBranches()) {
-            System.out.println("branch: " + branch.getId());
-       //     System.out.println("rho_branch=" + branch.getPiModel().getR1());
-            System.out.println("y_branch=" + branch.getPiModel().getY());
-//            System.out.println("r_branch=" + branch.getPiModel().getR());
-//            System.out.println("x_branch=" + branch.getPiModel().getX());
-            double z = y.getZ(branch.getBus1(), branch.getBus2());
-            System.out.println("z=" + z + ", 100 / z=" + 100 / z);
-            System.out.println("-------");
-        }
-        y.full();
-    }
+        LfBus ngen = lfNetwork.getBusById("VLGEN_0");
+        LfBus nhv1 = lfNetwork.getBusById("VLHV1_0");
+        LfBus nhv2 = lfNetwork.getBusById("VLHV2_0");
+        LfBus nload = lfNetwork.getBusById("VLLOAD_0");
 
-
-    @Test
-    void test2() {
-        Network network = TwoBusNetworkFactory.create();
-        LfNetwork lfNetwork = LfNetwork.load(network, new LfNetworkLoaderImpl(), new FirstSlackBusSelector()).get(0);
-        var ySystem = AdmittanceEquationSystem.create(lfNetwork, new VariableSet<>());
-        var y = AdmittanceMatrix.create(ySystem, new DenseMatrixFactory());
-
-//        for (LfBranch branch : lfNetwork.getBranches()) {
-//            System.out.println(branch.getPiModel().getY());
-//            double z = y.getZ(branch.getBus1(), branch.getBus2());
-//            System.out.println(z + " " + 1 / z);
-//        }
-        y.full();
+        assertEquals(136.842, 1.0 / y.getZ(ngen, nhv1), 1e-3);
+        assertEquals(87.155, 1.0 / y.getZ(nhv1, nhv2), 1e-3);
+        assertEquals(55.629, 1.0 / y.getZ(nhv2, nload), 1e-3);
     }
 }
