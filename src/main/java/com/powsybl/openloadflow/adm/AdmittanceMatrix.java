@@ -49,7 +49,7 @@ public class AdmittanceMatrix implements AutoCloseable {
     /**
      * Get equivalent impedance between 2 buses.
      */
-    public double getZ(LfBus bus1, LfBus bus2) {
+    public Complex getZ(LfBus bus1, LfBus bus2) {
         Objects.requireNonNull(bus1);
         Objects.requireNonNull(bus2);
         var yr1Eq = equationSystem.getEquation(bus1.getNum(), EquationType.BUS_YR).orElseThrow();
@@ -80,8 +80,7 @@ public class AdmittanceMatrix implements AutoCloseable {
         Complex z21 = new Complex(zr21, zi21);
         Complex z11 = new Complex(zr11, zi11);
         Complex z22 = new Complex(zr22, zi22);
-        Complex z = (z11.multiply(z22).subtract(z12.multiply(z21))).divide(z12);
-        return z.abs();
+        return (z11.multiply(z22).subtract(z12.multiply(z21))).divide(z12);
     }
 
     @Override
