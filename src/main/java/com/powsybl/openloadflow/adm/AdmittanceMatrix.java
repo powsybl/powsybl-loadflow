@@ -87,6 +87,8 @@ public class AdmittanceMatrix implements AutoCloseable {
 
     @Override
     public void close() {
-        lu.close();
+        if (lu != null) {
+            lu.close();
+        }
     }
 }

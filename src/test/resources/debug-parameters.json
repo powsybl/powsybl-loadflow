@@ -90,7 +90,8 @@
         "fictitiousGeneratorVoltageControlCheckMode" : "FORCED",
         "areaInterchangeControl" : false,
         "areaInterchangeControlAreaType" : "ControlArea",
-        "areaInterchangePMaxMismatch" : 2.0
+        "areaInterchangePMaxMismatch" : 2.0,
+        "fixTargetVoltageIncompatibility" : false
       }
     }
   },
