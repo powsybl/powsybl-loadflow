@@ -7,6 +7,7 @@
  */
 package com.powsybl.openloadflow;
 
+import com.google.common.base.Stopwatch;
 import com.powsybl.openloadflow.adm.AdmittanceEquationSystem;
 import com.powsybl.openloadflow.adm.AdmittanceMatrix;
 import com.powsybl.openloadflow.equations.VariableSet;
@@ -72,6 +73,8 @@ public class TargetVoltageCompatibilityChecker {
     }
 
     public List<Pair<LfBus, LfBus>> check(TargetVoltageCompatibilityCheckerParameters parameters) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
         Graph<LfBus, LfBranch> graph = createGraph(network);
 
         Set<LfBus> controlledBuses = network.getBuses().stream()
@@ -100,6 +103,8 @@ public class TargetVoltageCompatibilityChecker {
                 }
             }
         }
+
+        LOGGER.debug("Target voltage compatibility checked in {} ms", stopwatch.elapsed().toMillis());
 
         return incompatibleControlledBuses;
     }
