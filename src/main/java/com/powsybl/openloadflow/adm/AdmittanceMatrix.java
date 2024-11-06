@@ -1,8 +1,9 @@
 /**
- * Copyright (c) 2022, Jean-Baptiste Heyberger & Geoffroy Jamgotchian
+ * Copyright (c) 2024, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.openloadflow.adm;
 
@@ -18,11 +19,11 @@ import org.apache.commons.math3.complex.Complex;
 import java.util.Objects;
 
 /**
- * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
+ * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  */
 public class AdmittanceMatrix implements AutoCloseable {
 
-    private final EquationSystem<VariableType, EquationType> equationSystem;
+    private final EquationSystem<AdmittanceVariableType, AdmittanceEquationType> equationSystem;
 
     private final Matrix matrix;
 
@@ -30,7 +31,7 @@ public class AdmittanceMatrix implements AutoCloseable {
 
     private DenseMatrix e; // impedance extractor
 
-    public AdmittanceMatrix(EquationSystem<VariableType, EquationType> equationSystem, Matrix matrix) {
+    public AdmittanceMatrix(EquationSystem<AdmittanceVariableType, AdmittanceEquationType> equationSystem, Matrix matrix) {
         this.equationSystem = Objects.requireNonNull(equationSystem);
         this.matrix = Objects.requireNonNull(matrix);
     }
@@ -52,34 +53,35 @@ public class AdmittanceMatrix implements AutoCloseable {
     public Complex getZ(LfBus bus1, LfBus bus2) {
         Objects.requireNonNull(bus1);
         Objects.requireNonNull(bus2);
-        var yr1Eq = equationSystem.getEquation(bus1.getNum(), EquationType.BUS_YR).orElseThrow();
-        var yi1Eq = equationSystem.getEquation(bus1.getNum(), EquationType.BUS_YI).orElseThrow();
-        var yr2Eq = equationSystem.getEquation(bus2.getNum(), EquationType.BUS_YR).orElseThrow();
-        var yi2Eq = equationSystem.getEquation(bus2.getNum(), EquationType.BUS_YI).orElseThrow();
+        var i1xEq = equationSystem.getEquation(bus1.getNum(), AdmittanceEquationType.BUS_ADM_IX).orElseThrow();
+        var i1yEq = equationSystem.getEquation(bus1.getNum(), AdmittanceEquationType.BUS_ADM_IY).orElseThrow();
+        var i2xEq = equationSystem.getEquation(bus2.getNum(), AdmittanceEquationType.BUS_ADM_IX).orElseThrow();
+        var i2yEq = equationSystem.getEquation(bus2.getNum(), AdmittanceEquationType.BUS_ADM_IY).orElseThrow();
         if (e == null) {
             e = new DenseMatrix(matrix.getRowCount(), 4);
         }
         e.reset();
-        e.set(yr1Eq.getColumn(), 0, 1.0);
-        e.set(yi1Eq.getColumn(), 1, 1.0);
-        e.set(yr2Eq.getColumn(), 2, 1.0);
-        e.set(yi2Eq.getColumn(), 3, 1.0);
+        e.set(i1xEq.getColumn(), 0, 1.0);
+        e.set(i1yEq.getColumn(), 1, 1.0);
+        e.set(i2xEq.getColumn(), 2, 1.0);
+        e.set(i2yEq.getColumn(), 3, 1.0);
         if (lu == null) {
             lu = matrix.decomposeLU();
         }
         lu.solveTransposed(e);
-        double zr12 = e.get(yr1Eq.getColumn(), 2);
-        double zi12 = e.get(yi1Eq.getColumn(), 2);
-        double zr21 = e.get(yr2Eq.getColumn(), 0);
-        double zi21 = e.get(yi2Eq.getColumn(), 0);
-        double zr11 = e.get(yr1Eq.getColumn(), 0);
-        double zi11 = e.get(yi1Eq.getColumn(), 0);
-        double zr22 = e.get(yr2Eq.getColumn(), 2);
-        double zi22 = e.get(yi2Eq.getColumn(), 2);
-        Complex z12 = new Complex(zr12, zi12);
-        Complex z21 = new Complex(zr21, zi21);
-        Complex z11 = new Complex(zr11, zi11);
-        Complex z22 = new Complex(zr22, zi22);
+        double z12x = e.get(i1xEq.getColumn(), 2);
+        double z12y = e.get(i1yEq.getColumn(), 2);
+        double z21x = e.get(i2xEq.getColumn(), 0);
+        double z21y = e.get(i2yEq.getColumn(), 0);
+        double z11x = e.get(i1xEq.getColumn(), 0);
+        double z11y = e.get(i1yEq.getColumn(), 0);
+        double z22x = e.get(i2xEq.getColumn(), 2);
+        double z22y = e.get(i2yEq.getColumn(), 2);
+        Complex z12 = new Complex(z12x, z12y);
+        Complex z21 = new Complex(z21x, z21y);
+        Complex z11 = new Complex(z11x, z11y);
+        Complex z22 = new Complex(z22x, z22y);
+        // z = (z11 * z22 - z12 * z21) / z12
         return (z11.multiply(z22).subtract(z12.multiply(z21))).divide(z12);
     }
 

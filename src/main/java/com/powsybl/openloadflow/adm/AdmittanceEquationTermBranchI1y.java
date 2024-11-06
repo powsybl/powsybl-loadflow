@@ -1,8 +1,9 @@
 /**
- * Copyright (c) 2022, Jean-Baptiste Heyberger & Geoffroy Jamgotchian
+ * Copyright (c) 2024, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.openloadflow.adm;
 
@@ -12,11 +13,12 @@ import com.powsybl.openloadflow.network.LfBranch;
 import com.powsybl.openloadflow.network.LfBus;
 
 /**
- * I1x = (g1 + g12)V1x - (b1 + b12)V1y - g12 * V2x + b12 * V2y
+ * i1y = (b1 + b12) * v1x + (g1 + g12) * v1y - b12 * v2x - g12 * v2y
  *
  * @author Jean-Baptiste Heyberger <jbheyberger at gmail.com>
+ * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  */
-public class AdmittanceEquationTermBranchX1 extends AbstractAdmittanceEquationTerm {
+public class AdmittanceEquationTermBranchI1y extends AbstractAdmittanceEquationTerm {
 
     private final double g12;
 
@@ -26,7 +28,7 @@ public class AdmittanceEquationTermBranchX1 extends AbstractAdmittanceEquationTe
 
     private final double b1b12sum;
 
-    public AdmittanceEquationTermBranchX1(LfBranch branch, LfBus bus1, LfBus bus2, VariableSet<VariableType> variableSet) {
+    public AdmittanceEquationTermBranchI1y(LfBranch branch, LfBus bus1, LfBus bus2, VariableSet<AdmittanceVariableType> variableSet) {
         super(branch, bus1, bus2, variableSet);
         g12 = rho * zInvSquare * (r * cosA + x * sinA);
         b12 = -rho * zInvSquare * (x * cosA + r * sinA);
@@ -35,15 +37,15 @@ public class AdmittanceEquationTermBranchX1 extends AbstractAdmittanceEquationTe
     }
 
     @Override
-    public double der(Variable<VariableType> variable) {
-        if (variable.equals(v1rVar)) {
+    public double der(Variable<AdmittanceVariableType> variable) {
+        if (variable.equals(v1xVar)) {
+            return b1b12sum;
+        } else if (variable.equals(v2xVar)) {
+            return -b12;
+        } else if (variable.equals(v1yVar)) {
             return g1g12sum;
-        } else if (variable.equals(v2rVar)) {
+        } else if (variable.equals(v2yVar)) {
             return -g12;
-        } else if (variable.equals(v1iVar)) {
-            return -b1b12sum;
-        } else if (variable.equals(v2iVar)) {
-            return b12;
         } else {
             throw new IllegalArgumentException("Unknown variable " + variable);
         }
@@ -51,6 +53,6 @@ public class AdmittanceEquationTermBranchX1 extends AbstractAdmittanceEquationTe
 
     @Override
     protected String getName() {
-        return "yr1";
+        return "adm_yi1";
     }
 }

@@ -1,8 +1,9 @@
 /**
- * Copyright (c) 2022, Jean-Baptiste Heyberger & Geoffroy Jamgotchian
+ * Copyright (c) 2024, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.openloadflow.adm;
 
@@ -18,18 +19,19 @@ import java.util.Objects;
 
 /**
  * @author Jean-Baptiste Heyberger <jbheyberger at gmail.com>
+ * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  */
-public abstract class AbstractAdmittanceEquationTerm extends AbstractElementEquationTerm<LfBranch, VariableType, EquationType> {
+public abstract class AbstractAdmittanceEquationTerm extends AbstractElementEquationTerm<LfBranch, AdmittanceVariableType, AdmittanceEquationType> {
 
-    protected final Variable<VariableType> v1rVar;
+    protected final Variable<AdmittanceVariableType> v1xVar;
 
-    protected final Variable<VariableType> v1iVar;
+    protected final Variable<AdmittanceVariableType> v1yVar;
 
-    protected final Variable<VariableType> v2rVar;
+    protected final Variable<AdmittanceVariableType> v2xVar;
 
-    protected final Variable<VariableType> v2iVar;
+    protected final Variable<AdmittanceVariableType> v2yVar;
 
-    protected final List<Variable<VariableType>> variables;
+    protected final List<Variable<AdmittanceVariableType>> variables;
 
     protected double rho;
 
@@ -51,18 +53,18 @@ public abstract class AbstractAdmittanceEquationTerm extends AbstractElementEqua
 
     protected double bPi2;
 
-    protected AbstractAdmittanceEquationTerm(LfBranch branch, LfBus bus1, LfBus bus2, VariableSet<VariableType> variableSet) {
+    protected AbstractAdmittanceEquationTerm(LfBranch branch, LfBus bus1, LfBus bus2, VariableSet<AdmittanceVariableType> variableSet) {
         super(branch);
         Objects.requireNonNull(bus1);
         Objects.requireNonNull(bus2);
         Objects.requireNonNull(variableSet);
 
-        v1rVar = variableSet.getVariable(bus1.getNum(), VariableType.BUS_VR);
-        v2rVar = variableSet.getVariable(bus2.getNum(), VariableType.BUS_VR);
-        v1iVar = variableSet.getVariable(bus1.getNum(), VariableType.BUS_VI);
-        v2iVar = variableSet.getVariable(bus2.getNum(), VariableType.BUS_VI);
+        v1xVar = variableSet.getVariable(bus1.getNum(), AdmittanceVariableType.BUS_ADM_VX);
+        v2xVar = variableSet.getVariable(bus2.getNum(), AdmittanceVariableType.BUS_ADM_VX);
+        v1yVar = variableSet.getVariable(bus1.getNum(), AdmittanceVariableType.BUS_ADM_VY);
+        v2yVar = variableSet.getVariable(bus2.getNum(), AdmittanceVariableType.BUS_ADM_VY);
 
-        variables = List.of(v1rVar, v2rVar, v1iVar, v2iVar);
+        variables = List.of(v1xVar, v2xVar, v1yVar, v2yVar);
 
         PiModel piModel = branch.getPiModel();
         if (piModel.getX() == 0) {
@@ -89,7 +91,7 @@ public abstract class AbstractAdmittanceEquationTerm extends AbstractElementEqua
     }
 
     @Override
-    public List<Variable<VariableType>> getVariables() {
+    public List<Variable<AdmittanceVariableType>> getVariables() {
         return variables;
     }
 

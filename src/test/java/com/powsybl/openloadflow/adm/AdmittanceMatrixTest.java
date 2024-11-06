@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2024, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
+ */
 package com.powsybl.openloadflow.adm;
 
 import com.powsybl.iidm.network.Network;
@@ -13,6 +20,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
+ */
 class AdmittanceMatrixTest {
 
     @Test
@@ -41,6 +51,7 @@ class AdmittanceMatrixTest {
             assertEquals(136.842, 1.0 / y.getZ(ngen, nhv1).abs(), 1e-3);
             assertEquals(87.155, 1.0 / y.getZ(nhv1, nhv2).abs(), 1e-3);
             assertEquals(55.629, 1.0 / y.getZ(nhv2, nload).abs(), 1e-3);
+            assertEquals(28.582, 1.0 / y.getZ(ngen, nload).abs(), 1e-3);
         }
     }
 }

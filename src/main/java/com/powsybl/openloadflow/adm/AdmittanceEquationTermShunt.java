@@ -1,8 +1,9 @@
 /**
- * Copyright (c) 2022, Jean-Baptiste Heyberger & Geoffroy Jamgotchian
+ * Copyright (c) 2024, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.openloadflow.adm;
 
@@ -15,20 +16,21 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- *       v1r   v1i
- *       |     |
- * Eq1r - [ y1r1r y1r1i ]   [ g  -b ]
- * Eq1i - [ y1i1r y1i1i ] = [ b   g ] =
+ *         v1x   v1y
+ *          |     |
+ * i1x -  [ g  -b ]
+ * i2y -  [ b   g ]
  *
  * @author Jean-Baptiste Heyberger <jbheyberger at gmail.com>
+ * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  */
-public class AdmittanceEquationTermShunt extends AbstractElementEquationTerm<LfBus, VariableType, EquationType> {
+public class AdmittanceEquationTermShunt extends AbstractElementEquationTerm<LfBus, AdmittanceVariableType, AdmittanceEquationType> {
 
-    protected final Variable<VariableType> v1rVar;
+    protected final Variable<AdmittanceVariableType> v1xVar;
 
-    protected final Variable<VariableType> v1iVar;
+    protected final Variable<AdmittanceVariableType> v1yVar;
 
-    protected final List<Variable<VariableType>> variables;
+    protected final List<Variable<AdmittanceVariableType>> variables;
 
     protected double g;
 
@@ -36,20 +38,20 @@ public class AdmittanceEquationTermShunt extends AbstractElementEquationTerm<LfB
 
     protected boolean real;
 
-    public AdmittanceEquationTermShunt(LfBus bus, VariableSet<VariableType> variableSet, double g, double b, boolean real) {
+    public AdmittanceEquationTermShunt(LfBus bus, VariableSet<AdmittanceVariableType> variableSet, double g, double b, boolean real) {
         super(bus);
         Objects.requireNonNull(variableSet);
 
-        v1rVar = variableSet.getVariable(bus.getNum(), VariableType.BUS_VR);
-        v1iVar = variableSet.getVariable(bus.getNum(), VariableType.BUS_VI);
-        variables = List.of(v1rVar, v1iVar);
+        v1xVar = variableSet.getVariable(bus.getNum(), AdmittanceVariableType.BUS_ADM_VX);
+        v1yVar = variableSet.getVariable(bus.getNum(), AdmittanceVariableType.BUS_ADM_VY);
+        variables = List.of(v1xVar, v1yVar);
 
         this.g = g;
         this.b = b;
         this.real = real;
     }
 
-    public List<Variable<VariableType>> getVariables() {
+    public List<Variable<AdmittanceVariableType>> getVariables() {
         return variables;
     }
 
@@ -59,10 +61,10 @@ public class AdmittanceEquationTermShunt extends AbstractElementEquationTerm<LfB
     }
 
     @Override
-    public double der(Variable<VariableType> variable) {
-        if (variable.equals(v1rVar)) {
+    public double der(Variable<AdmittanceVariableType> variable) {
+        if (variable.equals(v1xVar)) {
             return real ? g : b;
-        } else if (variable.equals(v1iVar)) {
+        } else if (variable.equals(v1yVar)) {
             return real ? -b : g;
         } else {
             throw new IllegalArgumentException("Unknown variable " + variable);
@@ -71,6 +73,6 @@ public class AdmittanceEquationTermShunt extends AbstractElementEquationTerm<LfB
 
     @Override
     protected String getName() {
-        return "yshunt";
+        return "adm_shunt";
     }
 }
