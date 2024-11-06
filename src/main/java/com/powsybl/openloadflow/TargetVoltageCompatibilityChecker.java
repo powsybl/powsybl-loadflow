@@ -107,7 +107,7 @@ public class TargetVoltageCompatibilityChecker {
     public void fix(TargetVoltageCompatibilityCheckerParameters parameters) {
         List<Pair<LfBus, LfBus>> incompatibleControlledBuses = check(parameters);
         // some buses could be part of multiple target v incompatible buses couples
-        // fix the ones the most references
+        // fix the most referenced ones
         Map<LfBus, MutableInt> incompatibleControlledBusRefCount = new HashMap<>();
         for (Pair<LfBus, LfBus> p : incompatibleControlledBuses) {
             incompatibleControlledBusRefCount.computeIfAbsent(p.getLeft(), k -> new MutableInt(0)).increment();
