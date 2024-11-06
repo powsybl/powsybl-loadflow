@@ -53,6 +53,6 @@ public class AdmittanceEquationTermBranchI1y extends AbstractAdmittanceEquationT
 
     @Override
     protected String getName() {
-        return "adm_yi1";
+        return "adm_i1y";
     }
 }
