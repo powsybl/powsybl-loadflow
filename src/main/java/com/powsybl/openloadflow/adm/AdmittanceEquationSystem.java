@@ -56,14 +56,14 @@ public final class AdmittanceEquationSystem {
         }
     }
 
-    private static void createBranches(Collection<LfBranch> branches, VariableSet<AdmittanceVariableType> variableSet, EquationSystem<AdmittanceVariableType, AdmittanceEquationType> equationSystem) {
+    private static void createBranchEquations(Collection<LfBranch> branches, VariableSet<AdmittanceVariableType> variableSet, EquationSystem<AdmittanceVariableType, AdmittanceEquationType> equationSystem) {
         for (LfBranch branch : branches) {
             LfBus bus1 = branch.getBus1();
             LfBus bus2 = branch.getBus2();
             PiModel piModel = branch.getPiModel();
             if (FastMath.abs(piModel.getX()) < LfNetworkParameters.LOW_IMPEDANCE_THRESHOLD_DEFAULT_VALUE) {
                 if (bus1 != null && bus2 != null) {
-                    LOGGER.warn("Non impedant branches ({}w) not supported in admittance matrix",
+                    LOGGER.warn("Non impedant branches ({}) not supported in admittance matrix",
                             branch.getId());
                 }
             } else {
@@ -85,7 +85,7 @@ public final class AdmittanceEquationSystem {
         return b;
     }
 
-    private static void createShunts(Collection<LfBus> buses, VariableSet<AdmittanceVariableType> variableSet, EquationSystem<AdmittanceVariableType, AdmittanceEquationType> equationSystem) {
+    private static void createShuntEquations(Collection<LfBus> buses, VariableSet<AdmittanceVariableType> variableSet, EquationSystem<AdmittanceVariableType, AdmittanceEquationType> equationSystem) {
         for (LfBus bus : buses) {
             double b = getShuntB(bus);
             if (Math.abs(b) > B_EPSILON) {
@@ -104,8 +104,8 @@ public final class AdmittanceEquationSystem {
     public static AdmittanceEquationSystem create(Collection<LfBus> buses, Collection<LfBranch> branches, VariableSet<AdmittanceVariableType> variableSet) {
         EquationSystem<AdmittanceVariableType, AdmittanceEquationType> equationSystem = new EquationSystem<>();
 
-        createBranches(branches, variableSet, equationSystem);
-        createShunts(buses, variableSet, equationSystem);
+        createBranchEquations(branches, variableSet, equationSystem);
+        createShuntEquations(buses, variableSet, equationSystem);
 
         return new AdmittanceEquationSystem(equationSystem);
     }
