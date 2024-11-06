@@ -12,8 +12,10 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.*;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
+import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.serde.test.MetrixTutorialSixBusesFactory;
 import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.openloadflow.OpenLoadFlowParameters;
 import com.powsybl.openloadflow.ac.solver.NewtonRaphsonStoppingCriteriaType;
 import com.powsybl.openloadflow.graph.GraphConnectivityFactory;
@@ -39,7 +41,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.powsybl.openloadflow.util.LoadFlowAssert.*;
@@ -114,7 +115,7 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
 
         List<Contingency> contingencies = Stream.of("L1", "L3", "L2")
                 .map(id -> new Contingency(id, new BranchContingency(id)))
-                .collect(Collectors.toList());
+                .toList();
 
         List<Action> actions = List.of(new SwitchAction("action1", "C1", false),
                                        new SwitchAction("action3", "C2", false));
@@ -216,7 +217,7 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
 
         List<Contingency> contingencies = Stream.of("L1", "L3", "L2")
                 .map(id -> new Contingency(id, new BranchContingency(id)))
-                .collect(Collectors.toList());
+                .toList();
 
         List<Action> actions = List.of(new SwitchAction("action1", "C1", false),
                                        new SwitchAction("action3", "C2", false));
@@ -273,7 +274,7 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
 
         List<Contingency> contingencies = Stream.of("L3", "L2")
                 .map(id -> new Contingency(id, new BranchContingency(id)))
-                .collect(Collectors.toList());
+                .toList();
 
         List<Action> actions = List.of(new SwitchAction("action1", "C1", false),
                                        new SwitchAction("action3", "C2", false));
@@ -306,7 +307,7 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
 
         List<Contingency> contingencies = Stream.of("s25")
                 .map(id -> new Contingency(id, new SwitchContingency(id)))
-                .collect(Collectors.toList());
+                .toList();
 
         List<Action> actions = List.of(new SwitchAction("action1", "s34", true));
 
@@ -644,7 +645,7 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
 
         List<Contingency> contingencies = Stream.of("L1", "L3", "L2")
                 .map(id -> new Contingency(id, new BranchContingency(id)))
-                .collect(Collectors.toList());
+                .toList();
 
         List<Action> actions = List.of(new SwitchAction("action1", "C1", false),
                 new SwitchAction("action3", "C2", false));
@@ -692,7 +693,7 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
         Network network = FourBusNetworkFactory.create();
         List<Contingency> contingencies = Stream.of("l14")
                 .map(id -> new Contingency(id, new BranchContingency(id)))
-                .collect(Collectors.toList());
+                .toList();
 
         List<Action> actions = List.of(new TerminalsConnectionAction("openLine", "l13", true));
         List<OperatorStrategy> operatorStrategies = List.of(new OperatorStrategy("strategyL1", ContingencyContext.specificContingency("l14"), new TrueCondition(), List.of("openLine")));
@@ -786,7 +787,7 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
 
         List<Contingency> contingencies = Stream.of("l2")
                 .map(id -> new Contingency(id, new LoadContingency(id)))
-                .collect(Collectors.toList());
+                .toList();
 
         List<Action> actions = List.of(new LoadActionBuilder().withId("action1").withLoadId("l4").withRelativeValue(false).withActivePowerValue(90).build(),
                 new LoadActionBuilder().withId("action2").withLoadId("l1").withRelativeValue(true).withActivePowerValue(50).build(),
@@ -965,7 +966,7 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
         final String lineInContingencyId = "l13";
         List<Contingency> contingencies = Stream.of(lineInContingencyId)
                 .map(id -> new Contingency(id, new BranchContingency(id)))
-                .collect(Collectors.toList());
+                .toList();
 
         final String g1 = "g1";
         final String g2 = "g2";
@@ -1066,7 +1067,7 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
 
         List<Contingency> contingencies = Stream.of("g1")
                 .map(id -> new Contingency(id, new GeneratorContingency(id)))
-                .collect(Collectors.toList());
+                .toList();
 
         List<Action> actions = List.of(new GeneratorActionBuilder().withId("action1").withGeneratorId("g1").withActivePowerRelativeValue(true).withActivePowerValue(100).build(),
                                        new GeneratorActionBuilder().withId("action2").withGeneratorId("g2").withActivePowerRelativeValue(false).withActivePowerValue(300).build());
@@ -1506,7 +1507,7 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
         network.getLine("l23").getTerminal2().disconnect();
         List<Contingency> contingencies = Stream.of("l14")
                 .map(id -> new Contingency(id, new BranchContingency(id)))
-                .collect(Collectors.toList());
+                .toList();
 
         List<Action> actions = List.of(new TerminalsConnectionAction("closeLine", "l23", false));
         List<OperatorStrategy> operatorStrategies = List.of(new OperatorStrategy("strategyL1", ContingencyContext.specificContingency("l14"), new TrueCondition(), List.of("closeLine")));
@@ -1571,7 +1572,7 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
         network.getLine("l23").getTerminal2().disconnect();
         List<Contingency> contingencies = Stream.of("l14")
                 .map(id -> new Contingency(id, new BranchContingency(id)))
-                .collect(Collectors.toList());
+                .toList();
 
         List<Action> actions = List.of(new TerminalsConnectionAction("closeLine", "l23", false));
         List<OperatorStrategy> operatorStrategies = List.of(new OperatorStrategy("strategyL1", ContingencyContext.specificContingency("l14"), new TrueCondition(), List.of("closeLine")));
@@ -1589,5 +1590,27 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
         assertEquals(1.445, acStrategyResult.getNetworkResult().getBranchResult("l12").getP1(), LoadFlowAssert.DELTA_POWER);
         assertEquals(0.445, acStrategyResult.getNetworkResult().getBranchResult("l23").getP1(), LoadFlowAssert.DELTA_POWER);
         assertEquals(-1.666, acStrategyResult.getNetworkResult().getBranchResult("l34").getP1(), LoadFlowAssert.DELTA_POWER);
+    }
+
+    @Test
+    void testOperatorStrategyNoMoreBusVoltageControlled() throws IOException {
+        Network network = EurostagFactory.fix(EurostagTutorialExample1Factory.create());
+        // trip one of the two parallel lines
+        List<Contingency> contingencies = List.of(new Contingency("NHV1_NHV2_2", new BranchContingency("NHV1_NHV2_2")));
+        // opening this transformer will disconnect the only generator and there is no other voltage control
+        List<Action> actions = List.of(new TerminalsConnectionAction("open NGEN_NHV1", "NGEN_NHV1", true));
+        List<OperatorStrategy> operatorStrategies = List.of(new OperatorStrategy("strategy1",
+                ContingencyContext.specificContingency("NHV1_NHV2_2"), new TrueCondition(), List.of("open NGEN_NHV1")));
+
+        ReportNode reportNode = ReportNode.newRootReportNode()
+                .withMessageTemplate("testSaReport", "Test report of security analysis")
+                .build();
+        SecurityAnalysisResult result = runSecurityAnalysis(network, contingencies, Collections.emptyList(), new SecurityAnalysisParameters(), operatorStrategies, actions, reportNode);
+
+        assertSame(LoadFlowResult.ComponentResult.Status.CONVERGED, result.getPreContingencyResult().getStatus());
+        assertSame(PostContingencyComputationStatus.CONVERGED, result.getPostContingencyResults().get(0).getStatus());
+        assertSame(PostContingencyComputationStatus.SOLVER_FAILED, result.getOperatorStrategyResults().get(0).getStatus());
+
+        assertReportEquals("/saReportOperatorStrategyNoVoltageControl.txt", reportNode);
     }
 }

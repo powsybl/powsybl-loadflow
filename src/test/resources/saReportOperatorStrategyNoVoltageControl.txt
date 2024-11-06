@@ -1,4 +1,4 @@
-+ Test security analysis report
++ Test report of security analysis
    + AC security analysis on network 'sim1'
       + Network CC0 SC0
          + Network info
@@ -16,16 +16,6 @@
             Outer loop VoltageMonitoring
             Outer loop ReactiveLimits
             AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
-         + Post-contingency simulation 'NHV1_NHV2_1'
-            + Outer loop DistributedSlack
-               + Outer loop iteration 1
-                  Slack bus active power (5.803741102800952 MW) distributed in 1 distribution iteration(s)
-            Outer loop VoltageMonitoring
-            Outer loop ReactiveLimits
-            Outer loop DistributedSlack
-            Outer loop VoltageMonitoring
-            Outer loop ReactiveLimits
-            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
          + Post-contingency simulation 'NHV1_NHV2_2'
             + Outer loop DistributedSlack
                + Outer loop iteration 1
@@ -36,16 +26,6 @@
             Outer loop VoltageMonitoring
             Outer loop ReactiveLimits
             AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
-         + Post-contingency simulation 'NGEN_NHV1'
-            Network must have at least one bus with generator voltage control enabled
-            AC load flow completed with error (solverStatus=SOLVER_FAILED, outerloopStatus=STABLE)
-         + Post-contingency simulation 'NHV2_NLOAD'
-            + Outer loop DistributedSlack
-               + Outer loop iteration 1
-                  Slack bus active power (-5.4942194604343655 MW) distributed in 1 distribution iteration(s)
-            Outer loop VoltageMonitoring
-            Outer loop ReactiveLimits
-            Outer loop DistributedSlack
-            Outer loop VoltageMonitoring
-            Outer loop ReactiveLimits
-            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy1'
+               Network must have at least one bus with generator voltage control enabled
+               AC load flow completed with error (solverStatus=SOLVER_FAILED, outerloopStatus=STABLE)

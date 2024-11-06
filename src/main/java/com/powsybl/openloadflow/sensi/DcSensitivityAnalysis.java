@@ -13,6 +13,7 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.math.matrix.DenseMatrix;
+import com.powsybl.math.matrix.DenseMatrixFactory;
 import com.powsybl.math.matrix.MatrixFactory;
 import com.powsybl.openloadflow.OpenLoadFlowParameters;
 import com.powsybl.openloadflow.dc.DcLoadFlowContext;
@@ -231,7 +232,6 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
             DenseMatrix postContingencyFlowStates = engine.run(newFlowStates);
             DenseMatrix postContingencyFactorStates = engine.run(newFactorStates);
             calculateSensitivityValues(factors, postContingencyFactorStates, postContingencyFlowStates, contingency, resultWriter, disabledNetwork);
-
             // write contingency status
             if (contingency.hasNoImpact()) {
                 resultWriter.writeContingencyStatus(contingency.getIndex(), SensitivityAnalysisResult.Status.NO_IMPACT);
@@ -438,13 +438,14 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
                         : Collections.emptyList();
 
                 // run DC load on pre-contingency network
-                DenseMatrix flowStates = calculateFlowStates(loadFlowContext, participatingElements, new DisabledNetwork(), reportNode);
-
+                DenseMatrix baseFlowStates = calculateFlowStates(loadFlowContext, participatingElements, new DisabledNetwork(), reportNode);
+                DenseMatrix flowStates = (DenseMatrix) baseFlowStates.copy(new DenseMatrixFactory());
                 // compute the pre-contingency factor states
-                DenseMatrix factorsStates = calculateFactorStates(loadFlowContext, factorGroups, participatingElements);
+                DenseMatrix baseFactorStates = calculateFactorStates(loadFlowContext, factorGroups, participatingElements);
+                DenseMatrix factorStates = (DenseMatrix) baseFactorStates.copy(new DenseMatrixFactory());
 
                 // calculate sensitivity values for pre-contingency network
-                calculateSensitivityValues(validFactorHolder.getFactorsForBaseNetwork(), factorsStates, flowStates, null, resultWriter, new DisabledNetwork());
+                calculateSensitivityValues(validFactorHolder.getFactorsForBaseNetwork(), factorStates, flowStates, null, resultWriter, new DisabledNetwork());
 
                 // filter contingencies without factors
                 List<PropagatedContingency> contingenciesWithFactors = new ArrayList<>();
@@ -464,8 +465,11 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
 
                 // process contingencies with no connectivity break
                 for (PropagatedContingency contingency : connectivityBreakAnalysisResults.nonBreakingConnectivityContingencies()) {
+                    matrixShallowCopy(baseFlowStates, flowStates);
+                    matrixShallowCopy(baseFactorStates, factorStates);
+
                     calculateSensitivityValuesForAContingency(loadFlowContext, lfParametersExt, validFactorHolder, factorGroups,
-                            factorsStates, connectivityBreakAnalysisResults.contingenciesStates(), flowStates, contingency,
+                            factorStates, connectivityBreakAnalysisResults.contingenciesStates(), flowStates, contingency,
                             connectivityBreakAnalysisResults.contingencyElementByBranch(), Collections.emptySet(), participatingElements, Collections.emptySet(), resultWriter, reportNode, Collections.emptySet(), false);
                 }
 
@@ -473,9 +477,12 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
 
                 // process contingencies with connectivity break
                 for (ConnectivityBreakAnalysis.ConnectivityAnalysisResult connectivityAnalysisResult : connectivityBreakAnalysisResults.connectivityAnalysisResults()) {
+                    matrixShallowCopy(baseFlowStates, flowStates);
+                    matrixShallowCopy(baseFactorStates, factorStates);
+
                     processContingenciesBreakingConnectivity(connectivityAnalysisResult, loadFlowContext, lfParameters, lfParametersExt,
                             validFactorHolder, factorGroups, participatingElements, connectivityBreakAnalysisResults.contingencyElementByBranch(),
-                            flowStates, factorsStates, connectivityBreakAnalysisResults.contingenciesStates(), resultWriter, reportNode);
+                            flowStates, factorStates, connectivityBreakAnalysisResults.contingenciesStates(), resultWriter, reportNode);
                 }
             }
 
@@ -483,4 +490,20 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
             LOGGER.info("DC sensitivity analysis done in {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
+
+    /**
+     * Copy all the values that are in an originalMatrix and paste it in the copyMatrix (without allocating new memory spaces)
+     * The dimensions of both matrices must be the same
+     */
+    // TODO : implement this method for DenseMatrix in powsybl-core ?
+    private static void matrixShallowCopy(DenseMatrix originalMatrix, DenseMatrix copyMatrix) {
+        if (originalMatrix.getRowCount() == copyMatrix.getRowCount() && originalMatrix.getColumnCount() == copyMatrix.getColumnCount()) {
+            for (int columnIndex = 0; columnIndex < originalMatrix.getColumnCount(); columnIndex++) {
+                for (int rowIndex = 0; rowIndex < originalMatrix.getRowCount(); rowIndex++) {
+                    copyMatrix.set(rowIndex, columnIndex, originalMatrix.get(rowIndex, columnIndex));
+                }
+            }
+        }
+    }
+
 }
