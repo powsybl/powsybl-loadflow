@@ -18,10 +18,7 @@ import com.powsybl.openloadflow.equations.EquationSystem;
 import com.powsybl.openloadflow.equations.EquationTerm;
 import com.powsybl.openloadflow.equations.JacobianMatrix;
 import com.powsybl.openloadflow.equations.VariableSet;
-import com.powsybl.openloadflow.network.GeneratorVoltageControl;
-import com.powsybl.openloadflow.network.LfBranch;
-import com.powsybl.openloadflow.network.LfBus;
-import com.powsybl.openloadflow.network.LfNetwork;
+import com.powsybl.openloadflow.network.*;
 import com.powsybl.openloadflow.network.util.UniformValueVoltageInitializer;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.tuple.Pair;
@@ -206,11 +203,13 @@ public class RemoteVoltageTargetChecker {
             }
             LfBus controlledBusToFix = incompatibleControlledBusRefCount.get(controlledBus1).intValue() > incompatibleControlledBusRefCount.get(controlledBus2).intValue()
                     ? controlledBus1 : controlledBus2;
-            for (var voltageControl : controlledBusToFix.getVoltageControls()) {
+            for (VoltageControl voltageControl : controlledBusToFix.getVoltageControls()) {
                 LOGGER.warn("Controlled buses '{}' and '{}' have incompatible target voltages ({} and {}): disable voltage control of '{}'",
                         controlledBus1.getId(), controlledBus2.getId(), controlledBus1.getHighestPriorityTargetV().orElseThrow() * controlledBus1.getNominalV(),
                         controlledBus2.getHighestPriorityTargetV().orElseThrow() * controlledBus2.getNominalV(), controlledBusToFix.getId());
-          //      voltageControl.setDisabled(true);
+                for (var controllerElement : voltageControl.getControllerElements()) {
+                    voltageControl.setControllerEnabled((LfElement) controllerElement, false);
+                }
                 fixedControlledBuses.add(controlledBusToFix);
             }
         }

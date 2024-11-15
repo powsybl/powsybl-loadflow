@@ -276,7 +276,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
 
     public static final String AREA_INTERCHANGE_P_MAX_MISMATCH_PARAM_NAME = "areaInterchangePMaxMismatch";
 
-    public static final String FIX_REMOTE_TARGET_VOLTAGE_PARAM_NAME = "fixRemoteTargetVoltage";
+    public static final String FIX_REMOTE_VOLTAGE_TARGET_PARAM_NAME = "fixRemoteTargetVoltage";
 
     public static <E extends Enum<E>> List<Object> getEnumPossibleValues(Class<E> enumClass) {
         return EnumSet.allOf(enumClass).stream().map(Enum::name).collect(Collectors.toList());
@@ -416,7 +416,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
         new Parameter(AREA_INTERCHANGE_CONTROL_PARAM_NAME, ParameterType.BOOLEAN, "Area interchange control", AREA_INTERCHANGE_CONTROL_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, SLACK_DISTRIBUTION_CATEGORY_KEY),
         new Parameter(AREA_INTERCHANGE_CONTROL_AREA_TYPE_PARAM_NAME, ParameterType.STRING, "Area type for area interchange control", LfNetworkParameters.AREA_INTERCHANGE_CONTROL_AREA_TYPE_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, SLACK_DISTRIBUTION_CATEGORY_KEY),
         new Parameter(AREA_INTERCHANGE_P_MAX_MISMATCH_PARAM_NAME, ParameterType.DOUBLE, "Area interchange max active power mismatch", AREA_INTERCHANGE_P_MAX_MISMATCH_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, SLACK_DISTRIBUTION_CATEGORY_KEY),
-        new Parameter(FIX_REMOTE_TARGET_VOLTAGE_PARAM_NAME, ParameterType.BOOLEAN, "Automatically fix incompatible target voltages", AcLoadFlowParameters.FIX_REMOTE_VOLTAGE_TARGET_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, VOLTAGE_CONTROLS_CATEGORY_KEY)
+        new Parameter(FIX_REMOTE_VOLTAGE_TARGET_PARAM_NAME, ParameterType.BOOLEAN, "Automatically fix problematic remote voltage targets", AcLoadFlowParameters.FIX_REMOTE_VOLTAGE_TARGET_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, VOLTAGE_CONTROLS_CATEGORY_KEY)
     );
 
     public enum VoltageInitModeOverride {
@@ -1415,7 +1415,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
                 .setAreaInterchangeControl(config.getBooleanProperty(AREA_INTERCHANGE_CONTROL_PARAM_NAME, AREA_INTERCHANGE_CONTROL_DEFAULT_VALUE))
                 .setAreaInterchangeControlAreaType(config.getStringProperty(AREA_INTERCHANGE_CONTROL_AREA_TYPE_PARAM_NAME, LfNetworkParameters.AREA_INTERCHANGE_CONTROL_AREA_TYPE_DEFAULT_VALUE))
                 .setAreaInterchangePMaxMismatch(config.getDoubleProperty(AREA_INTERCHANGE_P_MAX_MISMATCH_PARAM_NAME, AREA_INTERCHANGE_P_MAX_MISMATCH_DEFAULT_VALUE))
-                .setFixRemoteVoltageTarget(config.getBooleanProperty(FIX_REMOTE_TARGET_VOLTAGE_PARAM_NAME, AcLoadFlowParameters.FIX_REMOTE_VOLTAGE_TARGET_DEFAULT_VALUE)));
+                .setFixRemoteVoltageTarget(config.getBooleanProperty(FIX_REMOTE_VOLTAGE_TARGET_PARAM_NAME, AcLoadFlowParameters.FIX_REMOTE_VOLTAGE_TARGET_DEFAULT_VALUE)));
         return parameters;
     }
 
@@ -1576,7 +1576,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
                 .ifPresent(this::setAreaInterchangeControlAreaType);
         Optional.ofNullable(properties.get(AREA_INTERCHANGE_P_MAX_MISMATCH_PARAM_NAME))
                 .ifPresent(prop -> this.setAreaInterchangePMaxMismatch(Double.parseDouble(prop)));
-        Optional.ofNullable(properties.get(FIX_REMOTE_TARGET_VOLTAGE_PARAM_NAME))
+        Optional.ofNullable(properties.get(FIX_REMOTE_VOLTAGE_TARGET_PARAM_NAME))
                 .ifPresent(prop -> this.setFixRemoteVoltageTarget(Boolean.parseBoolean(prop)));
         return this;
     }
@@ -1654,7 +1654,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
         map.put(AREA_INTERCHANGE_CONTROL_PARAM_NAME, areaInterchangeControl);
         map.put(AREA_INTERCHANGE_CONTROL_AREA_TYPE_PARAM_NAME, areaInterchangeControlAreaType);
         map.put(AREA_INTERCHANGE_P_MAX_MISMATCH_PARAM_NAME, areaInterchangePMaxMismatch);
-        map.put(FIX_REMOTE_TARGET_VOLTAGE_PARAM_NAME, fixRemoteVoltageTarget);
+        map.put(FIX_REMOTE_VOLTAGE_TARGET_PARAM_NAME, fixRemoteVoltageTarget);
         return map;
     }
 

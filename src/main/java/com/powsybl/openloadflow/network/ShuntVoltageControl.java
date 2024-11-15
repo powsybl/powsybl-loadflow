@@ -21,4 +21,9 @@ public class ShuntVoltageControl extends DiscreteVoltageControl<LfShunt> {
     public boolean isControllerEnabled(LfShunt controllerElement) {
         return controllerElement.isVoltageControlEnabled();
     }
+
+    @Override
+    public void setControllerEnabled(LfShunt controllerElement, boolean enabled) {
+        controllerElement.setVoltageControlEnabled(enabled);
+    }
 }
