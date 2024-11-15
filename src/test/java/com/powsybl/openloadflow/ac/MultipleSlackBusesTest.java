@@ -7,7 +7,9 @@
  */
 package com.powsybl.openloadflow.ac;
 
+import com.powsybl.iidm.network.Load;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.TwoWindingsTransformer;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -17,6 +19,7 @@ import com.powsybl.openloadflow.OpenLoadFlowParameters;
 import com.powsybl.openloadflow.OpenLoadFlowProvider;
 import com.powsybl.openloadflow.ac.solver.NewtonRaphsonStoppingCriteriaType;
 import com.powsybl.openloadflow.network.EurostagFactory;
+import com.powsybl.openloadflow.network.SlackBusSelectionMode;
 import com.powsybl.openloadflow.util.LoadFlowAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +33,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.powsybl.openloadflow.util.LoadFlowAssert.assertActivePowerEquals;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -106,5 +110,27 @@ class MultipleSlackBusesTest {
         assertEquals(2, slackBusResults.size());
         assertEquals(-0.005, slackBusResults.get(0).getActivePowerMismatch(), LoadFlowAssert.DELTA_POWER);
         assertEquals(-0.005, slackBusResults.get(1).getActivePowerMismatch(), LoadFlowAssert.DELTA_POWER);
+    }
+
+    @Test
+    void testSlackBusWithInjection() {
+        parametersExt
+                .setSlackBusSelectionMode(SlackBusSelectionMode.NAME)
+                .setSlackBusesIds(List.of("VLHV2", "VLLOAD"))
+                .setNewtonRaphsonConvEpsPerEq(1e-6);
+        LoadFlowResult result = loadFlowRunner.run(network, parameters);
+        assertTrue(result.isFullyConverged());
+        LoadFlowResult.ComponentResult componentResult = result.getComponentResults().get(0);
+        List<LoadFlowResult.SlackBusResult> slackBusResults = componentResult.getSlackBusResults();
+
+        TwoWindingsTransformer t2wtLoad = network.getTwoWindingsTransformer("NHV2_NLOAD");
+        Load load = network.getLoad("LOAD");
+
+        assertActivePowerEquals(-600.710, t2wtLoad.getTerminal2());
+        assertActivePowerEquals(600.0, load.getTerminal());
+
+        assertEquals(2, slackBusResults.size());
+        assertEquals(-0.710, slackBusResults.get(0).getActivePowerMismatch(), LoadFlowAssert.DELTA_POWER);
+        assertEquals(-0.710, slackBusResults.get(1).getActivePowerMismatch(), LoadFlowAssert.DELTA_POWER);
     }
 }

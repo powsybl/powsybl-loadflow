@@ -13,7 +13,7 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.math.matrix.DenseMatrix;
-import com.powsybl.math.matrix.DenseMatrixFactory;
+import com.powsybl.math.matrix.MatrixException;
 import com.powsybl.math.matrix.MatrixFactory;
 import com.powsybl.openloadflow.OpenLoadFlowParameters;
 import com.powsybl.openloadflow.dc.DcLoadFlowContext;
@@ -189,6 +189,7 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
      * if the factorsStates should be overridden or not in this method.
      * If connectivity, a generator, a load or a phase tap changer is lost due to the contingency,
      * the flowStates are overridden.
+     * The matrices factorStates and flowStates are modified by this method.
      */
     private void calculateSensitivityValuesForAContingency(DcLoadFlowContext loadFlowContext, OpenLoadFlowParameters lfParametersExt, SensitivityFactorHolder<DcVariableType, DcEquationType> validFactorHolder,
                                                            SensitivityFactorGroupList<DcVariableType, DcEquationType> factorGroups, DenseMatrix factorStates, DenseMatrix contingenciesStates, DenseMatrix flowStates,
@@ -229,9 +230,9 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
                 newFlowStates = calculateFlowStates(loadFlowContext, participatingElements, disabledNetwork, reportNode);
             }
 
-            DenseMatrix postContingencyFlowStates = engine.run(newFlowStates);
-            DenseMatrix postContingencyFactorStates = engine.run(newFactorStates);
-            calculateSensitivityValues(factors, postContingencyFactorStates, postContingencyFlowStates, contingency, resultWriter, disabledNetwork);
+            engine.toPostContingencyStates(newFlowStates);
+            engine.toPostContingencyStates(newFactorStates);
+            calculateSensitivityValues(factors, newFactorStates, newFlowStates, contingency, resultWriter, disabledNetwork);
             // write contingency status
             if (contingency.hasNoImpact()) {
                 resultWriter.writeContingencyStatus(contingency.getIndex(), SensitivityAnalysisResult.Status.NO_IMPACT);
@@ -280,9 +281,9 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
 
             DenseMatrix newFlowStates = calculateFlowStates(loadFlowContext, newParticipatingElements, disabledNetwork, reportNode);
 
-            DenseMatrix postContingencyFlowStates = engine.run(newFlowStates);
-            DenseMatrix postContingencyFactorStates = engine.run(newFactorStates);
-            calculateSensitivityValues(factors, postContingencyFactorStates, postContingencyFlowStates, contingency, resultWriter, disabledNetwork);
+            engine.toPostContingencyStates(newFlowStates);
+            engine.toPostContingencyStates(newFactorStates);
+            calculateSensitivityValues(factors, newFactorStates, newFlowStates, contingency, resultWriter, disabledNetwork);
 
             networkState.restore();
         }
@@ -439,13 +440,16 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
 
                 // run DC load on pre-contingency network
                 DenseMatrix baseFlowStates = calculateFlowStates(loadFlowContext, participatingElements, new DisabledNetwork(), reportNode);
-                DenseMatrix flowStates = (DenseMatrix) baseFlowStates.copy(new DenseMatrixFactory());
+                // create workingFlowStates matrix that will be a working copy of baseFlowStates
+                DenseMatrix workingFlowStates = new DenseMatrix(baseFlowStates.getRowCount(), baseFlowStates.getColumnCount());
+
                 // compute the pre-contingency factor states
                 DenseMatrix baseFactorStates = calculateFactorStates(loadFlowContext, factorGroups, participatingElements);
-                DenseMatrix factorStates = (DenseMatrix) baseFactorStates.copy(new DenseMatrixFactory());
+                // create workingFactorStates matrix that will be a working copy of baseFactorStates
+                DenseMatrix workingFactorStates = new DenseMatrix(baseFactorStates.getRowCount(), baseFactorStates.getColumnCount());
 
                 // calculate sensitivity values for pre-contingency network
-                calculateSensitivityValues(validFactorHolder.getFactorsForBaseNetwork(), factorStates, flowStates, null, resultWriter, new DisabledNetwork());
+                calculateSensitivityValues(validFactorHolder.getFactorsForBaseNetwork(), baseFactorStates, baseFlowStates, null, resultWriter, new DisabledNetwork());
 
                 // filter contingencies without factors
                 List<PropagatedContingency> contingenciesWithFactors = new ArrayList<>();
@@ -465,11 +469,11 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
 
                 // process contingencies with no connectivity break
                 for (PropagatedContingency contingency : connectivityBreakAnalysisResults.nonBreakingConnectivityContingencies()) {
-                    matrixShallowCopy(baseFlowStates, flowStates);
-                    matrixShallowCopy(baseFactorStates, factorStates);
+                    matrixCopyValues(baseFlowStates, workingFlowStates);
+                    matrixCopyValues(baseFactorStates, workingFactorStates);
 
                     calculateSensitivityValuesForAContingency(loadFlowContext, lfParametersExt, validFactorHolder, factorGroups,
-                            factorStates, connectivityBreakAnalysisResults.contingenciesStates(), flowStates, contingency,
+                            workingFactorStates, connectivityBreakAnalysisResults.contingenciesStates(), workingFlowStates, contingency,
                             connectivityBreakAnalysisResults.contingencyElementByBranch(), Collections.emptySet(), participatingElements, Collections.emptySet(), resultWriter, reportNode, Collections.emptySet(), false);
                 }
 
@@ -477,12 +481,12 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
 
                 // process contingencies with connectivity break
                 for (ConnectivityBreakAnalysis.ConnectivityAnalysisResult connectivityAnalysisResult : connectivityBreakAnalysisResults.connectivityAnalysisResults()) {
-                    matrixShallowCopy(baseFlowStates, flowStates);
-                    matrixShallowCopy(baseFactorStates, factorStates);
+                    matrixCopyValues(baseFlowStates, workingFlowStates);
+                    matrixCopyValues(baseFactorStates, workingFactorStates);
 
                     processContingenciesBreakingConnectivity(connectivityAnalysisResult, loadFlowContext, lfParameters, lfParametersExt,
                             validFactorHolder, factorGroups, participatingElements, connectivityBreakAnalysisResults.contingencyElementByBranch(),
-                            flowStates, factorStates, connectivityBreakAnalysisResults.contingenciesStates(), resultWriter, reportNode);
+                            workingFlowStates, workingFactorStates, connectivityBreakAnalysisResults.contingenciesStates(), resultWriter, reportNode);
                 }
             }
 
@@ -496,13 +500,15 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
      * The dimensions of both matrices must be the same
      */
     // TODO : implement this method for DenseMatrix in powsybl-core ?
-    private static void matrixShallowCopy(DenseMatrix originalMatrix, DenseMatrix copyMatrix) {
+    private static void matrixCopyValues(DenseMatrix originalMatrix, DenseMatrix copyMatrix) {
         if (originalMatrix.getRowCount() == copyMatrix.getRowCount() && originalMatrix.getColumnCount() == copyMatrix.getColumnCount()) {
             for (int columnIndex = 0; columnIndex < originalMatrix.getColumnCount(); columnIndex++) {
                 for (int rowIndex = 0; rowIndex < originalMatrix.getRowCount(); rowIndex++) {
                     copyMatrix.set(rowIndex, columnIndex, originalMatrix.get(rowIndex, columnIndex));
                 }
             }
+        } else {
+            throw new MatrixException("Incompatible matrices dimensions when copying values. Received (" + originalMatrix.getRowCount() + ", " + originalMatrix.getColumnCount() + ") and (" + copyMatrix.getRowCount() + ", " + copyMatrix.getColumnCount() + ")");
         }
     }
 

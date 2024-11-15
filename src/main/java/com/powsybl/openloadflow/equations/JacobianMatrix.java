@@ -12,6 +12,7 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.math.matrix.DenseMatrix;
 import com.powsybl.math.matrix.LUDecomposition;
 import com.powsybl.math.matrix.Matrix;
+import com.powsybl.math.matrix.MatrixException;
 import com.powsybl.math.matrix.MatrixFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,7 +142,18 @@ public class JacobianMatrix<V extends Enum<V> & Quantity, E extends Enum<E> & Qu
 
     private void updateValues(boolean allowIncrementalUpdate) {
         updateDer();
-        updateLu(allowIncrementalUpdate);
+        try {
+            updateLu(allowIncrementalUpdate);
+        } catch (MatrixException ex) {
+            if (allowIncrementalUpdate) {
+                // Try another time without incremental
+                LOGGER.warn("Exception when updating LU matrix in incremental mode. Retrying without incremental mode");
+                updateLu(false);
+            } else {
+                // Rethrow the exception
+                throw ex;
+            }
+        }
     }
 
     public void forceUpdate() {

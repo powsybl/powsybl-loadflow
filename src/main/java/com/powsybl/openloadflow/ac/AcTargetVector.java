@@ -66,7 +66,7 @@ public class AcTargetVector extends TargetVector<AcVariableType, AcEquationType>
 
     public static void init(Equation<AcVariableType, AcEquationType> equation, LfNetwork network, double[] targets) {
         switch (equation.getType()) {
-            case BUS_TARGET_P:
+            case BUS_TARGET_P, BUS_DISTR_SLACK_P:
                 targets[equation.getColumn()] = network.getBus(equation.getElementNum()).getTargetP();
                 break;
 
@@ -118,7 +118,6 @@ public class AcTargetVector extends TargetVector<AcVariableType, AcEquationType>
                  DISTR_SHUNT_B,
                  DUMMY_TARGET_P,
                  DUMMY_TARGET_Q,
-                 BUS_DISTR_SLACK_P,
                  BUS_TARGET_IX_ZERO,
                  BUS_TARGET_IY_ZERO,
                  BUS_TARGET_IX_NEGATIVE,

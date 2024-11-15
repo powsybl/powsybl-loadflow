@@ -1036,14 +1036,14 @@ public class AcEquationSystemCreator {
             LfBus firstSlackBus = slackBuses.get(0);
             for (int i = 1; i < slackBuses.size(); i++) {
                 LfBus slackBus = slackBuses.get(i);
-                // example for 2 slack buses
-                // 0 = slack_p1 - slack_p2
-                // 0 = slack_p1 - slack_p3
+                // example for 3 slack buses
+                // target_p2 = slack_p2 - slack_p1
+                // target_p3 = slack_p3 - slack_p1
                 equationSystem.createEquation(slackBus, AcEquationType.BUS_DISTR_SLACK_P)
-                        .addTerms(createActiveInjectionTerms(firstSlackBus, equationSystem.getVariableSet()))
-                        .addTerms(createActiveInjectionTerms(slackBus, equationSystem.getVariableSet()).stream()
+                        .addTerms(createActiveInjectionTerms(firstSlackBus, equationSystem.getVariableSet()).stream()
                                 .map(EquationTerm::minus)
-                                .collect(Collectors.toList()));
+                                .toList())
+                        .addTerms(createActiveInjectionTerms(slackBus, equationSystem.getVariableSet()));
                 // to update open/close terms activation
                 for (LfBranch branch : slackBus.getBranches()) {
                     updateBranchEquations(branch);
