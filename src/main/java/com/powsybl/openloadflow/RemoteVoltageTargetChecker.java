@@ -86,15 +86,6 @@ public class RemoteVoltageTargetChecker {
         return neighbors;
     }
 
-    private static Map<Integer, Integer> buildBusIndex(List<LfBus> buses) {
-        Map<Integer, Integer> busIndex = new LinkedHashMap<>();
-        for (int i = 0; i < buses.size(); i++) {
-            var bus = buses.get(i);
-            busIndex.put(bus.getNum(), i);
-        }
-        return busIndex;
-    }
-
     private void checkIncompatibleTargets(RemoteVoltageTargetCheckerParameters parameters,
                                           Set<LfBus> controlledBuses,
                                           RemoteVoltageTargetCheckResult result) {
@@ -131,7 +122,7 @@ public class RemoteVoltageTargetChecker {
         AcSolverUtil.initStateVector(network, equationSystem, new UniformValueVoltageInitializer());
 
         // calculate target voltage to calculated voltage sensibilities
-        var busNumToSensiColumn = buildBusIndex(new ArrayList<>(generatorControlledBuses));
+        var busNumToSensiColumn = LfBus.buildIndex(new ArrayList<>(generatorControlledBuses));
         DenseMatrix rhs = new DenseMatrix(equationSystem.getIndex().getSortedEquationsToSolve().size(), generatorControlledBuses.size());
         for (LfBus controlledBus : generatorControlledBuses) {
             equationSystem.getEquation(controlledBus.getNum(), AcEquationType.BUS_TARGET_V)
