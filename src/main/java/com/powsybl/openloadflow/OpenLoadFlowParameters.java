@@ -276,7 +276,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
 
     public static final String AREA_INTERCHANGE_P_MAX_MISMATCH_PARAM_NAME = "areaInterchangePMaxMismatch";
 
-    public static final String FIX_TARGET_VOLTAGE_INCOMPATIBILITY_PARAM_NAME = "fixTargetVoltageIncompatibility";
+    public static final String FIX_REMOTE_TARGET_VOLTAGE_PARAM_NAME = "fixRemoteTargetVoltage";
 
     public static <E extends Enum<E>> List<Object> getEnumPossibleValues(Class<E> enumClass) {
         return EnumSet.allOf(enumClass).stream().map(Enum::name).collect(Collectors.toList());
@@ -416,7 +416,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
         new Parameter(AREA_INTERCHANGE_CONTROL_PARAM_NAME, ParameterType.BOOLEAN, "Area interchange control", AREA_INTERCHANGE_CONTROL_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, SLACK_DISTRIBUTION_CATEGORY_KEY),
         new Parameter(AREA_INTERCHANGE_CONTROL_AREA_TYPE_PARAM_NAME, ParameterType.STRING, "Area type for area interchange control", LfNetworkParameters.AREA_INTERCHANGE_CONTROL_AREA_TYPE_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, SLACK_DISTRIBUTION_CATEGORY_KEY),
         new Parameter(AREA_INTERCHANGE_P_MAX_MISMATCH_PARAM_NAME, ParameterType.DOUBLE, "Area interchange max active power mismatch", AREA_INTERCHANGE_P_MAX_MISMATCH_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, SLACK_DISTRIBUTION_CATEGORY_KEY),
-        new Parameter(FIX_TARGET_VOLTAGE_INCOMPATIBILITY_PARAM_NAME, ParameterType.BOOLEAN, "Automatically fix incompatible target voltages", LfNetworkParameters.FIX_TARGET_VOLTAGE_INCOMPATIBILITY_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, VOLTAGE_CONTROLS_CATEGORY_KEY)
+        new Parameter(FIX_REMOTE_TARGET_VOLTAGE_PARAM_NAME, ParameterType.BOOLEAN, "Automatically fix incompatible target voltages", AcLoadFlowParameters.FIX_REMOTE_VOLTAGE_TARGET_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, VOLTAGE_CONTROLS_CATEGORY_KEY)
     );
 
     public enum VoltageInitModeOverride {
@@ -600,7 +600,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
 
     private double areaInterchangePMaxMismatch = AREA_INTERCHANGE_P_MAX_MISMATCH_DEFAULT_VALUE;
 
-    private boolean fixTargetVoltageIncompatibility = LfNetworkParameters.FIX_TARGET_VOLTAGE_INCOMPATIBILITY_DEFAULT_VALUE;
+    private boolean fixRemoteVoltageTarget = AcLoadFlowParameters.FIX_REMOTE_VOLTAGE_TARGET_DEFAULT_VALUE;
 
     public static double checkParameterValue(double parameterValue, boolean condition, String parameterName) {
         if (!condition) {
@@ -1327,12 +1327,12 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
         return this;
     }
 
-    public boolean isFixTargetVoltageIncompatibility() {
-        return fixTargetVoltageIncompatibility;
+    public boolean isFixRemoteVoltageTarget() {
+        return fixRemoteVoltageTarget;
     }
 
-    public OpenLoadFlowParameters setFixTargetVoltageIncompatibility(boolean fixTargetVoltageIncompatibility) {
-        this.fixTargetVoltageIncompatibility = fixTargetVoltageIncompatibility;
+    public OpenLoadFlowParameters setFixRemoteVoltageTarget(boolean fixRemoteVoltageTarget) {
+        this.fixRemoteVoltageTarget = fixRemoteVoltageTarget;
         return this;
     }
 
@@ -1415,7 +1415,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
                 .setAreaInterchangeControl(config.getBooleanProperty(AREA_INTERCHANGE_CONTROL_PARAM_NAME, AREA_INTERCHANGE_CONTROL_DEFAULT_VALUE))
                 .setAreaInterchangeControlAreaType(config.getStringProperty(AREA_INTERCHANGE_CONTROL_AREA_TYPE_PARAM_NAME, LfNetworkParameters.AREA_INTERCHANGE_CONTROL_AREA_TYPE_DEFAULT_VALUE))
                 .setAreaInterchangePMaxMismatch(config.getDoubleProperty(AREA_INTERCHANGE_P_MAX_MISMATCH_PARAM_NAME, AREA_INTERCHANGE_P_MAX_MISMATCH_DEFAULT_VALUE))
-                .setFixTargetVoltageIncompatibility(config.getBooleanProperty(FIX_TARGET_VOLTAGE_INCOMPATIBILITY_PARAM_NAME, LfNetworkParameters.FIX_TARGET_VOLTAGE_INCOMPATIBILITY_DEFAULT_VALUE)));
+                .setFixRemoteVoltageTarget(config.getBooleanProperty(FIX_REMOTE_TARGET_VOLTAGE_PARAM_NAME, AcLoadFlowParameters.FIX_REMOTE_VOLTAGE_TARGET_DEFAULT_VALUE)));
         return parameters;
     }
 
@@ -1576,8 +1576,8 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
                 .ifPresent(this::setAreaInterchangeControlAreaType);
         Optional.ofNullable(properties.get(AREA_INTERCHANGE_P_MAX_MISMATCH_PARAM_NAME))
                 .ifPresent(prop -> this.setAreaInterchangePMaxMismatch(Double.parseDouble(prop)));
-        Optional.ofNullable(properties.get(FIX_TARGET_VOLTAGE_INCOMPATIBILITY_PARAM_NAME))
-                .ifPresent(prop -> this.setFixTargetVoltageIncompatibility(Boolean.parseBoolean(prop)));
+        Optional.ofNullable(properties.get(FIX_REMOTE_TARGET_VOLTAGE_PARAM_NAME))
+                .ifPresent(prop -> this.setFixRemoteVoltageTarget(Boolean.parseBoolean(prop)));
         return this;
     }
 
@@ -1654,7 +1654,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
         map.put(AREA_INTERCHANGE_CONTROL_PARAM_NAME, areaInterchangeControl);
         map.put(AREA_INTERCHANGE_CONTROL_AREA_TYPE_PARAM_NAME, areaInterchangeControlAreaType);
         map.put(AREA_INTERCHANGE_P_MAX_MISMATCH_PARAM_NAME, areaInterchangePMaxMismatch);
-        map.put(FIX_TARGET_VOLTAGE_INCOMPATIBILITY_PARAM_NAME, fixTargetVoltageIncompatibility);
+        map.put(FIX_REMOTE_TARGET_VOLTAGE_PARAM_NAME, fixRemoteVoltageTarget);
         return map;
     }
 
@@ -1812,9 +1812,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
                 .setVoltageTargetPriorities(parametersExt.getVoltageTargetPriorities())
                 .setFictitiousGeneratorVoltageControlCheckMode(parametersExt.getFictitiousGeneratorVoltageControlCheckMode())
                 .setAreaInterchangeControl(parametersExt.isAreaInterchangeControl())
-                .setAreaInterchangeControlAreaType(parametersExt.getAreaInterchangeControlAreaType())
-                .setFixTargetVoltageIncompatibility(parametersExt.isFixTargetVoltageIncompatibility())
-                .setMatrixFactory(matrixFactory);
+                .setAreaInterchangeControlAreaType(parametersExt.getAreaInterchangeControlAreaType());
     }
 
     public static AcLoadFlowParameters createAcParameters(Network network, LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt,
@@ -1898,7 +1896,8 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
                 .setVoltageInitializer(voltageInitializer)
                 .setAsymmetrical(parametersExt.isAsymmetrical())
                 .setSlackDistributionFailureBehavior(parametersExt.getSlackDistributionFailureBehavior())
-                .setSolverFactory(solverFactory);
+                .setSolverFactory(solverFactory)
+                .setFixRemoteVoltageTarget(parametersExt.isFixRemoteVoltageTarget());
     }
 
     public static DcLoadFlowParameters createDcParameters(Network network, LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt,
@@ -2068,7 +2067,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
                 extension1.isAreaInterchangeControl() == extension2.isAreaInterchangeControl() &&
                 Objects.equals(extension1.getAreaInterchangeControlAreaType(), extension2.getAreaInterchangeControlAreaType()) &&
                 extension1.getAreaInterchangePMaxMismatch() == extension2.getAreaInterchangePMaxMismatch() &&
-                extension1.isFixTargetVoltageIncompatibility() == extension2.isFixTargetVoltageIncompatibility();
+                extension1.isFixRemoteVoltageTarget() == extension2.isFixRemoteVoltageTarget();
     }
 
     public static LoadFlowParameters clone(LoadFlowParameters parameters) {
@@ -2165,7 +2164,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
                     .setAreaInterchangeControl(extension.isAreaInterchangeControl())
                     .setAreaInterchangeControlAreaType(extension.getAreaInterchangeControlAreaType())
                     .setAreaInterchangePMaxMismatch(extension.getAreaInterchangePMaxMismatch())
-                    .setFixTargetVoltageIncompatibility(extension.isFixTargetVoltageIncompatibility());
+                    .setFixRemoteVoltageTarget(extension.isFixRemoteVoltageTarget());
 
             if (extension2 != null) {
                 parameters2.addExtension(OpenLoadFlowParameters.class, extension2);

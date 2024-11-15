@@ -14,17 +14,21 @@ import java.util.Objects;
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
-public class TargetVoltageCompatibilityCheckerParameters {
+public class RemoteVoltageTargetCheckerParameters {
 
     public static final int CONTROLLED_BUS_NEIGHBORS_EXPLORATION_DEPTH_DEFAULT_VALUE = 2;
 
     public static final double TARGET_VOLTAGE_PLAUSIBILITY_THRESHOLD_DEFAULT_VALUE = 10;
+
+    public static final double CONTROLLER_BUS_ACCEPTABLE_VOLTAGE_SHIFT_DEFAULT_VALUE = 0.8;
 
     private MatrixFactory matrixFactory;
 
     private int controlledBusNeighborsExplorationDepth = CONTROLLED_BUS_NEIGHBORS_EXPLORATION_DEPTH_DEFAULT_VALUE;
 
     private double targetVoltagePlausibilityThreshold = TARGET_VOLTAGE_PLAUSIBILITY_THRESHOLD_DEFAULT_VALUE;
+
+    private double controllerBusAcceptableVoltageShift = CONTROLLER_BUS_ACCEPTABLE_VOLTAGE_SHIFT_DEFAULT_VALUE; // shift from 1 pu
 
     public MatrixFactory getMatrixFactory() {
         return matrixFactory;
@@ -34,7 +38,7 @@ public class TargetVoltageCompatibilityCheckerParameters {
         this.matrixFactory = Objects.requireNonNull(matrixFactory);
     }
 
-    public TargetVoltageCompatibilityCheckerParameters(MatrixFactory matrixFactory) {
+    public RemoteVoltageTargetCheckerParameters(MatrixFactory matrixFactory) {
         this.matrixFactory = Objects.requireNonNull(matrixFactory);
     }
 
@@ -42,7 +46,7 @@ public class TargetVoltageCompatibilityCheckerParameters {
         return controlledBusNeighborsExplorationDepth;
     }
 
-    public TargetVoltageCompatibilityCheckerParameters setControlledBusNeighborsExplorationDepth(int controlledBusNeighborsExplorationDepth) {
+    public RemoteVoltageTargetCheckerParameters setControlledBusNeighborsExplorationDepth(int controlledBusNeighborsExplorationDepth) {
         this.controlledBusNeighborsExplorationDepth = controlledBusNeighborsExplorationDepth;
         return this;
     }
@@ -51,8 +55,17 @@ public class TargetVoltageCompatibilityCheckerParameters {
         return targetVoltagePlausibilityThreshold;
     }
 
-    public TargetVoltageCompatibilityCheckerParameters setTargetVoltagePlausibilityThreshold(double targetVoltagePlausibilityThreshold) {
+    public RemoteVoltageTargetCheckerParameters setTargetVoltagePlausibilityThreshold(double targetVoltagePlausibilityThreshold) {
         this.targetVoltagePlausibilityThreshold = targetVoltagePlausibilityThreshold;
+        return this;
+    }
+
+    public double getControllerBusAcceptableVoltageShift() {
+        return controllerBusAcceptableVoltageShift;
+    }
+
+    public RemoteVoltageTargetCheckerParameters setControllerBusAcceptableVoltageShift(double controllerBusAcceptableVoltageShift) {
+        this.controllerBusAcceptableVoltageShift = controllerBusAcceptableVoltageShift;
         return this;
     }
 
@@ -60,6 +73,7 @@ public class TargetVoltageCompatibilityCheckerParameters {
         return "TargetVoltageCompatibilityCheckerParameters(" +
                 "controlledBusNeighborsExplorationDepth=" + controlledBusNeighborsExplorationDepth +
                 ", targetVoltagePlausibilityThreshold=" + targetVoltagePlausibilityThreshold +
+                ", controllerBusAcceptableVoltageShift=" + controllerBusAcceptableVoltageShift +
                 ", matrixFactory=" + matrixFactory.getClass().getSimpleName() +
                 ")";
     }

@@ -91,7 +91,7 @@
         "areaInterchangeControl" : false,
         "areaInterchangeControlAreaType" : "ControlArea",
         "areaInterchangePMaxMismatch" : 2.0,
-        "fixTargetVoltageIncompatibility" : false
+        "fixRemoteVoltageTarget" : false
       }
     }
   },
