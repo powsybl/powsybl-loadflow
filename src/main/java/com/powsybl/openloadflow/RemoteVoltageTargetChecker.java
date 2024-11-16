@@ -8,7 +8,14 @@
 package com.powsybl.openloadflow;
 
 import com.google.common.base.Stopwatch;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.math.matrix.DenseMatrix;
+import com.powsybl.math.matrix.MatrixFactory;
+import com.powsybl.math.matrix.SparseMatrixFactory;
+import com.powsybl.openloadflow.ac.AcJacobianMatrix;
+import com.powsybl.openloadflow.ac.AcLoadFlowParameters;
+import com.powsybl.openloadflow.ac.equations.AcEquationSystemCreator;
 import com.powsybl.openloadflow.ac.equations.AcEquationType;
 import com.powsybl.openloadflow.ac.equations.AcVariableType;
 import com.powsybl.openloadflow.ac.solver.AcSolverUtil;
@@ -18,7 +25,10 @@ import com.powsybl.openloadflow.equations.EquationSystem;
 import com.powsybl.openloadflow.equations.EquationTerm;
 import com.powsybl.openloadflow.equations.JacobianMatrix;
 import com.powsybl.openloadflow.equations.VariableSet;
+import com.powsybl.openloadflow.graph.EvenShiloachGraphDecrementalConnectivityFactory;
+import com.powsybl.openloadflow.graph.GraphConnectivityFactory;
 import com.powsybl.openloadflow.network.*;
+import com.powsybl.openloadflow.network.impl.LfNetworkLoaderImpl;
 import com.powsybl.openloadflow.network.util.UniformValueVoltageInitializer;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jgrapht.Graph;
@@ -49,6 +59,41 @@ public class RemoteVoltageTargetChecker {
         this.network = Objects.requireNonNull(network);
         this.equationSystem = Objects.requireNonNull(equationSystem);
         this.j = Objects.requireNonNull(j);
+    }
+
+    public static Set<String> findElementsToDiscardFromVoltageControl(Network network, LoadFlowParameters parameters) {
+        return findElementsToDiscardFromVoltageControl(network, parameters, new SparseMatrixFactory());
+    }
+
+    public static Set<String> findElementsToDiscardFromVoltageControl(Network network, LoadFlowParameters parameters, MatrixFactory matrixFactory) {
+        Objects.requireNonNull(network);
+        Objects.requireNonNull(parameters);
+        Set<String> generatorIds = new TreeSet<>();
+        OpenLoadFlowParameters parametersExt = OpenLoadFlowParameters.get(parameters);
+        GraphConnectivityFactory<LfBus, LfBranch> selectedConnectivityFactory = OpenLoadFlowParameters.getConnectivityFactory(parametersExt, new EvenShiloachGraphDecrementalConnectivityFactory<>());
+        AcLoadFlowParameters acParameters = OpenLoadFlowParameters.createAcParameters(network, parameters, parametersExt, matrixFactory, selectedConnectivityFactory);
+        for (LfNetwork lfNetwork : LfNetwork.load(network, new LfNetworkLoaderImpl(), acParameters.getNetworkParameters())) {
+            var equationSystem = new AcEquationSystemCreator(lfNetwork, acParameters.getEquationSystemCreationParameters())
+                    .create();
+            try (var j = new AcJacobianMatrix(equationSystem, matrixFactory, lfNetwork)) {
+                var result = new RemoteVoltageTargetChecker(lfNetwork, equationSystem, j)
+                        .check(new RemoteVoltageTargetCheckerParameters(matrixFactory));
+                for (var incompatibleTarget : result.getIncompatibleTargets()) {
+                    LfBus controlledBus1 = incompatibleTarget.controlledBus1();
+                    LfBus controlledBus2 = incompatibleTarget.controlledBus2();
+                    for (LfBus controlledBus : List.of(controlledBus1, controlledBus2)) {
+                        controlledBus.getGeneratorVoltageControl()
+                                .ifPresent(vc -> generatorIds.addAll(vc.getControlledBus().getGenerators().stream().map(LfGenerator::getOriginalId).toList()));
+                        controlledBus.getShuntVoltageControl()
+                                .ifPresent(vc -> generatorIds.addAll(vc.getControlledBus().getGenerators().stream().map(LfGenerator::getOriginalId).toList()));
+                    }
+                }
+                for (var unrealisticTarget : result.getUnrealisticTargets()) {
+                    generatorIds.addAll(unrealisticTarget.controllerBus().getGenerators().stream().map(LfGenerator::getOriginalId).toList());
+                }
+            }
+        }
+        return generatorIds;
     }
 
     private static Graph<LfBus, LfBranch> createGraph(LfNetwork lfNetwork) {
