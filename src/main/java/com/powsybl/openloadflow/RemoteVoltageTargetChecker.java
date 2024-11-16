@@ -100,9 +100,9 @@ public class RemoteVoltageTargetChecker {
                     for (LfBus neighborControlledBus : neighborControlledBuses) {
                         double z = y.getZ(controlledBus, neighborControlledBus).abs();
                         double dv = Math.abs(controlledBus.getHighestPriorityTargetV().orElseThrow() - neighborControlledBus.getHighestPriorityTargetV().orElseThrow());
-                        double targetVoltagePlausibility = dv / z;
-                        if (targetVoltagePlausibility > parameters.getTargetVoltagePlausibilityThreshold()) {
-                            result.getIncompatibleTargets().add(new RemoteVoltageTargetCheckResult.IncompatibleTarget(controlledBus, neighborControlledBus));
+                        double targetVoltagePlausibilityIndicator = dv / z;
+                        if (targetVoltagePlausibilityIndicator > parameters.getTargetVoltagePlausibilityIndicatorThreshold()) {
+                            result.getIncompatibleTargets().add(new RemoteVoltageTargetCheckResult.IncompatibleTarget(controlledBus, neighborControlledBus, targetVoltagePlausibilityIndicator));
                         }
                     }
                 }
@@ -140,10 +140,10 @@ public class RemoteVoltageTargetChecker {
                     double dvControlled = voltageControl.getTargetValue() - 1.0;
                     // thanks to the sensitivity, compute the corresponding controller bus side
                     // resulting calculated voltage
-                    double dvController = dvControlled * sensiVv;
+                    double estimatedDvController = dvControlled * sensiVv;
                     // check if not too far from 1 pu
-                    if (Math.abs(dvController) > parameters.getControllerBusAcceptableVoltageDrop()) {
-                        result.getUnrealisticTargets().add(new RemoteVoltageTargetCheckResult.UnrealisticTarget(controllerBus));
+                    if (Math.abs(estimatedDvController) > parameters.getControllerBusAcceptableVoltageDrop()) {
+                        result.getUnrealisticTargets().add(new RemoteVoltageTargetCheckResult.UnrealisticTarget(controllerBus, estimatedDvController));
                     }
                 }
             }
@@ -194,9 +194,9 @@ public class RemoteVoltageTargetChecker {
             LfBus controlledBusToFix = incompatibleControlledBusRefCount.get(controlledBus1).intValue() > incompatibleControlledBusRefCount.get(controlledBus2).intValue()
                     ? controlledBus1 : controlledBus2;
             for (VoltageControl<? extends LfElement> voltageControl : controlledBusToFix.getVoltageControls()) {
-                LOGGER.warn("Controlled buses '{}' and '{}' have incompatible target voltages ({} and {}): disable voltage control of '{}'",
-                        controlledBus1.getId(), controlledBus2.getId(), controlledBus1.getHighestPriorityTargetV().orElseThrow() * controlledBus1.getNominalV(),
-                        controlledBus2.getHighestPriorityTargetV().orElseThrow() * controlledBus2.getNominalV(), controlledBusToFix.getId());
+                LOGGER.warn("Controlled buses '{}' and '{}' have incompatible target voltages (plausibility indicator: {}): disable controller elements {}",
+                        controlledBus1.getId(), controlledBus2.getId(), incompatibleTarget.targetVoltagePlausibilityIndicator(),
+                        voltageControl.getControllerElements().stream().map(LfElement::getId).toList());
                 for (var controllerElement : voltageControl.getControllerElements()) {
                     controllerElement.setVoltageControlEnabled(false);
                 }
@@ -207,8 +207,9 @@ public class RemoteVoltageTargetChecker {
         for (RemoteVoltageTargetCheckResult.UnrealisticTarget unrealisticTarget : result.getUnrealisticTargets()) {
             LfBus controllerBus = unrealisticTarget.controllerBus();
             LfBus controlledBus = controllerBus.getGeneratorVoltageControl().orElseThrow().getControlledBus();
-            LOGGER.warn("Controlled bus '{}' has an unrealistic target voltage {}, causing severe controller bus '{}' voltage drop: disable controller",
-                    controlledBus.getId(), controlledBus.getHighestPriorityTargetV().orElseThrow() * controlledBus.getNominalV(), controllerBus.getId());
+            LOGGER.warn("Controlled bus '{}' has an unrealistic target voltage {} Kv, causing a severe controller bus '{}' voltage drop (estimated at {} pu): disable controller bus",
+                    controlledBus.getId(), controlledBus.getHighestPriorityTargetV().orElseThrow() * controlledBus.getNominalV(),
+                    controllerBus.getId(), unrealisticTarget.estimatedDvController());
             controllerBus.setGeneratorVoltageControlEnabled(false);
         }
     }

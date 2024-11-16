@@ -26,7 +26,7 @@ public class RemoteVoltageTargetCheckerParameters {
 
     private int controlledBusNeighborsExplorationDepth = CONTROLLED_BUS_NEIGHBORS_EXPLORATION_DEPTH_DEFAULT_VALUE;
 
-    private double targetVoltagePlausibilityThreshold = TARGET_VOLTAGE_PLAUSIBILITY_THRESHOLD_DEFAULT_VALUE;
+    private double targetVoltagePlausibilityIndicatorThreshold = TARGET_VOLTAGE_PLAUSIBILITY_THRESHOLD_DEFAULT_VALUE;
 
     private double controllerBusAcceptableVoltageDrop = CONTROLLER_BUS_ACCEPTABLE_VOLTAGE_SHIFT_DEFAULT_VALUE; // shift from 1 pu
 
@@ -51,12 +51,12 @@ public class RemoteVoltageTargetCheckerParameters {
         return this;
     }
 
-    public double getTargetVoltagePlausibilityThreshold() {
-        return targetVoltagePlausibilityThreshold;
+    public double getTargetVoltagePlausibilityIndicatorThreshold() {
+        return targetVoltagePlausibilityIndicatorThreshold;
     }
 
-    public RemoteVoltageTargetCheckerParameters setTargetVoltagePlausibilityThreshold(double targetVoltagePlausibilityThreshold) {
-        this.targetVoltagePlausibilityThreshold = targetVoltagePlausibilityThreshold;
+    public RemoteVoltageTargetCheckerParameters setTargetVoltagePlausibilityIndicatorThreshold(double targetVoltagePlausibilityIndicatorThreshold) {
+        this.targetVoltagePlausibilityIndicatorThreshold = targetVoltagePlausibilityIndicatorThreshold;
         return this;
     }
 
@@ -72,7 +72,7 @@ public class RemoteVoltageTargetCheckerParameters {
     public String toString() {
         return "TargetVoltageCompatibilityCheckerParameters(" +
                 "controlledBusNeighborsExplorationDepth=" + controlledBusNeighborsExplorationDepth +
-                ", targetVoltagePlausibilityThreshold=" + targetVoltagePlausibilityThreshold +
+                ", targetVoltagePlausibilityIndicatorThreshold=" + targetVoltagePlausibilityIndicatorThreshold +
                 ", controllerBusAcceptableVoltageDrop=" + controllerBusAcceptableVoltageDrop +
                 ", matrixFactory=" + matrixFactory.getClass().getSimpleName() +
                 ")";

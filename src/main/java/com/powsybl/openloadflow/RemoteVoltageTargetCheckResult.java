@@ -17,10 +17,10 @@ import java.util.List;
  */
 public class RemoteVoltageTargetCheckResult {
 
-    public record IncompatibleTarget(LfBus controlledBus1, LfBus controlledBus2) {
+    public record IncompatibleTarget(LfBus controlledBus1, LfBus controlledBus2, double targetVoltagePlausibilityIndicator) {
     }
 
-    public record UnrealisticTarget(LfBus controllerBus) {
+    public record UnrealisticTarget(LfBus controllerBus, double estimatedDvController) {
     }
 
     private final List<IncompatibleTarget> incompatibleTargets = new ArrayList<>();
