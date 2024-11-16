@@ -21,7 +21,6 @@ import com.powsybl.openloadflow.equations.VariableSet;
 import com.powsybl.openloadflow.network.*;
 import com.powsybl.openloadflow.network.util.UniformValueVoltageInitializer;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.Pseudograph;
 import org.jgrapht.traverse.BreadthFirstIterator;
@@ -103,7 +102,7 @@ public class RemoteVoltageTargetChecker {
                         double dv = Math.abs(controlledBus.getHighestPriorityTargetV().orElseThrow() - neighborControlledBus.getHighestPriorityTargetV().orElseThrow());
                         double targetVoltagePlausibility = dv / z;
                         if (targetVoltagePlausibility > parameters.getTargetVoltagePlausibilityThreshold()) {
-                            result.getIncompatibleTargetControlledBuses().add(Pair.of(controlledBus, neighborControlledBus));
+                            result.getIncompatibleTargets().add(new RemoteVoltageTargetCheckResult.IncompatibleTarget(controlledBus, neighborControlledBus));
                         }
                     }
                 }
@@ -144,7 +143,7 @@ public class RemoteVoltageTargetChecker {
                     double dvController = dvControlled * sensiVv;
                     // check if not too far from 1 pu
                     if (Math.abs(dvController) > parameters.getControllerBusAcceptableVoltageShift()) {
-                        result.getUnrealisticTargetControllerBuses().add(controllerBus);
+                        result.getUnrealisticTargets().add(new RemoteVoltageTargetCheckResult.UnrealisticTarget(controllerBus));
                     }
                 }
             }
@@ -181,14 +180,14 @@ public class RemoteVoltageTargetChecker {
         // some buses could be part of multiple target v incompatible buses couples
         // fix the most referenced ones
         Map<LfBus, MutableInt> incompatibleControlledBusRefCount = new HashMap<>();
-        for (Pair<LfBus, LfBus> p : result.getIncompatibleTargetControlledBuses()) {
-            incompatibleControlledBusRefCount.computeIfAbsent(p.getLeft(), k -> new MutableInt(0)).increment();
-            incompatibleControlledBusRefCount.computeIfAbsent(p.getRight(), k -> new MutableInt(0)).increment();
+        for (RemoteVoltageTargetCheckResult.IncompatibleTarget incompatibleTarget : result.getIncompatibleTargets()) {
+            incompatibleControlledBusRefCount.computeIfAbsent(incompatibleTarget.controlledBus1(), k -> new MutableInt(0)).increment();
+            incompatibleControlledBusRefCount.computeIfAbsent(incompatibleTarget.controlledBus2(), k -> new MutableInt(0)).increment();
         }
         Set<LfBus> fixedControlledBuses = new HashSet<>();
-        for (Pair<LfBus, LfBus> p : result.getIncompatibleTargetControlledBuses()) {
-            LfBus controlledBus1 = p.getLeft();
-            LfBus controlledBus2 = p.getRight();
+        for (RemoteVoltageTargetCheckResult.IncompatibleTarget incompatibleTarget : result.getIncompatibleTargets()) {
+            LfBus controlledBus1 = incompatibleTarget.controlledBus1();
+            LfBus controlledBus2 = incompatibleTarget.controlledBus2();
             if (fixedControlledBuses.contains(controlledBus1) || fixedControlledBuses.contains(controlledBus2)) {
                 continue;
             }
@@ -205,7 +204,8 @@ public class RemoteVoltageTargetChecker {
             }
         }
 
-        for (LfBus controllerBus : result.getUnrealisticTargetControllerBuses()) {
+        for (RemoteVoltageTargetCheckResult.UnrealisticTarget unrealisticTarget : result.getUnrealisticTargets()) {
+            LfBus controllerBus = unrealisticTarget.controllerBus();
             LfBus controlledBus = controllerBus.getGeneratorVoltageControl().orElseThrow().getControlledBus();
             LOGGER.warn("Controlled bus '{}' has an unrealistic target voltage {}, causing severe controller bus '{}' voltage drop: disable controller",
                     controlledBus.getId(), controlledBus.getHighestPriorityTargetV().orElseThrow() * controlledBus.getNominalV(), controllerBus.getId());

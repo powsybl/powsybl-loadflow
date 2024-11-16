@@ -8,7 +8,6 @@
 package com.powsybl.openloadflow;
 
 import com.powsybl.openloadflow.network.LfBus;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,15 +17,21 @@ import java.util.List;
  */
 public class RemoteVoltageTargetCheckResult {
 
-    private final List<Pair<LfBus, LfBus>> incompatibleTargetControlledBuses = new ArrayList<>();
-
-    private final List<LfBus> unrealisticTargetControllerBuses = new ArrayList<>();
-
-    public List<Pair<LfBus, LfBus>> getIncompatibleTargetControlledBuses() {
-        return incompatibleTargetControlledBuses;
+    public record IncompatibleTarget(LfBus controlledBus1, LfBus controlledBus2) {
     }
 
-    public List<LfBus> getUnrealisticTargetControllerBuses() {
-        return unrealisticTargetControllerBuses;
+    public record UnrealisticTarget(LfBus controllerBus) {
+    }
+
+    private final List<IncompatibleTarget> incompatibleTargets = new ArrayList<>();
+
+    private final List<UnrealisticTarget> unrealisticTargets = new ArrayList<>();
+
+    public List<IncompatibleTarget> getIncompatibleTargets() {
+        return incompatibleTargets;
+    }
+
+    public List<UnrealisticTarget> getUnrealisticTargets() {
+        return unrealisticTargets;
     }
 }
