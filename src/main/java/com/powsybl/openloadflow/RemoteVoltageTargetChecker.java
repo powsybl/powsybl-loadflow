@@ -142,7 +142,7 @@ public class RemoteVoltageTargetChecker {
                     // resulting calculated voltage
                     double dvController = dvControlled * sensiVv;
                     // check if not too far from 1 pu
-                    if (Math.abs(dvController) > parameters.getControllerBusAcceptableVoltageShift()) {
+                    if (Math.abs(dvController) > parameters.getControllerBusAcceptableVoltageDrop()) {
                         result.getUnrealisticTargets().add(new RemoteVoltageTargetCheckResult.UnrealisticTarget(controllerBus));
                     }
                 }

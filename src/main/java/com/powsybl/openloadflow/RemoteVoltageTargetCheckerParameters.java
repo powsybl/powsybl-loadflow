@@ -28,7 +28,7 @@ public class RemoteVoltageTargetCheckerParameters {
 
     private double targetVoltagePlausibilityThreshold = TARGET_VOLTAGE_PLAUSIBILITY_THRESHOLD_DEFAULT_VALUE;
 
-    private double controllerBusAcceptableVoltageShift = CONTROLLER_BUS_ACCEPTABLE_VOLTAGE_SHIFT_DEFAULT_VALUE; // shift from 1 pu
+    private double controllerBusAcceptableVoltageDrop = CONTROLLER_BUS_ACCEPTABLE_VOLTAGE_SHIFT_DEFAULT_VALUE; // shift from 1 pu
 
     public MatrixFactory getMatrixFactory() {
         return matrixFactory;
@@ -60,12 +60,12 @@ public class RemoteVoltageTargetCheckerParameters {
         return this;
     }
 
-    public double getControllerBusAcceptableVoltageShift() {
-        return controllerBusAcceptableVoltageShift;
+    public double getControllerBusAcceptableVoltageDrop() {
+        return controllerBusAcceptableVoltageDrop;
     }
 
-    public RemoteVoltageTargetCheckerParameters setControllerBusAcceptableVoltageShift(double controllerBusAcceptableVoltageShift) {
-        this.controllerBusAcceptableVoltageShift = controllerBusAcceptableVoltageShift;
+    public RemoteVoltageTargetCheckerParameters setControllerBusAcceptableVoltageDrop(double controllerBusAcceptableVoltageDrop) {
+        this.controllerBusAcceptableVoltageDrop = controllerBusAcceptableVoltageDrop;
         return this;
     }
 
@@ -73,7 +73,7 @@ public class RemoteVoltageTargetCheckerParameters {
         return "TargetVoltageCompatibilityCheckerParameters(" +
                 "controlledBusNeighborsExplorationDepth=" + controlledBusNeighborsExplorationDepth +
                 ", targetVoltagePlausibilityThreshold=" + targetVoltagePlausibilityThreshold +
-                ", controllerBusAcceptableVoltageShift=" + controllerBusAcceptableVoltageShift +
+                ", controllerBusAcceptableVoltageDrop=" + controllerBusAcceptableVoltageDrop +
                 ", matrixFactory=" + matrixFactory.getClass().getSimpleName() +
                 ")";
     }
