@@ -193,12 +193,12 @@ public class RemoteVoltageTargetChecker {
             }
             LfBus controlledBusToFix = incompatibleControlledBusRefCount.get(controlledBus1).intValue() > incompatibleControlledBusRefCount.get(controlledBus2).intValue()
                     ? controlledBus1 : controlledBus2;
-            for (VoltageControl voltageControl : controlledBusToFix.getVoltageControls()) {
+            for (VoltageControl<? extends LfElement> voltageControl : controlledBusToFix.getVoltageControls()) {
                 LOGGER.warn("Controlled buses '{}' and '{}' have incompatible target voltages ({} and {}): disable voltage control of '{}'",
                         controlledBus1.getId(), controlledBus2.getId(), controlledBus1.getHighestPriorityTargetV().orElseThrow() * controlledBus1.getNominalV(),
                         controlledBus2.getHighestPriorityTargetV().orElseThrow() * controlledBus2.getNominalV(), controlledBusToFix.getId());
                 for (var controllerElement : voltageControl.getControllerElements()) {
-                    voltageControl.setControllerEnabled((LfElement) controllerElement, false);
+                    controllerElement.setVoltageControlEnabled(false);
                 }
                 fixedControlledBuses.add(controlledBusToFix);
             }

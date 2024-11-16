@@ -69,10 +69,6 @@ public class VoltageControl<T extends LfElement> extends Control {
         throw new IllegalStateException();
     }
 
-    public void setControllerEnabled(T controllerElement, boolean enabled) {
-        throw new IllegalStateException();
-    }
-
     public List<VoltageControl<T>> getMergedDependentVoltageControls() {
         return mergedDependentVoltageControls;
     }

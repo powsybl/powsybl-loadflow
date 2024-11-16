@@ -35,4 +35,6 @@ public interface LfElement extends PropertyBag {
     LfNetwork getNetwork();
 
     void removeEvaluable(Evaluable evaluable);
+
+    void setVoltageControlEnabled(boolean enabled);
 }

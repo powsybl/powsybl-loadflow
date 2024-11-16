@@ -261,6 +261,11 @@ public abstract class AbstractLfBus extends AbstractElement implements LfBus {
         }
     }
 
+    @Override
+    public void setVoltageControlEnabled(boolean enabled) {
+        setGeneratorVoltageControlEnabled(enabled);
+    }
+
     private static LfLoadModel createLfLoadModel(LoadModel loadModel, LfNetworkParameters parameters) {
         if (!parameters.isUseLoadModel() || loadModel == null) {
             return null;
