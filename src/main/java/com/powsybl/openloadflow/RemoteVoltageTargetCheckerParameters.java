@@ -8,7 +8,6 @@
 package com.powsybl.openloadflow;
 
 import com.powsybl.math.matrix.MatrixFactory;
-import com.powsybl.openloadflow.network.util.VoltageInitializer;
 
 import java.util.Objects;
 

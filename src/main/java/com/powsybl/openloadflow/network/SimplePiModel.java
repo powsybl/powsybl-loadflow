@@ -9,7 +9,9 @@ package com.powsybl.openloadflow.network;
 
 import net.jafama.FastMath;
 import org.apache.commons.lang3.Range;
+import org.apache.commons.math3.complex.Complex;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -171,27 +173,32 @@ public class SimplePiModel implements PiModel {
         throw new IllegalStateException(NO_TAP_POSITION_ERROR);
     }
 
-    private void rescaleZ(double z) {
-        double ksi = getKsi();
-        r = z * FastMath.sin(ksi);
-        x = z * FastMath.cos(ksi);
-    }
-
     @Override
-    public boolean setMinZ(double minZ, LoadFlowModel loadFlowModel) {
+    public Optional<Complex> getCutZ(double minZ, LoadFlowModel loadFlowModel) {
+        Objects.requireNonNull(loadFlowModel);
         if (loadFlowModel == LoadFlowModel.DC) {
             if (FastMath.abs(this.x) < minZ) {
-                this.x = minZ;
-                return true;
+                return Optional.of(Complex.valueOf(0, minZ));
             }
         } else {
             double z = getZ();
             if (z < minZ) {
-                rescaleZ(minZ);
-                return true;
+                double ksi = getKsi();
+                double newR = minZ * FastMath.sin(ksi);
+                double newX = minZ * FastMath.cos(ksi);
+                return Optional.of(Complex.valueOf(newR, newX));
             }
         }
-        return false;
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean setMinZ(double minZ, LoadFlowModel loadFlowModel) {
+        return getCutZ(minZ, loadFlowModel).map(z -> {
+            SimplePiModel.this.r = z.getReal();
+            SimplePiModel.this.x = z.getImaginary();
+            return true;
+        }).orElse(false);
     }
 
     @Override

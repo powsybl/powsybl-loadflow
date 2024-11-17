@@ -10,9 +10,7 @@ package com.powsybl.openloadflow.adm;
 import com.powsybl.openloadflow.equations.AbstractElementEquationTerm;
 import com.powsybl.openloadflow.equations.Variable;
 import com.powsybl.openloadflow.equations.VariableSet;
-import com.powsybl.openloadflow.network.LfBranch;
-import com.powsybl.openloadflow.network.LfBus;
-import com.powsybl.openloadflow.network.PiModel;
+import com.powsybl.openloadflow.network.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -67,18 +65,19 @@ public abstract class AbstractAdmittanceEquationTerm extends AbstractElementEqua
         variables = List.of(v1xVar, v2xVar, v1yVar, v2yVar);
 
         PiModel piModel = branch.getPiModel();
-        if (piModel.getX() == 0) {
-            throw new IllegalArgumentException("Branch '" + branch.getId() + "' has reactance equal to zero");
-        }
         rho = piModel.getR1();
-        if (piModel.getZ() == 0) {
-            throw new IllegalArgumentException("Branch '" + branch.getId() + "' has Z equal to zero");
-        }
 
-        r = piModel.getR();
-        x = piModel.getX();
-        double z = Math.sqrt(r * r + x * x);
-        zInvSquare = 1 / (z * z);
+        piModel.getCutZ(LfNetworkParameters.LOW_IMPEDANCE_THRESHOLD_DEFAULT_VALUE, LoadFlowModel.AC).ifPresentOrElse(z -> {
+            r = z.getReal();
+            x = z.getImaginary();
+            double zMod = z.abs();
+            zInvSquare = 1 / (zMod * zMod);
+        }, () -> {
+            r = piModel.getR();
+            x = piModel.getX();
+            double z = Math.sqrt(r * r + x * x);
+            zInvSquare = 1 / (z * z);
+        });
 
         double alpha = piModel.getA1();
         cosA = Math.cos(Math.toRadians(alpha));

@@ -9,10 +9,10 @@ package com.powsybl.openloadflow.adm;
 
 import com.powsybl.openloadflow.equations.EquationSystem;
 import com.powsybl.openloadflow.equations.VariableSet;
-import com.powsybl.openloadflow.network.*;
-import net.jafama.FastMath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.powsybl.openloadflow.network.LfBranch;
+import com.powsybl.openloadflow.network.LfBus;
+import com.powsybl.openloadflow.network.LfNetwork;
+import com.powsybl.openloadflow.network.LfShunt;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -22,8 +22,6 @@ import java.util.Objects;
  * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
  */
 public final class AdmittanceEquationSystem {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AdmittanceEquationSystem.class);
 
     private static final double B_EPSILON = 1e-8;
 
@@ -38,7 +36,7 @@ public final class AdmittanceEquationSystem {
     }
 
     //Equations are created based on the branches connections
-    private static void createImpedantBranch(VariableSet<AdmittanceVariableType> variableSet, EquationSystem<AdmittanceVariableType, AdmittanceEquationType> equationSystem,
+    private static void createBranchEquation(VariableSet<AdmittanceVariableType> variableSet, EquationSystem<AdmittanceVariableType, AdmittanceEquationType> equationSystem,
                                              LfBranch branch, LfBus bus1, LfBus bus2) {
         if (bus1 != null && bus2 != null) {
             // Equation system Y*V = I (expressed in cartesian coordinates x,y)
@@ -60,15 +58,7 @@ public final class AdmittanceEquationSystem {
         for (LfBranch branch : branches) {
             LfBus bus1 = branch.getBus1();
             LfBus bus2 = branch.getBus2();
-            PiModel piModel = branch.getPiModel();
-            if (FastMath.abs(piModel.getX()) < LfNetworkParameters.LOW_IMPEDANCE_THRESHOLD_DEFAULT_VALUE) {
-                if (bus1 != null && bus2 != null) {
-                    LOGGER.warn("Non impedant branches ({}) not supported in admittance matrix",
-                            branch.getId());
-                }
-            } else {
-                createImpedantBranch(variableSet, equationSystem, branch, bus1, bus2);
-            }
+            createBranchEquation(variableSet, equationSystem, branch, bus1, bus2);
         }
     }
 
