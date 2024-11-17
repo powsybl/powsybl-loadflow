@@ -68,7 +68,7 @@ public class RemoteVoltageTargetChecker {
     public static Set<String> findElementsToDiscardFromVoltageControl(Network network, LoadFlowParameters parameters, MatrixFactory matrixFactory) {
         Objects.requireNonNull(network);
         Objects.requireNonNull(parameters);
-        Set<String> generatorIds = new TreeSet<>();
+        Set<String> elementIds = new TreeSet<>();
         OpenLoadFlowParameters parametersExt = OpenLoadFlowParameters.get(parameters);
         GraphConnectivityFactory<LfBus, LfBranch> selectedConnectivityFactory = OpenLoadFlowParameters.getConnectivityFactory(parametersExt, new EvenShiloachGraphDecrementalConnectivityFactory<>());
         AcLoadFlowParameters acParameters = OpenLoadFlowParameters.createAcParameters(network, parameters, parametersExt, matrixFactory, selectedConnectivityFactory);
@@ -83,17 +83,26 @@ public class RemoteVoltageTargetChecker {
                     LfBus controlledBus2 = incompatibleTarget.controlledBus2();
                     for (LfBus controlledBus : List.of(controlledBus1, controlledBus2)) {
                         controlledBus.getGeneratorVoltageControl()
-                                .ifPresent(vc -> generatorIds.addAll(vc.getControlledBus().getGenerators().stream().map(LfGenerator::getOriginalId).toList()));
+                                .ifPresent(vc -> elementIds.addAll(vc.getControllerElements().stream()
+                                        .flatMap(c -> c.getGenerators().stream())
+                                        .map(LfGenerator::getOriginalId)
+                                        .toList()));
                         controlledBus.getShuntVoltageControl()
-                                .ifPresent(vc -> generatorIds.addAll(vc.getControlledBus().getGenerators().stream().map(LfGenerator::getOriginalId).toList()));
+                                .ifPresent(vc -> elementIds.addAll(vc.getControllerElements().stream()
+                                        .flatMap(s -> s.getOriginalIds().stream())
+                                        .toList()));
+                        controlledBus.getTransformerVoltageControl()
+                                .ifPresent(vc -> elementIds.addAll(vc.getControllerElements().stream()
+                                        .flatMap(t -> t.getOriginalIds().stream())
+                                        .toList()));
                     }
                 }
                 for (var unrealisticTarget : result.getUnrealisticTargets()) {
-                    generatorIds.addAll(unrealisticTarget.controllerBus().getGenerators().stream().map(LfGenerator::getOriginalId).toList());
+                    elementIds.addAll(unrealisticTarget.controllerBus().getGenerators().stream().map(LfGenerator::getOriginalId).toList());
                 }
             }
         }
-        return generatorIds;
+        return elementIds;
     }
 
     private static Graph<LfBus, LfBranch> createGraph(LfNetwork lfNetwork) {
