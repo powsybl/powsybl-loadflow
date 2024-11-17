@@ -8,6 +8,7 @@
 package com.powsybl.openloadflow;
 
 import com.powsybl.math.matrix.MatrixFactory;
+import com.powsybl.openloadflow.network.util.VoltageInitializer;
 
 import java.util.Objects;
 
@@ -24,11 +25,18 @@ public class RemoteVoltageTargetCheckerParameters {
 
     private MatrixFactory matrixFactory;
 
+    private VoltageInitializer voltageInitializer;
+
     private int controlledBusNeighborsExplorationDepth = CONTROLLED_BUS_NEIGHBORS_EXPLORATION_DEPTH_DEFAULT_VALUE;
 
     private double targetVoltagePlausibilityIndicatorThreshold = TARGET_VOLTAGE_PLAUSIBILITY_THRESHOLD_DEFAULT_VALUE;
 
     private double controllerBusAcceptableVoltageDrop = CONTROLLER_BUS_ACCEPTABLE_VOLTAGE_SHIFT_DEFAULT_VALUE; // shift from 1 pu
+
+    public RemoteVoltageTargetCheckerParameters(MatrixFactory matrixFactory, VoltageInitializer voltageInitializer) {
+        this.matrixFactory = Objects.requireNonNull(matrixFactory);
+        this.voltageInitializer = Objects.requireNonNull(voltageInitializer);
+    }
 
     public MatrixFactory getMatrixFactory() {
         return matrixFactory;
@@ -38,8 +46,12 @@ public class RemoteVoltageTargetCheckerParameters {
         this.matrixFactory = Objects.requireNonNull(matrixFactory);
     }
 
-    public RemoteVoltageTargetCheckerParameters(MatrixFactory matrixFactory) {
-        this.matrixFactory = Objects.requireNonNull(matrixFactory);
+    public VoltageInitializer getVoltageInitializer() {
+        return voltageInitializer;
+    }
+
+    public void setVoltageInitializer(VoltageInitializer voltageInitializer) {
+        this.voltageInitializer = Objects.requireNonNull(voltageInitializer);
     }
 
     public int getControlledBusNeighborsExplorationDepth() {
