@@ -29,6 +29,7 @@ import com.powsybl.openloadflow.graph.EvenShiloachGraphDecrementalConnectivityFa
 import com.powsybl.openloadflow.graph.GraphConnectivityFactory;
 import com.powsybl.openloadflow.network.*;
 import com.powsybl.openloadflow.network.impl.LfNetworkLoaderImpl;
+import com.powsybl.openloadflow.network.util.UniformValueVoltageInitializer;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.Pseudograph;
@@ -76,7 +77,7 @@ public class RemoteVoltageTargetChecker {
                     .create();
             try (var j = new AcJacobianMatrix(equationSystem, matrixFactory, lfNetwork)) {
                 var result = new RemoteVoltageTargetChecker(lfNetwork, equationSystem, j)
-                        .check(new RemoteVoltageTargetCheckerParameters(acParameters.getMatrixFactory(), acParameters.getVoltageInitializer()));
+                        .check(new RemoteVoltageTargetCheckerParameters(acParameters.getMatrixFactory()));
                 for (var incompatibleTarget : result.getIncompatibleTargets()) {
                     LfBus controlledBus1 = incompatibleTarget.controlledBus1();
                     LfBus controlledBus2 = incompatibleTarget.controlledBus2();
@@ -171,7 +172,7 @@ public class RemoteVoltageTargetChecker {
     private void checkUnrealisticTargets(RemoteVoltageTargetCheckerParameters parameters,
                                          List<LfBus> generatorControlledBuses,
                                          RemoteVoltageTargetCheckResult result) {
-        AcSolverUtil.initStateVector(network, equationSystem, parameters.getVoltageInitializer());
+        AcSolverUtil.initStateVector(network, equationSystem, new UniformValueVoltageInitializer());
 
         // calculate target voltage to calculated voltage sensibilities
         var busNumToSensiColumn = LfBus.buildIndex(new ArrayList<>(generatorControlledBuses));
