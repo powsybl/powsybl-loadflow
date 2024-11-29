@@ -42,6 +42,10 @@ public class LfBusImpl extends AbstractLfBus {
 
     private final List<String> bbsIds;
 
+    private final double fictitiousInjectionTargetP;
+
+    private final double fictitiousInjectionTargetQ;
+
     protected LfBusImpl(Bus bus, LfNetwork network, double v, double angle, LfNetworkParameters parameters,
                         boolean participating) {
         super(network, v, angle, parameters.isDistributedOnConformLoad());
@@ -52,6 +56,8 @@ public class LfBusImpl extends AbstractLfBus {
         this.participating = participating;
         this.breakers = parameters.isBreakers();
         country = bus.getVoltageLevel().getSubstation().flatMap(Substation::getCountry).orElse(null);
+        fictitiousInjectionTargetP = bus.getFictitiousP0();
+        fictitiousInjectionTargetQ = bus.getFictitiousQ0();
         if (bus.getVoltageLevel().getTopologyKind() == TopologyKind.NODE_BREAKER) {
             bbsIds = bus.getConnectedTerminalStream()
                     .map(Terminal::getConnectable)
@@ -189,5 +195,15 @@ public class LfBusImpl extends AbstractLfBus {
             // in this case, load target is set to zero and the constant power load model (in 3 phased representation) is replaced by a model depending on v1, v2, v0 (equivalent fortescue representation)
         }
         return super.getTargetQ();
+    }
+
+    @Override
+    public double getFictitiousInjectionTargetP() {
+        return fictitiousInjectionTargetP;
+    }
+
+    @Override
+    public double getFictitiousInjectionTargetQ() {
+        return fictitiousInjectionTargetQ;
     }
 }

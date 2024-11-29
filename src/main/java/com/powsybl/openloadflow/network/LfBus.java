@@ -89,6 +89,10 @@ public interface LfBus extends LfElement {
 
     double getTargetQ();
 
+    double getFictitiousInjectionTargetP();
+
+    double getFictitiousInjectionTargetQ();
+
     double getLoadTargetP();
 
     double getLoadTargetQ();

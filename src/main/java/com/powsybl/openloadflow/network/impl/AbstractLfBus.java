@@ -135,12 +135,12 @@ public abstract class AbstractLfBus extends AbstractElement implements LfBus {
 
     @Override
     public double getTargetP() {
-        return getGenerationTargetP() - getLoadTargetP();
+        return getGenerationTargetP() - getLoadTargetP() - getFictitiousInjectionTargetP();
     }
 
     @Override
     public double getTargetQ() {
-        return getGenerationTargetQ() - getLoadTargetQ();
+        return getGenerationTargetQ() - getLoadTargetQ() - getFictitiousInjectionTargetQ();
     }
 
     @Override
@@ -831,5 +831,15 @@ public abstract class AbstractLfBus extends AbstractElement implements LfBus {
     @Override
     public void setArea(LfArea area) {
         this.area = area;
+    }
+
+    @Override
+    public double getFictitiousInjectionTargetP() {
+        return 0;
+    }
+
+    @Override
+    public double getFictitiousInjectionTargetQ() {
+        return 0;
     }
 }
