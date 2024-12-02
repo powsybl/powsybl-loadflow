@@ -8,6 +8,7 @@
 package com.powsybl.openloadflow.network;
 
 import org.apache.commons.lang3.Range;
+import org.apache.commons.math3.complex.Complex;
 
 import java.util.List;
 import java.util.Objects;
@@ -356,6 +357,11 @@ public class PiModelArray implements PiModel {
             a1 = Double.NaN;
         }
         return direction;
+    }
+
+    @Override
+    public Optional<Complex> getCutZ(double minZ, LoadFlowModel loadFlowModel) {
+        return getModel().getCutZ(minZ, loadFlowModel);
     }
 
     @Override

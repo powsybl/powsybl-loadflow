@@ -19,6 +19,15 @@ import java.util.*;
  */
 public interface LfBus extends LfElement {
 
+    static Map<Integer, Integer> buildIndex(List<LfBus> buses) {
+        Map<Integer, Integer> busIndex = new LinkedHashMap<>();
+        for (int i = 0; i < buses.size(); i++) {
+            var bus = buses.get(i);
+            busIndex.put(bus.getNum(), i);
+        }
+        return busIndex;
+    }
+
     enum QLimitType {
         MIN_Q,
         MAX_Q

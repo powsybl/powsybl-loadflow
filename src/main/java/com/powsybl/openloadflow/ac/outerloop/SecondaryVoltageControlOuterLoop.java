@@ -54,15 +54,6 @@ public class SecondaryVoltageControlOuterLoop implements AcOuterLoop {
         this.maxPlausibleTargetVoltage = maxPlausibleTargetVoltage;
     }
 
-    private static Map<Integer, Integer> buildBusIndex(List<LfBus> buses) {
-        Map<Integer, Integer> busIndex = new LinkedHashMap<>();
-        for (int i = 0; i < buses.size(); i++) {
-            var bus = buses.get(i);
-            busIndex.put(bus.getNum(), i);
-        }
-        return busIndex;
-    }
-
     static class SensitivityContext {
 
         private final Map<Integer, Integer> busNumToSensiColumn;
@@ -75,7 +66,7 @@ public class SecondaryVoltageControlOuterLoop implements AcOuterLoop {
         }
 
         static SensitivityContext create(List<LfBus> controlledBuses, AcLoadFlowContext context) {
-            var busNumToSensiColumn = buildBusIndex(controlledBuses);
+            var busNumToSensiColumn = LfBus.buildIndex(controlledBuses);
 
             DenseMatrix sensitivities = calculateSensitivityValues(controlledBuses, busNumToSensiColumn, context.getEquationSystem(),
                                                                    context.getJacobianMatrix());
@@ -257,7 +248,7 @@ public class SecondaryVoltageControlOuterLoop implements AcOuterLoop {
                 .flatMap(control -> control.getEnabledControllerBuses().stream())
                 .toList();
 
-        var controllerBusIndex = buildBusIndex(allControllerBuses);
+        var controllerBusIndex = LfBus.buildIndex(allControllerBuses);
 
         DenseMatrix a = createA(secondaryVoltageControls, controllerBusIndex);
 

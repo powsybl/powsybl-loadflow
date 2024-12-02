@@ -42,11 +42,15 @@ public class AcLoadFlowParameters extends AbstractLoadFlowParameters<AcLoadFlowP
 
     private boolean asymmetrical = LfNetworkParameters.ASYMMETRICAL_DEFAULT_VALUE;
 
+    public static final boolean FIX_REMOTE_VOLTAGE_TARGET_DEFAULT_VALUE = false;
+
     private OpenLoadFlowParameters.SlackDistributionFailureBehavior slackDistributionFailureBehavior = OpenLoadFlowParameters.SlackDistributionFailureBehavior.LEAVE_ON_SLACK_BUS;
 
     private AcSolverFactory solverFactory = new NewtonRaphsonFactory();
 
     private boolean detailedReport = false;
+
+    private boolean fixRemoteVoltageTarget = FIX_REMOTE_VOLTAGE_TARGET_DEFAULT_VALUE;
 
     public AcEquationSystemCreationParameters getEquationSystemCreationParameters() {
         return equationSystemCreationParameters;
@@ -138,6 +142,15 @@ public class AcLoadFlowParameters extends AbstractLoadFlowParameters<AcLoadFlowP
         return this;
     }
 
+    public boolean isFixRemoteVoltageTarget() {
+        return fixRemoteVoltageTarget;
+    }
+
+    public AcLoadFlowParameters setFixRemoteVoltageTarget(boolean fixRemoteVoltageTarget) {
+        this.fixRemoteVoltageTarget = fixRemoteVoltageTarget;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "AcLoadFlowParameters(" +
@@ -153,6 +166,7 @@ public class AcLoadFlowParameters extends AbstractLoadFlowParameters<AcLoadFlowP
                 ", slackDistributionFailureBehavior=" + slackDistributionFailureBehavior.name() +
                 ", solverFactory=" + solverFactory.getClass().getSimpleName() +
                 ", detailedReport=" + detailedReport +
+                ", fixRemoteTargetVoltage=" + fixRemoteVoltageTarget +
                 ')';
     }
 }

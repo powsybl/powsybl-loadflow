@@ -8,6 +8,7 @@
 package com.powsybl.openloadflow.network;
 
 import org.apache.commons.lang3.Range;
+import org.apache.commons.math3.complex.Complex;
 
 import java.util.Optional;
 
@@ -67,6 +68,8 @@ public interface PiModel {
     Optional<Direction> updateTapPositionToExceedNewA1(double deltaA1, int maxTapShift, AllowedDirection allowedDirection);
 
     Optional<Direction> updateTapPositionToReachNewA1(double deltaA1, int maxTapShift, AllowedDirection allowedDirection);
+
+    Optional<Complex> getCutZ(double minZ, LoadFlowModel loadFlowModel);
 
     boolean setMinZ(double minZ, LoadFlowModel loadFlowModel);
 
