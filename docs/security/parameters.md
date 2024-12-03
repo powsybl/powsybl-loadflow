@@ -75,3 +75,14 @@ open-security-analysis-default-parameters:
 ```
 
 At the moment, overriding the parameters by a JSON file is not supported by Open Load Flow.
+
+## Contingency Parameters
+
+Some load flow related parameters can be configured per contingency. This can be done by adding to the `Contingency` object an extension of the `ContingencyParameters` class.  
+Those parameters correspond to parameters present in [`LoadFlowParameters`](inv:powsyblcore:*:*#simulation/loadflow/configuration) and [`OpenLoadFlowParameters`](../loadflow/parameters.md#specific-parameters) :
+
+- `distributedSlack` (see [distributedSlack](inv:powsyblcore:*:*#simulation/loadflow/configuration))
+- `areaInterchangeControl` (see [areaInterchangeControl](../loadflow/parameters.md#specific-parameters))
+- `balanceType` (see [balanceType](inv:powsyblcore:*:*#simulation/loadflow/configuration))
+
+If the extension is added to a contingency, the values of these parameters will override their equivalent of the SA input parameters for post contingency and post remedial actions states calculations.
