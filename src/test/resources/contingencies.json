@@ -1,0 +1,14 @@
+{
+  "id" : "L2",
+  "elements" : [ {
+    "id" : "L2",
+    "type" : "BRANCH"
+  } ],
+  "extensions" : {
+    "contingency-parameters" : {
+      "distributedSlack" : false,
+      "areaInterchangeControl" : true,
+      "balanceType" : "PROPORTIONAL_TO_LOAD"
+    }
+  }
+}

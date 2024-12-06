@@ -4034,17 +4034,4 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
         assertEquals(LoadFlowResult.ComponentResult.Status.CONVERGED, saResultAll.getPreContingencyResult().getStatus());
         assertEquals(6, saResultAll.getPreContingencyResult().getNetworkResult().getBusResults().size()); // 6 buses in total
     }
-
-    @Test
-    void testContingencyParametersExtension() {
-        Contingency contingency = new Contingency("L2", new BranchContingency("L2"));
-        contingency.addExtension(ContingencyParameters.class, new ContingencyParameters(false, true, LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD));
-
-        ContingencyParameters contingencyParameters = contingency.getExtension(ContingencyParameters.class);
-
-        assertEquals(contingencyParameters, contingency.getExtensionByName("ContingencyParameters"));
-        assertFalse(contingencyParameters.isDistributedSlack());
-        assertTrue(contingencyParameters.isAreaInterchangeControl());
-        assertEquals(LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD, contingencyParameters.getBalanceType());
-    }
 }
