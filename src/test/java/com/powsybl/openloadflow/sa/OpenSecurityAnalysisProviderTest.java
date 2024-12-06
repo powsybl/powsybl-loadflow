@@ -127,6 +127,7 @@ class OpenSecurityAnalysisProviderTest extends AbstractSerDeTest {
     void testContingencyParametersExtensionJson() throws IOException {
         Contingency contingency = new Contingency("L2", new BranchContingency("L2"));
         contingency.addExtension(ContingencyParameters.class, new ContingencyParameters(false, true, LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD));
+        assertEquals(ContingencyParameters.class, new ContingencyParametersJsonSerializer().getExtensionClass());
         roundTripTest(contingency, JsonSerializer::write, JsonSerializer::readContingency, "/contingencies.json");
     }
 }
