@@ -6,12 +6,14 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.google.auto.service.AutoService;
 import com.powsybl.commons.extensions.ExtensionJsonSerializer;
 import com.powsybl.commons.json.JsonUtil;
 import com.powsybl.contingency.Contingency;
 
 import java.io.IOException;
 
+@AutoService(ExtensionJsonSerializer.class)
 public class ContingencyParametersJsonSerializer implements ExtensionJsonSerializer<Contingency, ContingencyParameters> {
 
     @Override
