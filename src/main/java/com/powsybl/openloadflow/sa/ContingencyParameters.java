@@ -30,7 +30,7 @@ public class ContingencyParameters extends AbstractExtension<Contingency> {
 
     @Override
     public String getName() {
-        return "ContingencyParameters";
+        return "contingency-parameters";
     }
 
     public boolean isDistributedSlack() {

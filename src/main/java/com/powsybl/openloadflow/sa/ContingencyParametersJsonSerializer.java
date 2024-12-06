@@ -16,7 +16,7 @@ public class ContingencyParametersJsonSerializer implements ExtensionJsonSeriali
 
     @Override
     public String getExtensionName() {
-        return "contigency-parameters";
+        return "contingency-parameters";
     }
 
     @Override
