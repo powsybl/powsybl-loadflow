@@ -750,7 +750,6 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
         return Objects.requireNonNullElse(contingencyLoadFlowParameters, new ContingencyLoadFlowParameters(loadFlowParameters.isDistributedSlack(), openLoadFlowParameters.isAreaInterchangeControl(), loadFlowParameters.getBalanceType()));
     }
 
-
     private Consumer<P> applyContingencyParameters(P parameters, ContingencyLoadFlowParameters contingencyLoadFlowParameters, OpenLoadFlowParameters parametersExt) {
         if (contingencyLoadFlowParameters != null) {
             if (parameters instanceof DcLoadFlowParameters dcLoadFlowParameters) {
@@ -761,7 +760,7 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                 LOGGER.error("Unsupported load flow parameters type {} to apply contingency parameters", parameters.getClass());
             }
         }
-        return p -> {};
+        return p -> { };
     }
 
     private Consumer<P> applyAcContingencyLoadFlowParameters(AcLoadFlowParameters acLoadFlowParameters, OpenLoadFlowParameters parametersExt, ContingencyLoadFlowParameters contingencyLoadFlowParameters) {
