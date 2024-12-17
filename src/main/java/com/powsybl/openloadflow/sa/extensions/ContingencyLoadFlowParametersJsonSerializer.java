@@ -1,4 +1,4 @@
-package com.powsybl.openloadflow.sa;
+package com.powsybl.openloadflow.sa.extensions;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -14,7 +14,7 @@ import com.powsybl.contingency.Contingency;
 import java.io.IOException;
 
 @AutoService(ExtensionJsonSerializer.class)
-public class ContingencyParametersJsonSerializer implements ExtensionJsonSerializer<Contingency, ContingencyParameters> {
+public class ContingencyLoadFlowParametersJsonSerializer implements ExtensionJsonSerializer<Contingency, ContingencyLoadFlowParameters> {
 
     @Override
     public String getExtensionName() {
@@ -27,8 +27,8 @@ public class ContingencyParametersJsonSerializer implements ExtensionJsonSeriali
     }
 
     @Override
-    public Class<? super ContingencyParameters> getExtensionClass() {
-        return ContingencyParameters.class;
+    public Class<? super ContingencyLoadFlowParameters> getExtensionClass() {
+        return ContingencyLoadFlowParameters.class;
     }
 
     /**
@@ -45,16 +45,16 @@ public class ContingencyParametersJsonSerializer implements ExtensionJsonSeriali
 
     private static ObjectMapper createMapper() {
         return JsonUtil.createObjectMapper()
-                .addMixIn(ContingencyParameters.class, SerializationSpec.class);
+                .addMixIn(ContingencyLoadFlowParameters.class, SerializationSpec.class);
     }
 
     @Override
-    public void serialize(ContingencyParameters extension, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(ContingencyLoadFlowParameters extension, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         createMapper().writeValue(jsonGenerator, extension);
     }
 
     @Override
-    public ContingencyParameters deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        return createMapper().readValue(jsonParser, ContingencyParameters.class);
+    public ContingencyLoadFlowParameters deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+        return createMapper().readValue(jsonParser, ContingencyLoadFlowParameters.class);
     }
 }

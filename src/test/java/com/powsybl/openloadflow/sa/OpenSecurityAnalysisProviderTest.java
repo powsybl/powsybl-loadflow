@@ -10,10 +10,6 @@ package com.powsybl.openloadflow.sa;
 import com.powsybl.commons.config.InMemoryPlatformConfig;
 import com.powsybl.commons.config.MapModuleConfig;
 import com.powsybl.commons.test.AbstractSerDeTest;
-import com.powsybl.contingency.BranchContingency;
-import com.powsybl.contingency.Contingency;
-import com.powsybl.loadflow.LoadFlowParameters;
-import com.powsybl.openloadflow.util.JsonSerializer;
 import com.powsybl.openloadflow.util.PowsyblOpenLoadFlowVersion;
 import com.powsybl.openloadflow.util.ProviderConstants;
 import com.powsybl.security.SecurityAnalysisParameters;
@@ -108,26 +104,5 @@ class OpenSecurityAnalysisProviderTest extends AbstractSerDeTest {
                 .setDcFastMode(true);
         parameters.addExtension(OpenSecurityAnalysisParameters.class, parametersExt);
         roundTripTest(parameters, JsonSecurityAnalysisParameters::write, JsonSecurityAnalysisParameters::read, "/sa-params.json");
-    }
-
-    @Test
-    void testContingencyParametersExtension() {
-        Contingency contingency = new Contingency("L2", new BranchContingency("L2"));
-        contingency.addExtension(ContingencyParameters.class, new ContingencyParameters(false, true, LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD));
-
-        ContingencyParameters contingencyParameters = contingency.getExtension(ContingencyParameters.class);
-
-        assertEquals(contingencyParameters, contingency.getExtensionByName("contingency-parameters"));
-        assertFalse(contingencyParameters.isDistributedSlack());
-        assertTrue(contingencyParameters.isAreaInterchangeControl());
-        assertEquals(LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD, contingencyParameters.getBalanceType());
-    }
-
-    @Test
-    void testContingencyParametersExtensionJson() throws IOException {
-        Contingency contingency = new Contingency("L2", new BranchContingency("L2"));
-        contingency.addExtension(ContingencyParameters.class, new ContingencyParameters(false, true, LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD));
-        assertEquals(ContingencyParameters.class, new ContingencyParametersJsonSerializer().getExtensionClass());
-        roundTripTest(contingency, JsonSerializer::write, JsonSerializer::readContingency, "/contingencies.json");
     }
 }

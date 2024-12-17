@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * SPDX-License-Identifier: MPL-2.0
  */
-package com.powsybl.openloadflow.sa;
+package com.powsybl.openloadflow.sa.extensions;
 
 import com.powsybl.commons.extensions.AbstractExtension;
 import com.powsybl.contingency.Contingency;
@@ -14,7 +14,7 @@ import com.powsybl.loadflow.LoadFlowParameters;
 /**
  * @author Valentin Mouradian {@literal <valentin.mouradian at artelys.com>}
  */
-public class ContingencyParameters extends AbstractExtension<Contingency> {
+public class ContingencyLoadFlowParameters extends AbstractExtension<Contingency> {
 
     private boolean distributedSlack;
 
@@ -22,7 +22,7 @@ public class ContingencyParameters extends AbstractExtension<Contingency> {
 
     private LoadFlowParameters.BalanceType balanceType;
 
-    public ContingencyParameters(boolean distributedSlack, boolean areaInterchangeControl, LoadFlowParameters.BalanceType balanceType) {
+    public ContingencyLoadFlowParameters(boolean distributedSlack, boolean areaInterchangeControl, LoadFlowParameters.BalanceType balanceType) {
         this.distributedSlack = distributedSlack;
         this.areaInterchangeControl = areaInterchangeControl;
         this.balanceType = balanceType;
