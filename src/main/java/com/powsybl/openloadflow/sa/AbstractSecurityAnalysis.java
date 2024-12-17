@@ -746,10 +746,6 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
         }
     }
 
-    private ContingencyLoadFlowParameters initContingencyParameters(ContingencyLoadFlowParameters contingencyLoadFlowParameters, LoadFlowParameters loadFlowParameters, OpenLoadFlowParameters openLoadFlowParameters) {
-        return Objects.requireNonNullElse(contingencyLoadFlowParameters, new ContingencyLoadFlowParameters(loadFlowParameters.isDistributedSlack(), openLoadFlowParameters.isAreaInterchangeControl(), loadFlowParameters.getBalanceType()));
-    }
-
     private Consumer<P> applyContingencyParameters(P parameters, ContingencyLoadFlowParameters contingencyLoadFlowParameters, OpenLoadFlowParameters parametersExt) {
         if (contingencyLoadFlowParameters != null) {
             if (parameters instanceof DcLoadFlowParameters dcLoadFlowParameters) {
