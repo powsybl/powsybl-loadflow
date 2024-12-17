@@ -7,6 +7,7 @@
  */
 package com.powsybl.openloadflow.ac.outerloop;
 
+import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.openloadflow.ac.AcLoadFlowContext;
 import com.powsybl.openloadflow.ac.AcLoadFlowParameters;
 import com.powsybl.openloadflow.ac.AcOuterLoopContext;
@@ -30,6 +31,12 @@ public class AcAreaInterchangeControlOuterLoop
 
     public AcAreaInterchangeControlOuterLoop(ActivePowerDistribution activePowerDistribution, double slackBusPMaxMismatch, double areaInterchangePMaxMismatch) {
         super(activePowerDistribution, new DistributedSlackOuterLoop(activePowerDistribution, slackBusPMaxMismatch), slackBusPMaxMismatch, areaInterchangePMaxMismatch, LOGGER);
+    }
+
+    public static AcAreaInterchangeControlOuterLoop create(LoadFlowParameters.BalanceType balanceType, boolean loadPowerFactorConstant, boolean useActiveLimits,
+                                                           double slackBusPMaxMismatch, double areaInterchangePMaxMismatch) {
+        ActivePowerDistribution activePowerDistribution = ActivePowerDistribution.create(balanceType, loadPowerFactorConstant, useActiveLimits);
+        return new AcAreaInterchangeControlOuterLoop(activePowerDistribution, slackBusPMaxMismatch, areaInterchangePMaxMismatch);
     }
 
     @Override

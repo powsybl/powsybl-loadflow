@@ -8,6 +8,7 @@
 package com.powsybl.openloadflow.ac.outerloop;
 
 import com.powsybl.commons.report.ReportNode;
+import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.openloadflow.ac.AcLoadFlowContext;
 import com.powsybl.openloadflow.ac.AcLoadFlowParameters;
 import com.powsybl.openloadflow.ac.AcOuterLoopContext;
@@ -43,6 +44,12 @@ public class DistributedSlackOuterLoop
     public DistributedSlackOuterLoop(ActivePowerDistribution activePowerDistribution, double slackBusPMaxMismatch) {
         this.activePowerDistribution = Objects.requireNonNull(activePowerDistribution);
         this.slackBusPMaxMismatch = slackBusPMaxMismatch;
+    }
+
+    public static DistributedSlackOuterLoop create(LoadFlowParameters.BalanceType balanceType, boolean loadPowerFactorConstant, boolean useActiveLimits,
+                                            double slackBusPMaxMismatch) {
+        ActivePowerDistribution activePowerDistribution = ActivePowerDistribution.create(balanceType, loadPowerFactorConstant, useActiveLimits);
+        return new DistributedSlackOuterLoop(activePowerDistribution, slackBusPMaxMismatch);
     }
 
     @Override

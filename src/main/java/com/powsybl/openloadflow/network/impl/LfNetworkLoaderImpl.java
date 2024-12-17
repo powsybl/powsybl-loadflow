@@ -515,19 +515,17 @@ public class LfNetworkLoaderImpl implements LfNetworkLoader<Network> {
     }
 
     private static void updateArea(Bus bus, LfBus lfBus, LfNetworkParameters parameters, LoadingContext loadingContext) {
-        if (parameters.isAreaInterchangeControl()) {
-            // Consider only the area type that should be used for area interchange control
-            Optional<Area> areaOpt = bus.getVoltageLevel().getArea(parameters.getAreaInterchangeControlAreaType());
-            areaOpt.ifPresent(area ->
-                loadingContext.areaBusMap.computeIfAbsent(area, k -> {
-                    area.getAreaBoundaryStream().forEach(boundary -> {
-                        boundary.getTerminal().ifPresent(t -> loadingContext.areaTerminalMap.put(t, area));
-                        boundary.getBoundary().ifPresent(b -> loadingContext.areaTerminalMap.put(b.getDanglingLine().getTerminal(), area));
-                    });
-                    return new HashSet<>();
-                }).add(lfBus)
-            );
-        }
+        // Consider only the area type that should be used for area interchange control
+        Optional<Area> areaOpt = bus.getVoltageLevel().getArea(parameters.getAreaInterchangeControlAreaType());
+        areaOpt.ifPresent(area ->
+            loadingContext.areaBusMap.computeIfAbsent(area, k -> {
+                area.getAreaBoundaryStream().forEach(boundary -> {
+                    boundary.getTerminal().ifPresent(t -> loadingContext.areaTerminalMap.put(t, area));
+                    boundary.getBoundary().ifPresent(b -> loadingContext.areaTerminalMap.put(b.getDanglingLine().getTerminal(), area));
+                });
+                return new HashSet<>();
+            }).add(lfBus)
+        );
     }
 
     /**
@@ -556,36 +554,34 @@ public class LfNetworkLoaderImpl implements LfNetworkLoader<Network> {
     }
 
     private static void createAreas(LfNetwork network, LoadingContext loadingContext, List<LfNetworkLoaderPostProcessor> postProcessors, LfNetworkParameters parameters) {
-        if (parameters.isAreaInterchangeControl()) {
-            loadingContext.areaBusMap
-                    .entrySet()
-                    .stream()
-                    .filter(e -> {
-                        if (e.getKey().getAreaBoundaryStream().findAny().isEmpty()) {
-                            Reports.reportAreaNoInterchangeControl(network.getReportNode(), e.getKey().getId(), "Area does not have any area boundary");
-                            LOGGER.warn("Network {}: Area {} does not have any area boundary. The area will not be considered for area interchange control", network, e.getKey().getId());
-                            return false;
-                        }
-                        return true;
-                    })
-                    .filter(e -> {
-                        if (e.getKey().getInterchangeTarget().isEmpty()) {
-                            Reports.reportAreaNoInterchangeControl(network.getReportNode(), e.getKey().getId(), "Area does not have an interchange target");
-                            LOGGER.warn("Network {}: Area {} does not have an interchange target. The area will not be considered for area interchange control", network, e.getKey().getId());
-                            return false;
-                        }
-                        return true;
-                    })
-                    .filter(e -> checkBoundariesComponent(network, e.getKey()))
-                    .forEach(e -> {
-                        Area area = e.getKey();
-                        Set<LfBus> lfBuses = e.getValue();
-                        Set<LfArea.Boundary> boundaries = loadingContext.areaBoundaries.getOrDefault(area, new HashSet<>());
-                        LfArea lfArea = LfAreaImpl.create(area, lfBuses, boundaries, network, parameters);
-                        network.addArea(lfArea);
-                        postProcessors.forEach(pp -> pp.onAreaAdded(area, lfArea));
-                    });
-        }
+        loadingContext.areaBusMap
+                .entrySet()
+                .stream()
+                .filter(e -> {
+                    if (e.getKey().getAreaBoundaryStream().findAny().isEmpty()) {
+                        Reports.reportAreaNoInterchangeControl(network.getReportNode(), e.getKey().getId(), "Area does not have any area boundary");
+                        LOGGER.warn("Network {}: Area {} does not have any area boundary. The area will not be considered for area interchange control", network, e.getKey().getId());
+                        return false;
+                    }
+                    return true;
+                })
+                .filter(e -> {
+                    if (e.getKey().getInterchangeTarget().isEmpty()) {
+                        Reports.reportAreaNoInterchangeControl(network.getReportNode(), e.getKey().getId(), "Area does not have an interchange target");
+                        LOGGER.warn("Network {}: Area {} does not have an interchange target. The area will not be considered for area interchange control", network, e.getKey().getId());
+                        return false;
+                    }
+                    return true;
+                })
+                .filter(e -> checkBoundariesComponent(network, e.getKey()))
+                .forEach(e -> {
+                    Area area = e.getKey();
+                    Set<LfBus> lfBuses = e.getValue();
+                    Set<LfArea.Boundary> boundaries = loadingContext.areaBoundaries.getOrDefault(area, new HashSet<>());
+                    LfArea lfArea = LfAreaImpl.create(area, lfBuses, boundaries, network, parameters);
+                    network.addArea(lfArea);
+                    postProcessors.forEach(pp -> pp.onAreaAdded(area, lfArea));
+                });
     }
 
     private static boolean checkBoundariesComponent(LfNetwork network, Area area) {
