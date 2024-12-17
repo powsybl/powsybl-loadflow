@@ -785,9 +785,9 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
             DcAreaInterchangeControlOuterLoop outerLoop = DcAreaInterchangeControlOuterLoop.create(contingencyLoadFlowParameters.getBalanceType(), parametersExt.isLoadPowerFactorConstant(), parametersExt.isUseActiveLimits(),
                     parametersExt.getSlackBusPMaxMismatch(), parametersExt.getAreaInterchangePMaxMismatch());
             newOuterLoops.add(outerLoop);
-        } else if (contingencyLoadFlowParameters.isDistributedSlack()) {
-            dcLoadFlowParameters.setDistributedSlack(true);
         }
+        dcLoadFlowParameters.setDistributedSlack(contingencyLoadFlowParameters.isDistributedSlack());
+        dcLoadFlowParameters.setBalanceType(contingencyLoadFlowParameters.getBalanceType());
         dcLoadFlowParameters.setOuterLoops(newOuterLoops);
         return p -> {
             ((DcLoadFlowParameters) p).setDistributedSlack(oldDistributedSlack);
