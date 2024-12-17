@@ -1673,9 +1673,12 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
         assertReportEquals("/saReportOperatorStrategyNoVoltageControl.txt", reportNode);
     }
 
-    @Test
-    void testContingencyParameters() {
+    @ParameterizedTest(name = "DC = {0}")
+    @ValueSource(booleans = {false, true})
+    void testContingencyParameters(boolean isDc) {
         Network network = MultiAreaNetworkFactory.createTwoAreasWithTieLine();
+
+        // create a contingency with ContingencyLoadFlowParameters extension
         Contingency contingency1 = new Contingency("load3", new LoadContingency("load3"));
         ContingencyLoadFlowParameters contingencyParameters1 = new ContingencyLoadFlowParameters(false, true, LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD);
         contingency1.addExtension(ContingencyLoadFlowParameters.class, contingencyParameters1);
@@ -1688,22 +1691,25 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
         List<Action> actions = List.of(action1);
         List<OperatorStrategy> operatorStrategies = List.of(operatorStrategy1);
 
-        LoadFlowParameters parameters = new LoadFlowParameters();
-        parameters.setDistributedSlack(true);
+        // run the security analysis
+        LoadFlowParameters parameters = new LoadFlowParameters().setDc(isDc);
         parameters.setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.ALL);
         SecurityAnalysisParameters securityAnalysisParameters = new SecurityAnalysisParameters();
         securityAnalysisParameters.setLoadFlowParameters(parameters);
         SecurityAnalysisResult resultAc = runSecurityAnalysis(network, contingencies, monitors, securityAnalysisParameters,
                 operatorStrategies, actions, ReportNode.NO_OP);
 
+        // Pre-contingency results
         PreContingencyResult preContingencyResult = resultAc.getPreContingencyResult();
         assertEquals(25, preContingencyResult.getNetworkResult().getBranchResult("tl1").getP1(), LoadFlowAssert.DELTA_POWER);
         assertEquals(30, preContingencyResult.getNetworkResult().getBranchResult("l34").getP1(), LoadFlowAssert.DELTA_POWER);
 
+        // Post-contingency results : AIC on loads
         PostContingencyResult postContingencyResult = getPostContingencyResult(resultAc, "load3");
         assertEquals(50, postContingencyResult.getNetworkResult().getBranchResult("tl1").getP1(), LoadFlowAssert.DELTA_POWER);
         assertEquals(75, postContingencyResult.getNetworkResult().getBranchResult("l34").getP1(), LoadFlowAssert.DELTA_POWER);
 
+        // Operator strategy results : AIC on loads
         OperatorStrategyResult acStrategyResult = getOperatorStrategyResult(resultAc, "strategy1");
         assertEquals(50, acStrategyResult.getNetworkResult().getBranchResult("tl1").getP1(), LoadFlowAssert.DELTA_POWER);
         assertEquals(95, acStrategyResult.getNetworkResult().getBranchResult("l34").getP1(), LoadFlowAssert.DELTA_POWER);
