@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class OpenSecurityAnalysisExtensionsTest extends AbstractSerDeTest {
 
     @Test
-    void testContingencyParametersExtension() {
+    void testContingencyLoadFlowParametersExtension() {
         Contingency contingency = new Contingency("L2", new BranchContingency("L2"));
         contingency.addExtension(ContingencyLoadFlowParameters.class, new ContingencyLoadFlowParameters(false, true, LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD));
 
@@ -48,7 +48,7 @@ class OpenSecurityAnalysisExtensionsTest extends AbstractSerDeTest {
     }
 
     @Test
-    void testContingencyParametersExtensionJson() throws IOException {
+    void testContingencyLoadFlowParametersExtensionJson() throws IOException {
         Contingency contingency = new Contingency("L2", new BranchContingency("L2"));
         contingency.addExtension(ContingencyLoadFlowParameters.class, new ContingencyLoadFlowParameters(false, true, LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD));
         assertEquals(ContingencyLoadFlowParameters.class, new ContingencyLoadFlowParametersJsonSerializer().getExtensionClass());

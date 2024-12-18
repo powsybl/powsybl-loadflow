@@ -32,7 +32,7 @@ public class ContingencyLoadFlowParametersJsonSerializer implements ExtensionJso
     }
 
     /**
-     * Specifies serialization for our extension: ignore name et extendable
+     * Specifies serialization for our extension: ignore name and extendable
      */
     private interface SerializationSpec {
 

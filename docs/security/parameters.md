@@ -78,7 +78,7 @@ At the moment, overriding the parameters by a JSON file is not supported by Open
 
 ## Contingency Parameters
 
-Some load flow related parameters can be configured per contingency. This can be done by adding to the `Contingency` object an extension of the `ContingencyParameters` class.  
+Some load flow related parameters can be configured per contingency. This can be done by adding to the `Contingency` object an extension of the `ContingencyLoadFlowParameters` class.  
 Those parameters correspond to parameters present in [`LoadFlowParameters`](inv:powsyblcore:*:*#simulation/loadflow/configuration) and [`OpenLoadFlowParameters`](../loadflow/parameters.md#specific-parameters) :
 
 - `distributedSlack` (see [distributedSlack](inv:powsyblcore:*:*#simulation/loadflow/configuration))
