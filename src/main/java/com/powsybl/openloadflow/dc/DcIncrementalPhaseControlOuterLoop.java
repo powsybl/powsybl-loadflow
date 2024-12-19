@@ -37,7 +37,7 @@ public class DcIncrementalPhaseControlOuterLoop
 
     @Override
     public String getName() {
-        return "DC Incremental phase control";
+        return NAME;
     }
 
     public static class DcSensitivityContext extends AbstractSensitivityContext<DcVariableType, DcEquationType> {

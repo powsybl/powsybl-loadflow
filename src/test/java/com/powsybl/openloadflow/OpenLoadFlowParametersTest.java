@@ -401,7 +401,7 @@ class OpenLoadFlowParametersTest {
     }
 
     @Test
-    void testExplicitOuterLoopsParameter() {
+    void testExplicitOuterLoopsParameterAc() {
         LoadFlowParameters parameters = new LoadFlowParameters()
                 .setShuntCompensatorVoltageControlOn(true);
         OpenLoadFlowParameters parametersExt = new OpenLoadFlowParameters()
@@ -418,10 +418,27 @@ class OpenLoadFlowParametersTest {
 
         parametersExt.setOuterLoopNames(List.of("ReactiveLimits", "Foo"));
         e = assertThrows(PowsyblException.class, () -> OpenLoadFlowParameters.createAcOuterLoops(parameters, parametersExt));
-        assertEquals("Unknown outer loop 'Foo'", e.getMessage());
+        assertEquals("Unknown outer loop 'Foo' for AC load flow", e.getMessage());
 
-        assertEquals("Ordered explicit list of outer loop names, supported outer loops are IncrementalPhaseControl, DistributedSlack, IncrementalShuntVoltageControl, IncrementalTransformerVoltageControl, VoltageMonitoring, PhaseControl, ReactiveLimits, SecondaryVoltageControl, ShuntVoltageControl, SimpleTransformerVoltageControl, TransformerVoltageControl, AutomationSystem, IncrementalTransformerReactivePowerControl, AreaInterchangeControl",
+        assertEquals("Ordered explicit list of outer loop names, supported outer loops are for AC : [IncrementalPhaseControl, DistributedSlack, IncrementalShuntVoltageControl, IncrementalTransformerVoltageControl, VoltageMonitoring, PhaseControl, ReactiveLimits, SecondaryVoltageControl, ShuntVoltageControl, SimpleTransformerVoltageControl, TransformerVoltageControl, AutomationSystem, IncrementalTransformerReactivePowerControl, AreaInterchangeControl], and for DC : [IncrementalPhaseControl, AreaInterchangeControl]",
                      OpenLoadFlowParameters.SPECIFIC_PARAMETERS.stream().filter(p -> p.getName().equals(OpenLoadFlowParameters.OUTER_LOOP_NAMES_PARAM_NAME)).findFirst().orElseThrow().getDescription());
+    }
+
+    @Test
+    void testExplicitOuterLoopsParameterDc() {
+        LoadFlowParameters parameters = new LoadFlowParameters()
+                .setPhaseShifterRegulationOn(true);
+        OpenLoadFlowParameters parametersExt = new OpenLoadFlowParameters()
+                .setAreaInterchangeControl(true);
+
+        assertEquals(List.of("IncrementalPhaseControl", "AreaInterchangeControl"), OpenLoadFlowParameters.createDcOuterLoops(parameters, parametersExt).stream().map(OuterLoop::getName).toList());
+
+        parametersExt.setOuterLoopNames(List.of("IncrementalPhaseControl"));
+        assertEquals(List.of("IncrementalPhaseControl"), OpenLoadFlowParameters.createDcOuterLoops(parameters, parametersExt).stream().map(OuterLoop::getName).toList());
+
+        parametersExt.setOuterLoopNames(List.of("IncrementalPhaseControl", "DistributedSlack"));
+        PowsyblException e = assertThrows(PowsyblException.class, () -> OpenLoadFlowParameters.createDcOuterLoops(parameters, parametersExt));
+        assertEquals("Unknown outer loop 'DistributedSlack' for DC load flow", e.getMessage());
     }
 
     @Test

@@ -24,8 +24,6 @@ import com.powsybl.openloadflow.ac.equations.AcEquationSystemCreationParameters;
 import com.powsybl.openloadflow.ac.solver.*;
 import com.powsybl.openloadflow.ac.outerloop.AcOuterLoop;
 import com.powsybl.openloadflow.ac.outerloop.ReactiveLimitsOuterLoop;
-import com.powsybl.openloadflow.dc.DcAreaInterchangeControlOuterLoop;
-import com.powsybl.openloadflow.dc.DcIncrementalPhaseControlOuterLoop;
 import com.powsybl.openloadflow.dc.DcLoadFlowParameters;
 import com.powsybl.openloadflow.dc.DcOuterLoop;
 import com.powsybl.openloadflow.dc.DcValueVoltageInitializer;
@@ -34,7 +32,6 @@ import com.powsybl.openloadflow.dc.equations.DcEquationSystemCreationParameters;
 import com.powsybl.openloadflow.graph.GraphConnectivityFactory;
 import com.powsybl.openloadflow.lf.AbstractLoadFlowParameters;
 import com.powsybl.openloadflow.network.*;
-import com.powsybl.openloadflow.network.util.ActivePowerDistribution;
 import com.powsybl.openloadflow.network.util.PreviousValueVoltageInitializer;
 import com.powsybl.openloadflow.network.util.UniformValueVoltageInitializer;
 import com.powsybl.openloadflow.network.util.VoltageInitializer;
@@ -399,7 +396,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
         new Parameter(ASYMMETRICAL_PARAM_NAME, ParameterType.BOOLEAN, "Asymmetrical calculation", LfNetworkParameters.ASYMMETRICAL_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, MODEL_CATEGORY_KEY),
         new Parameter(MIN_NOMINAL_VOLTAGE_TARGET_VOLTAGE_CHECK_PARAM_NAME, ParameterType.DOUBLE, "Min nominal voltage for target voltage check", LfNetworkParameters.MIN_NOMINAL_VOLTAGE_TARGET_VOLTAGE_CHECK_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, VOLTAGE_CONTROLS_CATEGORY_KEY),
         new Parameter(REACTIVE_POWER_DISPATCH_MODE_PARAM_NAME, ParameterType.STRING, "Generators reactive power from bus dispatch mode", REACTIVE_POWER_DISPATCH_MODE_DEFAULT_VALUE.name(), getEnumPossibleValues(ReactivePowerDispatchMode.class), ParameterScope.FUNCTIONAL, GENERATOR_VOLTAGE_CONTROL_CATEGORY_KEY),
-        new Parameter(OUTER_LOOP_NAMES_PARAM_NAME, ParameterType.STRING_LIST, "Ordered explicit list of outer loop names, supported outer loops are " + String.join(", ", ExplicitAcOuterLoopConfig.NAMES), OUTER_LOOP_NAMES_DEFAULT_VALUE, ParameterScope.TECHNICAL, OUTER_LOOPS_CATEGORY_KEY),
+        new Parameter(OUTER_LOOP_NAMES_PARAM_NAME, ParameterType.STRING_LIST, "Ordered explicit list of outer loop names, supported outer loops are for AC : [" + String.join(", ", ExplicitAcOuterLoopConfig.NAMES) + "], and for DC : [" + String.join(", ", ExplicitDcOuterLoopConfig.NAMES) + "]", OUTER_LOOP_NAMES_DEFAULT_VALUE, ParameterScope.TECHNICAL, OUTER_LOOPS_CATEGORY_KEY),
         new Parameter(USE_ACTIVE_LIMITS_PARAM_NAME, ParameterType.BOOLEAN, "Use active power limits in slack distribution", LfNetworkParameters.USE_ACTIVE_LIMITS_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, SLACK_DISTRIBUTION_CATEGORY_KEY),
         new Parameter(DISABLE_VOLTAGE_CONTROL_OF_GENERATORS_OUTSIDE_ACTIVE_POWER_LIMITS_PARAM_NAME, ParameterType.BOOLEAN, "Disable voltage control of generators outside active power limits", LfNetworkParameters.DISABLE_VOLTAGE_CONTROL_OF_GENERATORS_OUTSIDE_ACTIVE_POWER_LIMITS_DEFAULT_VALUE, ParameterScope.FUNCTIONAL, GENERATOR_VOLTAGE_CONTROL_CATEGORY_KEY),
         new Parameter(LINE_SEARCH_STATE_VECTOR_SCALING_MAX_ITERATION_PARAM_NAME, ParameterType.INTEGER, "Max iteration for the line search state vector scaling", LineSearchStateVectorScaling.DEFAULT_MAX_ITERATION, ParameterScope.FUNCTIONAL, NEWTON_RAPHSON_CATEGORY_KEY),
@@ -1821,9 +1818,16 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
     }
 
     static List<AcOuterLoop> createAcOuterLoops(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt) {
-        AcOuterLoopConfig outerLoopConfig = AcOuterLoopConfig.findOuterLoopConfig()
+        AcOuterLoopConfig outerLoopConfig = OuterLoopConfig.findOuterLoopConfig(AcOuterLoopConfig.class)
                 .orElseGet(() -> parametersExt.getOuterLoopNames() != null ? new ExplicitAcOuterLoopConfig()
                                                                            : new DefaultAcOuterLoopConfig());
+        return outerLoopConfig.configure(parameters, parametersExt);
+    }
+
+    static List<DcOuterLoop> createDcOuterLoops(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt) {
+        DcOuterLoopConfig outerLoopConfig = OuterLoopConfig.findOuterLoopConfig(DcOuterLoopConfig.class)
+                .orElseGet(() -> parametersExt.getOuterLoopNames() != null ? new ExplicitDcOuterLoopConfig()
+                                                                           : new DefaultDcOuterLoopConfig());
         return outerLoopConfig.configure(parameters, parametersExt);
     }
 
@@ -1853,20 +1857,6 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
                 .setAsymmetrical(parametersExt.isAsymmetrical())
                 .setSlackDistributionFailureBehavior(parametersExt.getSlackDistributionFailureBehavior())
                 .setSolverFactory(solverFactory, parameters);
-    }
-
-    static List<DcOuterLoop> createDcOuterLoops(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt) {
-        List<DcOuterLoop> outerLoops = new ArrayList<>();
-        if (parameters.isPhaseShifterRegulationOn()) {
-            DcIncrementalPhaseControlOuterLoop phaseShifterControlOuterLoop = new DcIncrementalPhaseControlOuterLoop();
-            outerLoops.add(phaseShifterControlOuterLoop);
-        }
-        if (parametersExt.isAreaInterchangeControl()) {
-            ActivePowerDistribution activePowerDistribution = ActivePowerDistribution.create(parameters.getBalanceType(), false, parametersExt.isUseActiveLimits());
-            DcAreaInterchangeControlOuterLoop areaInterchangeControlOuterLoop = new DcAreaInterchangeControlOuterLoop(activePowerDistribution, parametersExt.getSlackBusPMaxMismatch(), parametersExt.getAreaInterchangePMaxMismatch());
-            outerLoops.add(areaInterchangeControlOuterLoop);
-        }
-        return outerLoops;
     }
 
     public static DcLoadFlowParameters createDcParameters(Network network, LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt,

@@ -10,6 +10,8 @@ package com.powsybl.openloadflow;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.openloadflow.ac.outerloop.*;
+import com.powsybl.openloadflow.lf.outerloop.AbstractAreaInterchangeControlOuterLoop;
+import com.powsybl.openloadflow.lf.outerloop.AbstractIncrementalPhaseControlOuterLoop;
 import com.powsybl.openloadflow.lf.outerloop.OuterLoop;
 
 import java.util.List;
@@ -23,7 +25,7 @@ import java.util.stream.Collectors;
  */
 public class ExplicitAcOuterLoopConfig extends AbstractAcOuterLoopConfig {
 
-    public static final List<String> NAMES = List.of(AcIncrementalPhaseControlOuterLoop.NAME,
+    public static final List<String> NAMES = List.of(AbstractIncrementalPhaseControlOuterLoop.NAME,
                                                      DistributedSlackOuterLoop.NAME,
                                                      IncrementalShuntVoltageControlOuterLoop.NAME,
                                                      IncrementalTransformerVoltageControlOuterLoop.NAME,
@@ -36,11 +38,11 @@ public class ExplicitAcOuterLoopConfig extends AbstractAcOuterLoopConfig {
                                                      TransformerVoltageControlOuterLoop.NAME,
                                                      AutomationSystemOuterLoop.NAME,
                                                      IncrementalTransformerReactivePowerControlOuterLoop.NAME,
-                                                     AcAreaInterchangeControlOuterLoop.NAME);
+                                                     AbstractAreaInterchangeControlOuterLoop.NAME);
 
     private static Optional<AcOuterLoop> createOuterLoop(String name, LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt) {
         return switch (name) {
-            case AcIncrementalPhaseControlOuterLoop.NAME -> createPhaseControlOuterLoop(parameters,
+            case AbstractIncrementalPhaseControlOuterLoop.NAME -> createPhaseControlOuterLoop(parameters,
                                                                                                OpenLoadFlowParameters.PhaseShifterControlMode.INCREMENTAL);
             case DistributedSlackOuterLoop.NAME -> createDistributedSlackOuterLoop(parameters, parametersExt);
             case IncrementalShuntVoltageControlOuterLoop.NAME -> createShuntVoltageControlOuterLoop(parameters,
@@ -69,8 +71,8 @@ public class ExplicitAcOuterLoopConfig extends AbstractAcOuterLoopConfig {
                                                                                                      parametersExt.getGeneratorVoltageControlMinNominalVoltage());
             case AutomationSystemOuterLoop.NAME -> createAutomationSystemOuterLoop(parametersExt);
             case IncrementalTransformerReactivePowerControlOuterLoop.NAME -> createTransformerReactivePowerControlOuterLoop(parametersExt);
-            case AcAreaInterchangeControlOuterLoop.NAME -> createAreaInterchangeControlOuterLoop(parameters, parametersExt);
-            default -> throw new PowsyblException("Unknown outer loop '" + name + "'");
+            case AbstractAreaInterchangeControlOuterLoop.NAME -> createAreaInterchangeControlOuterLoop(parameters, parametersExt);
+            default -> throw new PowsyblException("Unknown outer loop '" + name + "' for AC load flow");
         };
     }
 
