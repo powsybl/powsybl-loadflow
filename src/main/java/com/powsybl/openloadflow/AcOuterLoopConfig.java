@@ -9,9 +9,15 @@ package com.powsybl.openloadflow;
 
 import com.powsybl.openloadflow.ac.outerloop.AcOuterLoop;
 
+import java.util.Optional;
+
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 public interface AcOuterLoopConfig extends OuterLoopConfig<AcOuterLoop> {
+
+    static Optional<AcOuterLoopConfig> findOuterLoopConfig() {
+        return OuterLoopConfig.findOuterLoopConfig(AcOuterLoopConfig.class);
+    }
 
 }

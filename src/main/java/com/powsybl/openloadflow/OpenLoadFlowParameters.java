@@ -1818,14 +1818,14 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
     }
 
     static List<AcOuterLoop> createAcOuterLoops(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt) {
-        AcOuterLoopConfig outerLoopConfig = OuterLoopConfig.findOuterLoopConfig(AcOuterLoopConfig.class)
+        AcOuterLoopConfig outerLoopConfig = AcOuterLoopConfig.findOuterLoopConfig()
                 .orElseGet(() -> parametersExt.getOuterLoopNames() != null ? new ExplicitAcOuterLoopConfig()
                                                                            : new DefaultAcOuterLoopConfig());
         return outerLoopConfig.configure(parameters, parametersExt);
     }
 
     static List<DcOuterLoop> createDcOuterLoops(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt) {
-        DcOuterLoopConfig outerLoopConfig = OuterLoopConfig.findOuterLoopConfig(DcOuterLoopConfig.class)
+        DcOuterLoopConfig outerLoopConfig = DcOuterLoopConfig.findOuterLoopConfig()
                 .orElseGet(() -> parametersExt.getOuterLoopNames() != null ? new ExplicitDcOuterLoopConfig()
                                                                            : new DefaultDcOuterLoopConfig());
         return outerLoopConfig.configure(parameters, parametersExt);

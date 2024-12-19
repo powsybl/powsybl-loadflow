@@ -9,8 +9,15 @@ package com.powsybl.openloadflow;
 
 import com.powsybl.openloadflow.dc.DcOuterLoop;
 
+import java.util.Optional;
+
 /**
  * @author Valentin Mouradian {@literal <valentin.mouradian at artelys.com>}
  */
 public interface DcOuterLoopConfig extends OuterLoopConfig<DcOuterLoop> {
+
+    static Optional<DcOuterLoopConfig> findOuterLoopConfig() {
+        return OuterLoopConfig.findOuterLoopConfig(DcOuterLoopConfig.class);
+    }
+
 }
