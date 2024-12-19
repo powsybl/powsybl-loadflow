@@ -9,7 +9,6 @@ package com.powsybl.openloadflow;
 
 import com.powsybl.openloadflow.dc.DcOuterLoop;
 
-
 /**
  * @author Valentin Mouradian {@literal <valentin.mouradian at artelys.com>}
  */
