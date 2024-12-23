@@ -30,7 +30,7 @@ public class ContingencyLoadFlowParameters extends AbstractExtension<Contingency
 
     @Override
     public String getName() {
-        return "contingency-parameters";
+        return "contingency-load-flow-parameters";
     }
 
     public boolean isDistributedSlack() {

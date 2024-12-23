@@ -41,7 +41,7 @@ class OpenSecurityAnalysisExtensionsTest extends AbstractSerDeTest {
 
         ContingencyLoadFlowParameters contingencyLoadFlowParameters = contingency.getExtension(ContingencyLoadFlowParameters.class);
 
-        assertEquals(contingencyLoadFlowParameters, contingency.getExtensionByName("contingency-parameters"));
+        assertEquals(contingencyLoadFlowParameters, contingency.getExtensionByName("contingency-load-flow-parameters"));
         assertFalse(contingencyLoadFlowParameters.isDistributedSlack());
         assertTrue(contingencyLoadFlowParameters.isAreaInterchangeControl());
         assertEquals(LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD, contingencyLoadFlowParameters.getBalanceType());

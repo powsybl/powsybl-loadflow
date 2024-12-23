@@ -5,7 +5,7 @@
     "type" : "BRANCH"
   } ],
   "extensions" : {
-    "contingency-parameters" : {
+    "contingency-load-flow-parameters" : {
       "distributedSlack" : false,
       "areaInterchangeControl" : true,
       "balanceType" : "PROPORTIONAL_TO_LOAD"
