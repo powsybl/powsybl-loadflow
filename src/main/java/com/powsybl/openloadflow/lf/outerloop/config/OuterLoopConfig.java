@@ -5,10 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * SPDX-License-Identifier: MPL-2.0
  */
-package com.powsybl.openloadflow;
+package com.powsybl.openloadflow.lf.outerloop.config;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.openloadflow.OpenLoadFlowParameters;
 import com.powsybl.openloadflow.lf.outerloop.OuterLoop;
 import org.apache.commons.compress.utils.Lists;
 
@@ -22,7 +23,7 @@ import java.util.ServiceLoader;
 public interface OuterLoopConfig<O extends OuterLoop<?, ?, ?, ?, ?>> {
     List<O> configure(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt);
 
-    static <C extends OuterLoopConfig> Optional<C> findOuterLoopConfig(Class<C> configClass) {
+    static <C extends OuterLoopConfig<?>> Optional<C> findOuterLoopConfig(Class<C> configClass) {
         List<C> outerLoopConfigs = Lists.newArrayList(ServiceLoader.load(configClass, configClass.getClassLoader()).iterator());
         if (outerLoopConfigs.isEmpty()) {
             return Optional.empty();

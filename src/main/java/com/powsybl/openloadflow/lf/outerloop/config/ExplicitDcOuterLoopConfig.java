@@ -5,12 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * SPDX-License-Identifier: MPL-2.0
  */
-package com.powsybl.openloadflow;
+package com.powsybl.openloadflow.lf.outerloop.config;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.loadflow.LoadFlowParameters;
-import com.powsybl.openloadflow.dc.DcAreaInterchangeControlOuterLoop;
-import com.powsybl.openloadflow.dc.DcIncrementalPhaseControlOuterLoop;
+import com.powsybl.openloadflow.OpenLoadFlowParameters;
+import com.powsybl.openloadflow.lf.outerloop.AbstractAreaInterchangeControlOuterLoop;
+import com.powsybl.openloadflow.lf.outerloop.AbstractIncrementalPhaseControlOuterLoop;
 import com.powsybl.openloadflow.dc.DcOuterLoop;
 
 import java.util.List;
@@ -22,13 +23,13 @@ import java.util.Optional;
  */
 public class ExplicitDcOuterLoopConfig extends AbstractDcOuterLoopConfig {
 
-    public static final List<String> NAMES = List.of(DcIncrementalPhaseControlOuterLoop.NAME,
-                                                        DcAreaInterchangeControlOuterLoop.NAME);
+    public static final List<String> NAMES = List.of(AbstractIncrementalPhaseControlOuterLoop.NAME,
+                                                        AbstractAreaInterchangeControlOuterLoop.NAME);
 
     private static Optional<DcOuterLoop> createOuterLoop(String name, LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt) {
         return switch (name) {
-            case DcIncrementalPhaseControlOuterLoop.NAME -> createIncrementalPhaseControlOuterLoop(parameters);
-            case DcAreaInterchangeControlOuterLoop.NAME -> createAreaInterchangeControlOuterLoop(parameters, parametersExt);
+            case AbstractIncrementalPhaseControlOuterLoop.NAME -> createIncrementalPhaseControlOuterLoop(parameters);
+            case AbstractAreaInterchangeControlOuterLoop.NAME -> createAreaInterchangeControlOuterLoop(parameters, parametersExt);
             default -> throw new PowsyblException("Unknown outer loop '" + name + "' for DC load flow");
         };
     }
