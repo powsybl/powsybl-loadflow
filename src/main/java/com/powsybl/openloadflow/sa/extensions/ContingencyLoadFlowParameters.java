@@ -11,21 +11,20 @@ import com.powsybl.commons.extensions.AbstractExtension;
 import com.powsybl.contingency.Contingency;
 import com.powsybl.loadflow.LoadFlowParameters;
 
+import java.util.Optional;
+
 /**
  * @author Valentin Mouradian {@literal <valentin.mouradian at artelys.com>}
  */
 public class ContingencyLoadFlowParameters extends AbstractExtension<Contingency> {
 
-    private boolean distributedSlack;
+    private Boolean distributedSlack = null;
 
-    private boolean areaInterchangeControl;
+    private Boolean areaInterchangeControl = null;
 
-    private LoadFlowParameters.BalanceType balanceType;
+    private LoadFlowParameters.BalanceType balanceType = null;
 
-    public ContingencyLoadFlowParameters(boolean distributedSlack, boolean areaInterchangeControl, LoadFlowParameters.BalanceType balanceType) {
-        this.distributedSlack = distributedSlack;
-        this.areaInterchangeControl = areaInterchangeControl;
-        this.balanceType = balanceType;
+    public ContingencyLoadFlowParameters() {
     }
 
     @Override
@@ -33,15 +32,30 @@ public class ContingencyLoadFlowParameters extends AbstractExtension<Contingency
         return "contingency-load-flow-parameters";
     }
 
-    public boolean isDistributedSlack() {
-        return distributedSlack;
+    public Optional<Boolean> isDistributedSlack() {
+        return Optional.ofNullable(distributedSlack);
     }
 
-    public boolean isAreaInterchangeControl() {
-        return areaInterchangeControl;
+    public Optional<Boolean> isAreaInterchangeControl() {
+        return Optional.ofNullable(areaInterchangeControl);
     }
 
-    public LoadFlowParameters.BalanceType getBalanceType() {
-        return balanceType;
+    public Optional<LoadFlowParameters.BalanceType> getBalanceType() {
+        return Optional.ofNullable(balanceType);
+    }
+
+    public ContingencyLoadFlowParameters setDistributedSlack(Boolean distributedSlack) {
+        this.distributedSlack = distributedSlack;
+        return this;
+    }
+
+    public ContingencyLoadFlowParameters setAreaInterchangeControl(Boolean areaInterchangeControl) {
+        this.areaInterchangeControl = areaInterchangeControl;
+        return this;
+    }
+
+    public ContingencyLoadFlowParameters setBalanceType(LoadFlowParameters.BalanceType balanceType) {
+        this.balanceType = balanceType;
+        return this;
     }
 }

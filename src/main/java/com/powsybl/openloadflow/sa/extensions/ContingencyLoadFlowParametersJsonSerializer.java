@@ -7,18 +7,19 @@
  */
 package com.powsybl.openloadflow.sa.extensions;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.google.auto.service.AutoService;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.extensions.ExtensionJsonSerializer;
-import com.powsybl.commons.json.JsonUtil;
 import com.powsybl.contingency.Contingency;
+import com.powsybl.loadflow.LoadFlowParameters;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * @author Valentin Mouradian {@literal <valentin.mouradian at artelys.com>}
@@ -33,7 +34,7 @@ public class ContingencyLoadFlowParametersJsonSerializer implements ExtensionJso
 
     @Override
     public String getCategoryName() {
-        return "contingency";
+        return "security-analysis";
     }
 
     @Override
@@ -41,30 +42,45 @@ public class ContingencyLoadFlowParametersJsonSerializer implements ExtensionJso
         return ContingencyLoadFlowParameters.class;
     }
 
-    /**
-     * Specifies serialization for our extension: ignore name and extendable
-     */
-    private interface SerializationSpec {
-
-        @JsonIgnore
-        String getName();
-
-        @JsonIgnore
-        Contingency getExtendable();
-    }
-
-    private static ObjectMapper createMapper() {
-        return JsonUtil.createObjectMapper()
-                .addMixIn(ContingencyLoadFlowParameters.class, SerializationSpec.class);
-    }
-
     @Override
     public void serialize(ContingencyLoadFlowParameters extension, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-        createMapper().writeValue(jsonGenerator, extension);
+        Optional<Boolean> distributedSlack = extension.isDistributedSlack();
+        Optional<Boolean> areaInterchangeControl = extension.isAreaInterchangeControl();
+        Optional<LoadFlowParameters.BalanceType> balanceType = extension.getBalanceType();
+
+        jsonGenerator.writeStartObject();
+        if (distributedSlack.isPresent()) {
+            jsonGenerator.writeBooleanField("distributedSlack", distributedSlack.get());
+        }
+        if (areaInterchangeControl.isPresent()) {
+            jsonGenerator.writeBooleanField("areaInterchangeControl", areaInterchangeControl.get());
+        }
+        if (balanceType.isPresent()) {
+            jsonGenerator.writeStringField("balanceType", balanceType.get().name());
+        }
+        jsonGenerator.writeEndObject();
     }
 
     @Override
     public ContingencyLoadFlowParameters deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        return createMapper().readValue(jsonParser, ContingencyLoadFlowParameters.class);
+        ContingencyLoadFlowParameters contingencyLoadFlowParameters = new ContingencyLoadFlowParameters();
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            if (jsonParser.currentName().equals("distributedSlack")) {
+                jsonParser.nextToken();
+                boolean distributedSlack = jsonParser.readValueAs(Boolean.class);
+                contingencyLoadFlowParameters.setDistributedSlack(distributedSlack);
+            } else if (jsonParser.currentName().equals("areaInterchangeControl")) {
+                jsonParser.nextToken();
+                boolean areaInterchangeControl = jsonParser.readValueAs(Boolean.class);
+                contingencyLoadFlowParameters.setAreaInterchangeControl(areaInterchangeControl);
+            } else if (jsonParser.currentName().equals("balanceType")) {
+                jsonParser.nextToken();
+                LoadFlowParameters.BalanceType balanceType = LoadFlowParameters.BalanceType.valueOf(jsonParser.readValueAs(String.class));
+                contingencyLoadFlowParameters.setBalanceType(balanceType);
+            } else {
+                throw new PowsyblException("Unexpected field: " + jsonParser.currentName());
+            }
+        }
+        return contingencyLoadFlowParameters;
     }
 }
