@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, Coreso SA (https://www.coreso.eu/) and TSCNET Services GmbH (https://www.tscnet.eu/)
+ * Copyright (c) 2021, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 
 /**
- * @author Valentin Mouradian {@literal <valentin.mouradian at artelys.com>}
+ * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 public interface OuterLoopConfig<O extends OuterLoop<?, ?, ?, ?, ?>> {
     List<O> configure(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt);
