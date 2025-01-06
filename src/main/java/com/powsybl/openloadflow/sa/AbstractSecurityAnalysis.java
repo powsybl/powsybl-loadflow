@@ -20,6 +20,14 @@ import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.math.matrix.MatrixFactory;
 import com.powsybl.openloadflow.OpenLoadFlowParameters;
+import com.powsybl.openloadflow.ac.AcLoadFlowParameters;
+import com.powsybl.openloadflow.ac.outerloop.AcActivePowerDistributionOuterLoop;
+import com.powsybl.openloadflow.ac.outerloop.AcAreaInterchangeControlOuterLoop;
+import com.powsybl.openloadflow.ac.outerloop.AcOuterLoop;
+import com.powsybl.openloadflow.ac.outerloop.DistributedSlackOuterLoop;
+import com.powsybl.openloadflow.dc.DcAreaInterchangeControlOuterLoop;
+import com.powsybl.openloadflow.dc.DcLoadFlowParameters;
+import com.powsybl.openloadflow.dc.DcOuterLoop;
 import com.powsybl.openloadflow.equations.Quantity;
 import com.powsybl.openloadflow.graph.GraphConnectivityFactory;
 import com.powsybl.openloadflow.lf.AbstractLoadFlowParameters;
@@ -28,6 +36,7 @@ import com.powsybl.openloadflow.lf.LoadFlowEngine;
 import com.powsybl.openloadflow.network.*;
 import com.powsybl.openloadflow.network.impl.*;
 import com.powsybl.openloadflow.network.util.ActivePowerDistribution;
+import com.powsybl.openloadflow.sa.extensions.ContingencyLoadFlowParameters;
 import com.powsybl.openloadflow.util.Lists2;
 import com.powsybl.openloadflow.util.PerUnit;
 import com.powsybl.openloadflow.util.Reports;
@@ -49,6 +58,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -605,9 +615,14 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
     }
 
     protected static void distributedMismatch(LfNetwork network, double mismatch, LoadFlowParameters loadFlowParameters,
-                                           OpenLoadFlowParameters openLoadFlowParameters) {
-        if (loadFlowParameters.isDistributedSlack() && Math.abs(mismatch) > 0) {
-            ActivePowerDistribution activePowerDistribution = ActivePowerDistribution.create(loadFlowParameters.getBalanceType(), openLoadFlowParameters.isLoadPowerFactorConstant(), openLoadFlowParameters.isUseActiveLimits());
+                                           OpenLoadFlowParameters openLoadFlowParameters, ContingencyLoadFlowParameters nullableContingencyLfParameters) {
+        ContingencyLoadFlowParameters contingencyLfParameters = Objects.requireNonNullElse(nullableContingencyLfParameters, new ContingencyLoadFlowParameters());
+        boolean distributedSlack = contingencyLfParameters.isDistributedSlack().orElse(loadFlowParameters.isDistributedSlack());
+        boolean areaInterchangeControl = contingencyLfParameters.isAreaInterchangeControl().orElse(openLoadFlowParameters.isAreaInterchangeControl());
+        LoadFlowParameters.BalanceType balanceType = contingencyLfParameters.getBalanceType().orElse(loadFlowParameters.getBalanceType());
+
+        if ((distributedSlack || areaInterchangeControl) && Math.abs(mismatch) > 0) {
+            ActivePowerDistribution activePowerDistribution = ActivePowerDistribution.create(balanceType, openLoadFlowParameters.isLoadPowerFactorConstant(), openLoadFlowParameters.isUseActiveLimits());
             activePowerDistribution.run(network, mismatch);
         }
     }
@@ -660,6 +675,9 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                 // save base state for later restoration after each contingency
                 NetworkState networkState = NetworkState.save(lfNetwork);
 
+                // Create consumer to reset parameters if they are modified for a contingency
+                Consumer<P> parametersResetter = createParametersResetter(acParameters);
+
                 // start a simulation for each of the contingency
                 Iterator<PropagatedContingency> contingencyIt = propagatedContingencies.iterator();
                 while (contingencyIt.hasNext() && !Thread.currentThread().isInterrupted()) {
@@ -669,9 +687,12 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                                 ReportNode postContSimReportNode = Reports.createPostContingencySimulation(networkReportNode, lfContingency.getId());
                                 lfNetwork.setReportNode(postContSimReportNode);
 
+                                ContingencyLoadFlowParameters contingencyLoadFlowParameters = propagatedContingency.getContingency().getExtension(ContingencyLoadFlowParameters.class);
+                                applyContingencyParameters(context.getParameters(), contingencyLoadFlowParameters, loadFlowParameters, openLoadFlowParameters);
+
                                 lfContingency.apply(loadFlowParameters.getBalanceType());
 
-                                distributedMismatch(lfNetwork, lfContingency.getActivePowerLoss(), loadFlowParameters, openLoadFlowParameters);
+                                distributedMismatch(lfNetwork, lfContingency.getActivePowerLoss(), loadFlowParameters, openLoadFlowParameters, contingencyLoadFlowParameters);
 
                                 var postContingencyResult = runPostContingencySimulation(lfNetwork, context, propagatedContingency.getContingency(),
                                                                                          lfContingency, preContingencyLimitViolationManager,
@@ -713,10 +734,13 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                                         }
                                     }
                                 }
-
                                 if (contingencyIt.hasNext()) {
                                     // restore base state
                                     networkState.restore();
+                                    if (contingencyLoadFlowParameters != null) {
+                                        // reset parameters
+                                        parametersResetter.accept(context.getParameters());
+                                    }
                                 }
                             });
                 }
@@ -730,6 +754,67 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                             preContingencyNetworkResult.getThreeWindingsTransformerResults()),
                     postContingencyResults, operatorStrategyResults);
         }
+    }
+
+    private Consumer<P> createParametersResetter(P parameters) {
+        if (parameters instanceof DcLoadFlowParameters dcLoadFlowParameters) {
+            boolean oldDistributedSlack = dcLoadFlowParameters.isDistributedSlack();
+            LoadFlowParameters.BalanceType oldBalanceType = dcLoadFlowParameters.getBalanceType();
+            List<DcOuterLoop> oldOuterLoops = new ArrayList<>(dcLoadFlowParameters.getOuterLoops());
+            return p -> {
+                ((DcLoadFlowParameters) p).setDistributedSlack(oldDistributedSlack);
+                ((DcLoadFlowParameters) p).setBalanceType(oldBalanceType);
+                ((DcLoadFlowParameters) p).setOuterLoops(oldOuterLoops);
+            };
+        } else if (parameters instanceof AcLoadFlowParameters acLoadFlowParameters) {
+            List<AcOuterLoop> oldOuterLoops = new ArrayList<>(acLoadFlowParameters.getOuterLoops());
+            return p -> ((AcLoadFlowParameters) p).setOuterLoops(oldOuterLoops);
+        } else {
+            return p -> { };
+        }
+    }
+
+    private void applyContingencyParameters(P parameters, ContingencyLoadFlowParameters contingencyLoadFlowParameters, LoadFlowParameters loadFlowParameters, OpenLoadFlowParameters parametersExt) {
+        if (contingencyLoadFlowParameters != null) {
+            LoadFlowParameters.BalanceType balanceType = contingencyLoadFlowParameters.getBalanceType().orElse(loadFlowParameters.getBalanceType());
+            if (parameters instanceof DcLoadFlowParameters dcLoadFlowParameters) {
+                applyDcContingencyLoadFlowParameters(dcLoadFlowParameters, parametersExt, contingencyLoadFlowParameters, balanceType);
+            } else if (parameters instanceof AcLoadFlowParameters acLoadFlowParameters) {
+                applyAcContingencyLoadFlowParameters(acLoadFlowParameters, contingencyLoadFlowParameters, parametersExt, balanceType);
+            } else {
+                LOGGER.error("Unsupported load flow parameters type {} to apply contingency parameters", parameters.getClass());
+            }
+        }
+    }
+
+    private void applyAcContingencyLoadFlowParameters(AcLoadFlowParameters acLoadFlowParameters, ContingencyLoadFlowParameters contingencyLoadFlowParameters, OpenLoadFlowParameters parametersExt, LoadFlowParameters.BalanceType balanceType) {
+        boolean createAreaInterchangeControl = contingencyLoadFlowParameters.isAreaInterchangeControl().orElse(false);
+        boolean createDistributedSlack = contingencyLoadFlowParameters.isDistributedSlack().orElse(false);
+        if (createAreaInterchangeControl || createDistributedSlack) {
+            List<AcOuterLoop> newOuterLoops = new ArrayList<>(acLoadFlowParameters.getOuterLoops().stream().filter(o -> !(o instanceof AcActivePowerDistributionOuterLoop)).toList());
+            AcOuterLoop outerLoop;
+            if (createAreaInterchangeControl) {
+                outerLoop = AcAreaInterchangeControlOuterLoop.create(balanceType, parametersExt.isLoadPowerFactorConstant(), parametersExt.isUseActiveLimits(),
+                        parametersExt.getSlackBusPMaxMismatch(), parametersExt.getAreaInterchangePMaxMismatch());
+            } else {
+                outerLoop = DistributedSlackOuterLoop.create(balanceType, parametersExt.isLoadPowerFactorConstant(), parametersExt.isUseActiveLimits(),
+                        parametersExt.getSlackBusPMaxMismatch());
+            }
+            newOuterLoops.add(outerLoop);
+            acLoadFlowParameters.setOuterLoops(newOuterLoops);
+        }
+    }
+
+    private void applyDcContingencyLoadFlowParameters(DcLoadFlowParameters dcLoadFlowParameters, OpenLoadFlowParameters parametersExt, ContingencyLoadFlowParameters contingencyLoadFlowParameters, LoadFlowParameters.BalanceType balanceType) {
+        if (contingencyLoadFlowParameters.isAreaInterchangeControl().orElse(false)) {
+            List<DcOuterLoop> newOuterLoops = new ArrayList<>(dcLoadFlowParameters.getOuterLoops().stream().filter(o -> !(o instanceof DcAreaInterchangeControlOuterLoop)).toList());
+            DcAreaInterchangeControlOuterLoop outerLoop = DcAreaInterchangeControlOuterLoop.create(balanceType, parametersExt.isLoadPowerFactorConstant(), parametersExt.isUseActiveLimits(),
+                    parametersExt.getSlackBusPMaxMismatch(), parametersExt.getAreaInterchangePMaxMismatch());
+            newOuterLoops.add(outerLoop);
+            dcLoadFlowParameters.setOuterLoops(newOuterLoops);
+        }
+        contingencyLoadFlowParameters.isDistributedSlack().ifPresent(dcLoadFlowParameters::setDistributedSlack);
+        dcLoadFlowParameters.setBalanceType(balanceType);
     }
 
     private Optional<OperatorStrategyResult> runActionSimulation(LfNetwork network, C context, OperatorStrategy operatorStrategy,
