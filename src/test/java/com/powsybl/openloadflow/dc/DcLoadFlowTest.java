@@ -496,7 +496,7 @@ class DcLoadFlowTest {
         var result = loadFlowRunner.run(network, parameters);
         assertFalse(result.isFullyConverged());
         assertEquals(LoadFlowResult.ComponentResult.Status.MAX_ITERATION_REACHED, result.getComponentResults().get(0).getStatus());
-        assertEquals("Reached outer loop max iterations limit. Last outer loop name: DC Incremental phase control", result.getComponentResults().get(0).getStatusText());
+        assertEquals("Reached outer loop max iterations limit. Last outer loop name: IncrementalPhaseControl", result.getComponentResults().get(0).getStatusText());
 
         parametersExt.setMaxOuterLoopIterations(3);
         result = loadFlowRunner.run(network, parameters);

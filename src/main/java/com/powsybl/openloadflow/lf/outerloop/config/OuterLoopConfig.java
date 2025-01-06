@@ -1,15 +1,17 @@
 /**
  * Copyright (c) 2021, RTE (http://www.rte-france.com)
+ * Copyright (c) 2024, Coreso SA (https://www.coreso.eu/) and TSCNET Services GmbH (https://www.tscnet.eu/)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * SPDX-License-Identifier: MPL-2.0
  */
-package com.powsybl.openloadflow;
+package com.powsybl.openloadflow.lf.outerloop.config;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.loadflow.LoadFlowParameters;
-import com.powsybl.openloadflow.ac.outerloop.AcOuterLoop;
+import com.powsybl.openloadflow.OpenLoadFlowParameters;
+import com.powsybl.openloadflow.lf.outerloop.OuterLoop;
 import org.apache.commons.compress.utils.Lists;
 
 import java.util.List;
@@ -18,13 +20,13 @@ import java.util.ServiceLoader;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
+ * @author Valentin Mouradian {@literal <valentin.mouradian at artelys.com>}
  */
-public interface AcOuterLoopConfig {
+public interface OuterLoopConfig<O extends OuterLoop<?, ?, ?, ?, ?>> {
+    List<O> configure(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt);
 
-    List<AcOuterLoop> configure(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt);
-
-    static Optional<AcOuterLoopConfig> findOuterLoopConfig() {
-        List<AcOuterLoopConfig> outerLoopConfigs = Lists.newArrayList(ServiceLoader.load(AcOuterLoopConfig.class, AcOuterLoopConfig.class.getClassLoader()).iterator());
+    static <C extends OuterLoopConfig<?>> Optional<C> findOuterLoopConfig(Class<C> configClass) {
+        List<C> outerLoopConfigs = Lists.newArrayList(ServiceLoader.load(configClass, configClass.getClassLoader()).iterator());
         if (outerLoopConfigs.isEmpty()) {
             return Optional.empty();
         } else {

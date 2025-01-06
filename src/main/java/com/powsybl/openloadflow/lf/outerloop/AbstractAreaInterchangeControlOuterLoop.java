@@ -43,6 +43,8 @@ public abstract class AbstractAreaInterchangeControlOuterLoop<
             O extends AbstractOuterLoopContext<V, E, P, C>>
         extends AbstractActivePowerDistributionOuterLoop<V, E, P, C, O> {
 
+    public static final String NAME = "AreaInterchangeControl";
+
     private final Logger logger;
 
     protected static final String FAILED_TO_DISTRIBUTE_INTERCHANGE_ACTIVE_POWER_MISMATCH = "Failed to distribute interchange active power mismatch";
