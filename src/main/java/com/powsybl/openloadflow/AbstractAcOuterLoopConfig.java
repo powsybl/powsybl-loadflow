@@ -49,7 +49,10 @@ abstract class AbstractAcOuterLoopConfig implements AcOuterLoopConfig {
                 case UNIFORM_CRITERIA -> parametersExt.getNewtonRaphsonConvEpsPerEq();
                 case PER_EQUATION_TYPE_CRITERIA -> parametersExt.getMaxReactivePowerMismatch() / PerUnit.SB;
             };
-            return Optional.of(new ReactiveLimitsOuterLoop(parametersExt.getReactiveLimitsMaxPqPvSwitch(), effectiveMaxReactivePowerMismatch));
+            return Optional.of(new ReactiveLimitsOuterLoop(parametersExt.getReactiveLimitsMaxPqPvSwitch(),
+                                                           effectiveMaxReactivePowerMismatch,
+                                                           parametersExt.getMinRealisticVoltage(),
+                                                           parametersExt.getMaxRealisticVoltage()));
         }
         return Optional.empty();
     }

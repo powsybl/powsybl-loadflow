@@ -275,20 +275,25 @@ class AcLoadFlowReportTest {
 
         assertTrue(result.isFailed());
         LoadFlowAssert.assertTxtReportEquals("""
-                        + Test Report
-                           + Load flow on network 'sim1'
-                              + Network CC0 SC0
-                                 + Network info
-                                    Network has 4 buses and 4 branches
-                                    Network balance: active generation=607.0 MW, active load=600.0 MW, reactive generation=0.0 MVar, reactive load=200.0 MVar
-                                    Angle reference bus: VLHV1_0
-                                    Slack bus: VLHV1_0
-                                 + 4 buses have a voltage magnitude out of the configured realistic range [0.99, 1.01] p.u.
-                                    Bus VLGEN_0 has an unrealistic voltage magnitude: 1.0208333333333333 p.u.
-                                    Bus VLHV1_0 has an unrealistic voltage magnitude: 1.0582636574158686 p.u.
-                                    Bus VLHV2_0 has an unrealistic voltage magnitude: 1.0261840057810543 p.u.
-                                    Bus VLLOAD_0 has an unrealistic voltage magnitude: 0.9838500227734096 p.u.
-                                 AC load flow completed with error (solverStatus=UNREALISTIC_STATE, outerloopStatus=STABLE)
-                        """, reportNode);
+                + Test Report
+                   + Load flow on network 'sim1'
+                      + Network CC0 SC0
+                         + Network info
+                            Network has 4 buses and 4 branches
+                            Network balance: active generation=607.0 MW, active load=600.0 MW, reactive generation=0.0 MVar, reactive load=200.0 MVar
+                            Angle reference bus: VLHV1_0
+                            Slack bus: VLHV1_0
+                         + Outer loop DistributedSlack
+                            + Outer loop iteration 1
+                               Failed to distribute slack bus active power mismatch, -1.4404045651219555 MW remains
+                         Outer loop VoltageMonitoring
+                         Outer loop ReactiveLimits
+                         + 4 buses have a voltage magnitude out of the configured realistic range [0.99, 1.01] p.u.
+                            Bus VLGEN_0 has an unrealistic voltage magnitude: 1.0208333333333333 p.u.
+                            Bus VLHV1_0 has an unrealistic voltage magnitude: 1.0582636574158686 p.u.
+                            Bus VLHV2_0 has an unrealistic voltage magnitude: 1.0261840057810543 p.u.
+                            Bus VLLOAD_0 has an unrealistic voltage magnitude: 0.9838500227734096 p.u.
+                         AC load flow completed with error (solverStatus=UNREALISTIC_STATE, outerloopStatus=STABLE)
+                            """, reportNode);
     }
 }

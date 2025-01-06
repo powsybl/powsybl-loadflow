@@ -17,5 +17,10 @@ public interface AcSolver {
 
     String getName();
 
-    AcSolverResult run(VoltageInitializer voltageInitializer, ReportNode reportNode);
+    AcSolverResult run(VoltageInitializer voltageInitializer, ReportNode reportNode, boolean canCheckUnrealistic);
+
+    default boolean isStateUnrealisticForSolver(ReportNode reportNode) {
+        return false;
+    }
+
 }

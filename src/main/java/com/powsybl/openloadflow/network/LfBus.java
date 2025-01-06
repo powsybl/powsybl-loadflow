@@ -21,7 +21,19 @@ public interface LfBus extends LfElement {
 
     enum QLimitType {
         MIN_Q,
-        MAX_Q
+        MAX_Q,
+        // Remote voltage control bus that have not reached a Q Limit but a realistic V limit
+        MIN_V,
+        MAX_V;
+
+        public boolean isMinLimit() {
+            return this == MIN_Q || this == MIN_V;
+        }
+
+        public boolean isMaxLimit() {
+            return this == MAX_Q || this == MAX_V;
+        }
+
     }
 
     String getVoltageLevelId();

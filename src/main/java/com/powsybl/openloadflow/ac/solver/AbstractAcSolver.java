@@ -47,4 +47,5 @@ public abstract class AbstractAcSolver implements AcSolver {
         this.equationVector = Objects.requireNonNull(equationVector);
         this.detailedReport = detailedReport;
     }
+
 }

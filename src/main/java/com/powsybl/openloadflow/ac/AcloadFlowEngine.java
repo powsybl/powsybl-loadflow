@@ -63,9 +63,11 @@ public class AcloadFlowEngine implements LoadFlowEngine<AcVariableType, AcEquati
         private final MutableInt nrTotalIterations = new MutableInt();
 
         private OuterLoopResult lastOuterLoopResult = OuterLoopResult.stable();
+
+        private AcOuterLoop lastUnrealisticStateFixingLoop;
     }
 
-    private void runOuterLoop(AcOuterLoop outerLoop, AcOuterLoopContext outerLoopContext, AcSolver solver, RunningContext runningContext) {
+    private void runOuterLoop(AcOuterLoop outerLoop, AcOuterLoopContext outerLoopContext, AcSolver solver, RunningContext runningContext, boolean canCheckUnrealistic) {
         ReportNode olReportNode = Reports.createOuterLoopReporter(outerLoopContext.getNetwork().getReportNode(), outerLoop.getName());
 
         // for each outer loop re-run solver until stabilization
@@ -95,7 +97,7 @@ public class AcloadFlowEngine implements LoadFlowEngine<AcVariableType, AcEquati
                 }
 
                 // if not yet stable, restart solver
-                runningContext.lastSolverResult = solver.run(new PreviousValueVoltageInitializer(), reportNode);
+                runningContext.lastSolverResult = solver.run(new PreviousValueVoltageInitializer(), reportNode, canCheckUnrealistic);
 
                 runningContext.nrTotalIterations.add(runningContext.lastSolverResult.getIterations());
                 runningContext.outerLoopTotalIterations++;
@@ -105,6 +107,16 @@ public class AcloadFlowEngine implements LoadFlowEngine<AcVariableType, AcEquati
         } while (outerLoopResult.status() == OuterLoopStatus.UNSTABLE
                 && runningContext.lastSolverResult.getStatus() == AcSolverStatus.CONVERGED
                 && runningContext.outerLoopTotalIterations < context.getParameters().getMaxOuterLoopIterations());
+
+        if (!canCheckUnrealistic && runningContext.lastUnrealisticStateFixingLoop == outerLoop && runningContext.lastSolverResult.getStatus() == AcSolverStatus.CONVERGED) {
+            // This is time to check the irrealistic state
+
+            if (solver.isStateUnrealisticForSolver(context.getNetwork().getReportNode())) {
+                runningContext.lastSolverResult = new AcSolverResult(AcSolverStatus.UNREALISTIC_STATE,
+                                                                     runningContext.lastSolverResult.getIterations(),
+                                                                     runningContext.lastSolverResult.getSlackBusActivePowerMismatch());
+            }
+        }
 
         if (outerLoopResult.status() != OuterLoopStatus.STABLE) {
             Reports.reportUnsuccessfulOuterLoop(olReportNode, outerLoopResult.status().name());
@@ -166,8 +178,17 @@ public class AcloadFlowEngine implements LoadFlowEngine<AcVariableType, AcEquati
                     context.getNetwork().getNumCC(),
                     context.getNetwork().getNumSC());
         }
+
+        runningContext.lastUnrealisticStateFixingLoop = outerLoopsAndContexts.stream()
+                .map(Pair::getLeft)
+                .filter(AcOuterLoop::canFixUnrealisticSate)
+                .reduce((first, second) -> second).orElse(null);
+
+        // Don't chck irrealitic voltage yet if an outerloop can fix them
+        boolean canCheckUnrealisticStates = runningContext.lastUnrealisticStateFixingLoop == null;
+
         // initial solver run
-        runningContext.lastSolverResult = solver.run(voltageInitializer, reportNode);
+        runningContext.lastSolverResult = solver.run(voltageInitializer, reportNode, canCheckUnrealisticStates);
 
         runningContext.nrTotalIterations.add(runningContext.lastSolverResult.getIterations());
 
@@ -177,11 +198,18 @@ public class AcloadFlowEngine implements LoadFlowEngine<AcVariableType, AcEquati
             // re-run all outer loops until solver failed or no more solver iterations are needed
             int oldNrTotalIterations;
             do {
+                // Restore the flag before each outerloop iteration
+                canCheckUnrealisticStates = runningContext.lastUnrealisticStateFixingLoop == null;
+
                 oldNrTotalIterations = runningContext.nrTotalIterations.getValue();
 
                 // outer loops are nested: innermost loop first in the list, outermost loop last
                 for (var outerLoopAndContext : outerLoopsAndContexts) {
-                    runOuterLoop(outerLoopAndContext.getLeft(), outerLoopAndContext.getRight(), solver, runningContext);
+                    runOuterLoop(outerLoopAndContext.getLeft(), outerLoopAndContext.getRight(), solver, runningContext, canCheckUnrealisticStates);
+
+                    if (outerLoopAndContext.getLeft() == runningContext.lastUnrealisticStateFixingLoop) {
+                        canCheckUnrealisticStates = true;
+                    }
 
                     // continue with next outer loop only if:
                     // - last solver run succeed,

@@ -172,8 +172,10 @@ public class NewtonRaphson extends AbstractAcSolver {
         }
     }
 
-    private boolean isStateUnrealistic(ReportNode reportNode) {
+    @Override
+    public boolean isStateUnrealisticForSolver(ReportNode reportNode) {
         Map<String, Double> busesOutOfNormalVoltageRange = new LinkedHashMap<>();
+
         for (Variable<AcVariableType> v : equationSystem.getIndex().getSortedVariablesToFind()) {
             if (v.getType() == AcVariableType.BUS_V && !network.getBus(v.getElementNum()).isFictitious()) {
                 double value = equationSystem.getStateVector().get(v.getRow());
@@ -182,6 +184,7 @@ public class NewtonRaphson extends AbstractAcSolver {
                 }
             }
         }
+
         if (!busesOutOfNormalVoltageRange.isEmpty()) {
             if (LOGGER.isTraceEnabled()) {
                 for (var e : busesOutOfNormalVoltageRange.entrySet()) {
@@ -197,7 +200,7 @@ public class NewtonRaphson extends AbstractAcSolver {
     }
 
     @Override
-    public AcSolverResult run(VoltageInitializer voltageInitializer, ReportNode reportNode) {
+    public AcSolverResult run(VoltageInitializer voltageInitializer, ReportNode reportNode, boolean canCheckUnrealistic) {
         // initialize state vector
         AcSolverUtil.initStateVector(network, equationSystem, voltageInitializer);
 
@@ -236,7 +239,7 @@ public class NewtonRaphson extends AbstractAcSolver {
         }
 
         // update network state variable
-        if (status == AcSolverStatus.CONVERGED && isStateUnrealistic(reportNode)) {
+        if (status == AcSolverStatus.CONVERGED && canCheckUnrealistic && isStateUnrealisticForSolver(reportNode)) {
             status = AcSolverStatus.UNREALISTIC_STATE;
         }
 

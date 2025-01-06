@@ -53,7 +53,7 @@ public class NewtonKrylov extends AbstractAcSolver {
     }
 
     @Override
-    public AcSolverResult run(VoltageInitializer voltageInitializer, ReportNode reportNode) {
+    public AcSolverResult run(VoltageInitializer voltageInitializer, ReportNode reportNode, boolean canCheckUnrealistic) {
         // initialize state vector
         AcSolverUtil.initStateVector(network, equationSystem, voltageInitializer);
 

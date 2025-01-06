@@ -71,7 +71,7 @@ class AcSolverFactoryTest {
         }
 
         @Override
-        public AcSolverResult run(VoltageInitializer voltageInitializer, ReportNode reportNode) {
+        public AcSolverResult run(VoltageInitializer voltageInitializer, ReportNode reportNode, boolean canCheckUnrealistic) {
             AcSolverUtil.initStateVector(network, equationSystem, new UniformValueVoltageInitializer());
             LOGGER.info("I am a not so advanced solver only able to return flat 1 p.u. /_ 0.0, in max iterations, leaving 34 MW slack mismatch.");
             return new AcSolverResult(AcSolverStatus.CONVERGED, parameters.maxIterations(), 0.34);
