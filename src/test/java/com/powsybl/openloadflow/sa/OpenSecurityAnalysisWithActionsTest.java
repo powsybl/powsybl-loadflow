@@ -1680,7 +1680,12 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
 
         // create a contingency with ContingencyLoadFlowParameters extension
         Contingency contingency1 = new Contingency("load3", new LoadContingency("load3"));
-        ContingencyLoadFlowParameters contingencyParameters1 = new ContingencyLoadFlowParameters(false, true, LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD);
+
+        ContingencyLoadFlowParameters contingencyParameters1 = new ContingencyLoadFlowParameters()
+                .setDistributedSlack(false)
+                .setAreaInterchangeControl(true)
+                .setBalanceType(LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD);
+
         contingency1.addExtension(ContingencyLoadFlowParameters.class, contingencyParameters1);
         Action action1 = new GeneratorActionBuilder().withId("action1").withGeneratorId("gen3").withActivePowerRelativeValue(false).withActivePowerValue(45).build();
 

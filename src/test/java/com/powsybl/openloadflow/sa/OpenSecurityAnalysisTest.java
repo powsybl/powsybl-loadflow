@@ -4054,9 +4054,15 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
                 .setBalanceType(LoadFlowParameters.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX);
 
         // Add contingency LF parameters to contingencies 1 and 3
-        ContingencyLoadFlowParameters contLfParams1 = new ContingencyLoadFlowParameters(false, true, LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD);
+        ContingencyLoadFlowParameters contLfParams1 = new ContingencyLoadFlowParameters()
+                .setDistributedSlack(false)
+                .setAreaInterchangeControl(true)
+                .setBalanceType(LoadFlowParameters.BalanceType.PROPORTIONAL_TO_LOAD);
         cont1.addExtension(ContingencyLoadFlowParameters.class, contLfParams1);
-        ContingencyLoadFlowParameters contLfParams3 = new ContingencyLoadFlowParameters(true, false, LoadFlowParameters.BalanceType.PROPORTIONAL_TO_GENERATION_P);
+        ContingencyLoadFlowParameters contLfParams3 = new ContingencyLoadFlowParameters()
+                .setDistributedSlack(true)
+                .setAreaInterchangeControl(false)
+                .setBalanceType(LoadFlowParameters.BalanceType.PROPORTIONAL_TO_GENERATION_P);
         cont3.addExtension(ContingencyLoadFlowParameters.class, contLfParams3);
 
         // Run security analysis
