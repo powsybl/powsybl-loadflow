@@ -13,6 +13,7 @@ import com.powsybl.action.LoadActionBuilder;
 import com.powsybl.action.TerminalsConnectionAction;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
+import com.powsybl.commons.test.TestUtil;
 import com.powsybl.contingency.*;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.criteria.AtLeastOneNominalVoltageCriterion;
@@ -3747,7 +3748,7 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
         StringWriter sw = new StringWriter();
         testReport.print(sw);
         // Remove Windows EOL
-        String reportString = sw.toString().replaceAll("\\r\\n", "\n");
+        String reportString = TestUtil.normalizeLineSeparator(sw.toString());
 
         // TODO remove this debug trace
         System.out.println("threadCount: " + threadCount);
@@ -3855,7 +3856,7 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
         StringWriter sw = new StringWriter();
         reportNode.print(sw);
         // Remove Windows EOL
-        String reportString = sw.toString().replaceAll("\\r\\n", "\\n");
+        String reportString = TestUtil.normalizeLineSeparator(sw.toString());
         // The purpose of this test is to check that the report have the same size with one or two threadd
         // The content should be the same, but not the order...
         assertEquals(14292, reportString.length());
