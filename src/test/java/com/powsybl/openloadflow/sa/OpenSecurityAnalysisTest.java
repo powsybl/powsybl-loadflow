@@ -3749,6 +3749,11 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
         // Remove Windows EOL
         String reportString = sw.toString().replaceAll("\\r$", "");
 
+        // TODO remove this debug trace
+        System.out.println("threadCount: " + threadCount);
+        System.out.println(reportString);
+        System.out.println(reportString.length());
+
         // The purpose of this test is to check that the report have the same size with one or two threadd
         // The content should be the same, but not the order...
         assertEquals(7278, reportString.length());
