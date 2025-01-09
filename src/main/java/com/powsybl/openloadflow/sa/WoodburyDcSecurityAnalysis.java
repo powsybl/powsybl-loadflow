@@ -323,7 +323,7 @@ public class WoodburyDcSecurityAnalysis extends DcSecurityAnalysis {
         LfNetwork lfNetwork = context.getNetwork();
         // process results only if contingency impacts the network
         contingency.toLfContingency(lfNetwork, false).ifPresent(lfContingency -> {
-            ReportNode postContSimReportNode = Reports.createPostContingencySimulation(saReportNode, contingency.getContingency().getId());
+            ReportNode postContSimReportNode = Reports.createPostContingencySimulationMTSafe(saReportNode, contingency.getContingency().getId());
             lfNetwork.setReportNode(postContSimReportNode);
 
             // process post contingency result with supplier giving post contingency states

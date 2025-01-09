@@ -3770,7 +3770,8 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
                         "            Outer loop VoltageMonitoring\n" +
                         "            Outer loop ReactiveLimits\n" +
                         "            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)";
-        assertTrue(reportString.contains(expected));
+        // Remove Windows EOL for comparison
+        assertTrue(reportString.contains(expected.replaceAll("\\r\\n", "\\n")));
     }
 
     @ParameterizedTest
@@ -3854,7 +3855,7 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
         StringWriter sw = new StringWriter();
         reportNode.print(sw);
         // Remove Windows EOL
-        String reportString = sw.toString().replaceAll("\\r$", "");
+        String reportString = sw.toString().replaceAll("\\r\\n", "\\n");
         // The purpose of this test is to check that the report have the same size with one or two threadd
         // The content should be the same, but not the order...
         assertEquals(14292, reportString.length());

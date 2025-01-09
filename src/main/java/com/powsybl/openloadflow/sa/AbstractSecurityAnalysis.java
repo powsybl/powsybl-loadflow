@@ -697,7 +697,7 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                     propagatedContingency.toLfContingency(lfNetwork)
                             .ifPresent(lfContingency -> { // only process contingencies that impact the network
                                 ReportNode postContSimReportNode =
-                                        Reports.createPostContingencySimulation(ccReportNode, lfContingency.getId());
+                                        Reports.createPostContingencySimulationMTSafe(ccReportNode, lfContingency.getId());
                                 lfNetwork.setReportNode(postContSimReportNode);
 
                                 lfContingency.apply(loadFlowParameters.getBalanceType());
