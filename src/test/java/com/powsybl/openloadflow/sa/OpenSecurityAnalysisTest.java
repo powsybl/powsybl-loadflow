@@ -3524,7 +3524,6 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
                 .map(id -> new Contingency(id, new BranchContingency(id)))
                 .toList();
 
-
         ReportNode reportNodeOneThread = ReportNode.newRootReportNode()
                 .withMessageTemplate("MT_SA_TEST", "MT SA Report Node")
                 .build();
@@ -3703,7 +3702,6 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
             contingencies.add(new Contingency("l13_" + i, new BranchContingency("l13")));
             contingencies.add(new Contingency("dummyLoad_" + i, new LoadContingency("dummyLoad")));
         }
-
 
         // Monitor branch in both components
         List<StateMonitor> monitors = List.of(

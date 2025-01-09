@@ -667,7 +667,6 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                 lfNetwork.setReportNode(preContSimReportNode);
             }
 
-
             // run pre-contingency simulation
             R preContingencyLoadFlowResult = createLoadFlowEngine(context)
                     .run();
