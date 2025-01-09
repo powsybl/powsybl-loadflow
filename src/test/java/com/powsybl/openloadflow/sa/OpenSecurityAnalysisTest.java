@@ -3747,7 +3747,7 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
         StringWriter sw = new StringWriter();
         testReport.print(sw);
         // Remove Windows EOL
-        String reportString = sw.toString().replaceAll("\\r\\n", "\\n");
+        String reportString = sw.toString().replaceAll("\\r\\n", "\n");
 
         // TODO remove this debug trace
         System.out.println("threadCount: " + threadCount);
@@ -3771,7 +3771,7 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
                         "            Outer loop ReactiveLimits\n" +
                         "            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)";
         // Remove Windows EOL for comparison
-        assertTrue(reportString.contains(expected.replaceAll("\\r\\n", "\\n")));
+        assertTrue(reportString.contains(expected));
     }
 
     @ParameterizedTest
