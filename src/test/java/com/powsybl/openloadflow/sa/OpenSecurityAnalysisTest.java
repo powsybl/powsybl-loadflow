@@ -3746,9 +3746,12 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
 
         StringWriter sw = new StringWriter();
         testReport.print(sw);
+        // Remove Windows EOL
+        String reportString = sw.toString().replaceAll("\\r$", "");
+
         // The purpose of this test is to check that the report have the same size with one or two threadd
         // The content should be the same, but not the order...
-        assertEquals(7278, sw.toString().length());
+        assertEquals(7278, reportString.length());
         // Check also that the preCont report is before the postContResults in the second CC
         String expected =
                   "      + Network CC1 SC1\n" +
@@ -3762,7 +3765,7 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
                         "            Outer loop VoltageMonitoring\n" +
                         "            Outer loop ReactiveLimits\n" +
                         "            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)";
-        assertTrue(sw.toString().contains(expected));
+        assertTrue(reportString.contains(expected));
     }
 
     @ParameterizedTest
@@ -3845,9 +3848,11 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
 
         StringWriter sw = new StringWriter();
         reportNode.print(sw);
+        // Remove Windows EOL
+        String reportString = sw.toString().replaceAll("\\r$", "");
         // The purpose of this test is to check that the report have the same size with one or two threadd
         // The content should be the same, but not the order...
-        assertEquals(14292, sw.toString().length());
+        assertEquals(14292, reportString.length());
     }
 
     /**
