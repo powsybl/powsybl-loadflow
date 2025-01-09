@@ -470,10 +470,13 @@ public final class Reports {
     }
 
     public static ReportNode createPostContingencySimulation(ReportNode reportNode, String contingencyId) {
-        return reportNode.newReportNode()
-                .withMessageTemplate("postContingencySimulation", "Post-contingency simulation '${contingencyId}'")
-                .withUntypedValue("contingencyId", contingencyId)
-                .add();
+        // This cn be called in an MT context on the same saNode
+        synchronized (reportNode) {
+            return reportNode.newReportNode()
+                    .withMessageTemplate("postContingencySimulation", "Post-contingency simulation '${contingencyId}'")
+                    .withUntypedValue("contingencyId", contingencyId)
+                    .add();
+        }
     }
 
     public static ReportNode createOperatorStrategySimulation(ReportNode reportNode, String operatorStrategyId) {
