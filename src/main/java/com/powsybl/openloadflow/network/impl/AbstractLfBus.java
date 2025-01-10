@@ -183,11 +183,15 @@ public abstract class AbstractLfBus extends AbstractElement implements LfBus {
 
     @Override
     public void setGeneratorVoltageControl(GeneratorVoltageControl generatorVoltageControl) {
-        this.generatorVoltageControl = Objects.requireNonNull(generatorVoltageControl);
-        if (hasGeneratorVoltageControllerCapability()) {
-            this.generatorVoltageControlEnabled = true;
-        } else if (!isGeneratorVoltageControlled()) {
-            throw new PowsyblException("Setting inconsistent voltage control to bus " + getId());
+        this.generatorVoltageControl = generatorVoltageControl;
+        if (generatorVoltageControl != null) {
+            if (hasGeneratorVoltageControllerCapability()) {
+                this.generatorVoltageControlEnabled = true;
+            } else if (!isGeneratorVoltageControlled()) {
+                throw new PowsyblException("Setting inconsistent voltage control to bus " + getId());
+            }
+        } else {
+            this.generatorVoltageControlEnabled = false;
         }
     }
 

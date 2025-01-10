@@ -73,7 +73,7 @@ public class LfSecondaryVoltageControl {
     public Set<GeneratorVoltageControl> getGeneratorVoltageControls() {
         return generatorVoltageControls.stream()
                 .filter(this::hasAtLeastOneParticipatingControlUnit) // only keep voltage controls where there is at list one enabled control unit
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private boolean hasAtLeastOneParticipatingControlUnit(GeneratorVoltageControl vc) {
