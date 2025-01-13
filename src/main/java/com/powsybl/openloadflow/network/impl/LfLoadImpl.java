@@ -130,6 +130,7 @@ public class LfLoadImpl extends AbstractLfInjection implements LfLoad {
         if (targetP != this.targetP) {
             double oldTargetP = this.targetP;
             this.targetP = targetP;
+            bus.invalidateLoadTargetP();
             for (LfNetworkListener listener : bus.getNetwork().getListeners()) {
                 listener.onLoadActivePowerTargetChange(this, oldTargetP, targetP);
             }
