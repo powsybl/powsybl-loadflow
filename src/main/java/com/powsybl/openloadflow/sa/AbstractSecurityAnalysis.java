@@ -42,11 +42,14 @@ import com.powsybl.security.monitor.StateMonitorIndex;
 import com.powsybl.security.results.*;
 import com.powsybl.security.strategy.ConditionalActions;
 import com.powsybl.security.strategy.OperatorStrategy;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
@@ -73,6 +76,8 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
     protected final ReportNode reportNode;
 
     private static final String NOT_FOUND = "' not found in the network";
+
+    protected record ReportNodeSync(ReportNode reportNode, AtomicInteger runCount) { }
 
     protected AbstractSecurityAnalysis(Network network, MatrixFactory matrixFactory, GraphConnectivityFactory<LfBus, LfBranch> connectivityFactory,
                                        List<StateMonitor> stateMonitors, ReportNode reportNode) {
@@ -155,7 +160,9 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
 
             // create networks including all necessary switches
             try (LfNetworkList lfNetworks = Networks.load(network, parameters.getNetworkParameters(), topoConfig, saReportNode)) {
-                finalResult = runSimulationsOnAllComponents(lfNetworks, propagatedContingencies, parameters, securityAnalysisParameters, operatorStrategies, actions, limitReductions, lfParameters);
+                finalResult = runSimulationsOnAllComponents(lfNetworks, propagatedContingencies, parameters, securityAnalysisParameters, operatorStrategies, actions, limitReductions, lfParameters,
+                        lfNetworks.getList().stream()
+                                .collect(Collectors.toMap(n -> new ImmutablePair<>(n.getNumCC(), n.getNumSC()), n -> new ReportNodeSync(n.getReportNode(), new AtomicInteger(0)))));
             }
 
         } else {
@@ -171,6 +178,7 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
             try {
                 Lock networkLock = new ReentrantLock();
                 List<CompletableFuture<Void>> futures = new ArrayList<>();
+                Map<Pair<Integer, Integer>, ReportNodeSync> ccNetworkReportNodes = new HashMap<>();
                 for (int i = 0; i < contingenciesPartitions.size(); i++) {
                     final int partitionNum = i;
                     var contingenciesPartition = contingenciesPartitions.get(i);
@@ -192,6 +200,7 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                         P parameters;
                         networkLock.lock();
                         try {
+                            boolean first = ccNetworkReportNodes.isEmpty();
                             network.getVariantManager().setWorkingVariant(workingVariantId);
 
                             propagatedContingencies = PropagatedContingency.createList(network, contingenciesPartition, partitionTopoConfig, creationParameters);
@@ -199,15 +208,24 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                             parameters = createParameters(lfParameters, lfParametersExt, partitionTopoConfig.isBreaker());
 
                             // create networks including all necessary switches
-                            lfNetworks = Networks.load(network, parameters.getNetworkParameters(), partitionTopoConfig, saReportNode);
+                            // LfNetworks creation reports are only made for the first partition
+                            lfNetworks = Networks.load(network, parameters.getNetworkParameters(), partitionTopoConfig, first ? saReportNode : ReportNode.NO_OP);
                             lfNetworksList.add(0, lfNetworks); // FIXME to workaround variant removal bug, to fix in core
+
+                            if (first) {
+                                // List CC reports to attach post contingency result
+                                for (LfNetwork n : lfNetworks.getList()) {
+                                    ccNetworkReportNodes.put(new ImmutablePair<>(n.getNumCC(), n.getNumSC()), new ReportNodeSync(n.getReportNode(), new AtomicInteger(0)));
+                                }
+                            }
                         } finally {
                             networkLock.unlock();
                         }
 
                         // run simulation on largest network
                         partitionResults.set(partitionNum, runSimulationsOnAllComponents(
-                                lfNetworks, propagatedContingencies, parameters, securityAnalysisParameters, operatorStrategies, actions, limitReductions, lfParameters));
+                                lfNetworks, propagatedContingencies, parameters, securityAnalysisParameters, operatorStrategies, actions, limitReductions, lfParameters,
+                                ccNetworkReportNodes));
 
                         return null;
                     }, executor));
@@ -250,7 +268,8 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
 
     SecurityAnalysisResult runSimulationsOnAllComponents(LfNetworkList networks, List<PropagatedContingency> propagatedContingencies, P parameters,
                                                          SecurityAnalysisParameters securityAnalysisParameters, List<OperatorStrategy> operatorStrategies,
-                                                         List<Action> actions, List<LimitReduction> limitReductions, LoadFlowParameters lfParameters) {
+                                                         List<Action> actions, List<LimitReduction> limitReductions, LoadFlowParameters lfParameters,
+                                                         Map<Pair<Integer, Integer>, ReportNodeSync> postCtgReportNodeMap) {
 
         List<LfNetwork> networkToSimulate = new ArrayList<>(getNetworksToSimulate(networks, lfParameters.getConnectedComponentMode()));
 
@@ -260,7 +279,7 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
 
         // run simulation on first lfNetwork to initialize results structures
         LfNetwork firstNetwork = networkToSimulate.remove(0);
-        SecurityAnalysisResult result = runSimulations(firstNetwork, propagatedContingencies, parameters, securityAnalysisParameters, operatorStrategies, actions, limitReductions);
+        SecurityAnalysisResult result = runSimulations(firstNetwork, propagatedContingencies, parameters, securityAnalysisParameters, operatorStrategies, actions, limitReductions, postCtgReportNodeMap);
 
         List<PostContingencyResult> postContingencyResults = result.getPostContingencyResults();
         List<OperatorStrategyResult> operatorStrategyResults = result.getOperatorStrategyResults();
@@ -276,7 +295,8 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
         preContingencyViolations = new ArrayList<>(preContingencyViolations);
 
         for (LfNetwork n : networkToSimulate) {
-            SecurityAnalysisResult resultOtherComponent = runSimulations(n, propagatedContingencies, parameters, securityAnalysisParameters, operatorStrategies, actions, limitReductions);
+            SecurityAnalysisResult resultOtherComponent = runSimulations(n, propagatedContingencies, parameters, securityAnalysisParameters,
+                    operatorStrategies, actions, limitReductions, postCtgReportNodeMap);
 
             // Merge into first result
             // PreContingency results first
@@ -477,7 +497,8 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
     protected static Map<String, List<OperatorStrategy>> indexOperatorStrategiesByContingencyId(List<PropagatedContingency> propagatedContingencies,
                                                                                               List<OperatorStrategy> operatorStrategies,
                                                                                               Map<String, Action> actionsById,
-                                                                                              Set<Action> neededActions) {
+                                                                                              Set<Action> neededActions,
+                                                                                              boolean tolerateMissingContingencies) {
         Set<String> contingencyIds = propagatedContingencies.stream().map(propagatedContingency -> propagatedContingency.getContingency().getId()).collect(Collectors.toSet());
         Map<String, List<OperatorStrategy>> operatorStrategiesByContingencyId = new HashMap<>();
         for (OperatorStrategy operatorStrategy : operatorStrategies) {
@@ -496,8 +517,10 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                 operatorStrategiesByContingencyId.computeIfAbsent(operatorStrategy.getContingencyContext().getContingencyId(), key -> new ArrayList<>())
                         .add(operatorStrategy);
             } else {
-                throw new PowsyblException("Operator strategy '" + operatorStrategy.getId() + "' is associated to contingency '"
-                        + operatorStrategy.getContingencyContext().getContingencyId() + "' but this contingency is not present in the list");
+                if (!tolerateMissingContingencies) {
+                    throw new PowsyblException("Operator strategy '" + operatorStrategy.getId() + "' is associated to contingency '"
+                            + operatorStrategy.getContingencyContext().getContingencyId() + "' but this contingency is not present in the list");
+                }
             }
         }
         return operatorStrategiesByContingencyId;
@@ -621,10 +644,14 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
 
     protected SecurityAnalysisResult runSimulations(LfNetwork lfNetwork, List<PropagatedContingency> propagatedContingencies, P acParameters,
                                                     SecurityAnalysisParameters securityAnalysisParameters, List<OperatorStrategy> operatorStrategies,
-                                                    List<Action> actions, List<LimitReduction> limitReductions) {
+                                                    List<Action> actions, List<LimitReduction> limitReductions, Map<Pair<Integer, Integer>, ReportNodeSync> postContReportMap) {
         Map<String, Action> actionsById = indexActionsById(actions);
         Set<Action> neededActions = new HashSet<>(actionsById.size());
-        Map<String, List<OperatorStrategy>> operatorStrategiesByContingencyId = indexOperatorStrategiesByContingencyId(propagatedContingencies, operatorStrategies, actionsById, neededActions);
+        OpenSecurityAnalysisParameters securityAnalysisParametersExt = securityAnalysisParameters.getExtension(OpenSecurityAnalysisParameters.class);
+        boolean tolerateMissingContingencies = securityAnalysisParametersExt != null && securityAnalysisParametersExt.getThreadCount() > 1;
+
+        Map<String, List<OperatorStrategy>> operatorStrategiesByContingencyId =
+                indexOperatorStrategiesByContingencyId(propagatedContingencies, operatorStrategies, actionsById, neededActions, tolerateMissingContingencies);
         Map<String, LfAction> lfActionById = createLfActions(lfNetwork, neededActions, network, acParameters.getNetworkParameters()); // only convert needed actions
 
         LoadFlowParameters loadFlowParameters = securityAnalysisParameters.getLoadFlowParameters();
@@ -633,8 +660,13 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
         boolean createResultExtension = openSecurityAnalysisParameters.isCreateResultExtension();
 
         try (C context = createLoadFlowContext(lfNetwork, acParameters)) {
-            ReportNode networkReportNode = lfNetwork.getReportNode();
-            ReportNode preContSimReportNode = Reports.createPreContingencySimulation(networkReportNode);
+            final ReportNode preContReportNode;
+            final ReportNodeSync ccReportNodeSync = postContReportMap.get(new ImmutablePair<>(lfNetwork.getNumCC(), lfNetwork.getNumSC()));
+
+            // In an MT run, the report is a NO_OP if not the first thread to run on this CC, to avoid duplicate
+            // functional reports of lf network loading and precontingency run
+            preContReportNode = (ccReportNodeSync.runCount.incrementAndGet() == 1) ? ccReportNodeSync.reportNode : ReportNode.NO_OP;
+            ReportNode preContSimReportNode = Reports.createPreContingencySimulation(preContReportNode);
             lfNetwork.setReportNode(preContSimReportNode);
 
             // run pre-contingency simulation
@@ -666,7 +698,8 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                     PropagatedContingency propagatedContingency = contingencyIt.next();
                     propagatedContingency.toLfContingency(lfNetwork)
                             .ifPresent(lfContingency -> { // only process contingencies that impact the network
-                                ReportNode postContSimReportNode = Reports.createPostContingencySimulation(networkReportNode, lfContingency.getId());
+                                ReportNode postContSimReportNode =
+                                        Reports.createPostContingencySimulationMTSafe(ccReportNodeSync.reportNode, lfContingency.getId());
                                 lfNetwork.setReportNode(postContSimReportNode);
 
                                 lfContingency.apply(loadFlowParameters.getBalanceType());
