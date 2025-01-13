@@ -8,7 +8,6 @@
 package com.powsybl.openloadflow.ac.equations;
 
 import com.powsybl.iidm.network.TwoSides;
-import com.powsybl.openloadflow.equations.EquationSystem;
 import com.powsybl.openloadflow.lf.AbstractEquationSystemUpdater;
 import com.powsybl.openloadflow.network.*;
 import com.powsybl.openloadflow.util.EvaluableConstants;
@@ -21,25 +20,27 @@ import java.util.Objects;
  */
 public class AcEquationSystemUpdater extends AbstractEquationSystemUpdater<AcVariableType, AcEquationType> {
 
-    private final AcEquationSystemCreationParameters parameters;
+    private final AcEquationSystemCreator creator;
 
-    public AcEquationSystemUpdater(EquationSystem<AcVariableType, AcEquationType> equationSystem,
-                                   AcEquationSystemCreationParameters parameters) {
-        super(equationSystem, LoadFlowModel.AC);
-        this.parameters = Objects.requireNonNull(parameters);
+    private final AcEquationSystemCreationContext creationContext;
+
+    public AcEquationSystemUpdater(AcEquationSystemCreator creator, AcEquationSystemCreationContext creationContext) {
+        super(creationContext.getEquationSystem(), LoadFlowModel.AC);
+        this.creator = Objects.requireNonNull(creator);
+        this.creationContext = Objects.requireNonNull(creationContext);
     }
 
     private void updateVoltageControls(LfBus bus) {
         LfZeroImpedanceNetwork zn = bus.getZeroImpedanceNetwork(loadFlowModel);
         if (zn == null) {
-            bus.getGeneratorVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateGeneratorVoltageControl(voltageControl.getMainVoltageControl(), equationSystem));
-            bus.getTransformerVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateTransformerVoltageControlEquations(voltageControl.getMainVoltageControl(), equationSystem));
-            bus.getShuntVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateShuntVoltageControlEquations(voltageControl.getMainVoltageControl(), equationSystem));
+            bus.getGeneratorVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateGeneratorVoltageControl(voltageControl.getMainVoltageControl(), creationContext));
+            bus.getTransformerVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateTransformerVoltageControlEquations(voltageControl.getMainVoltageControl(), creationContext));
+            bus.getShuntVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateShuntVoltageControlEquations(voltageControl.getMainVoltageControl(), creationContext));
         } else {
             for (LfBus zb : zn.getGraph().vertexSet()) {
-                zb.getGeneratorVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateGeneratorVoltageControl(voltageControl.getMainVoltageControl(), equationSystem));
-                zb.getTransformerVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateTransformerVoltageControlEquations(voltageControl.getMainVoltageControl(), equationSystem));
-                zb.getShuntVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateShuntVoltageControlEquations(voltageControl.getMainVoltageControl(), equationSystem));
+                zb.getGeneratorVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateGeneratorVoltageControl(voltageControl.getMainVoltageControl(), creationContext));
+                zb.getTransformerVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateTransformerVoltageControlEquations(voltageControl.getMainVoltageControl(), creationContext));
+                zb.getShuntVoltageControl().ifPresent(voltageControl -> AcEquationSystemCreator.updateShuntVoltageControlEquations(voltageControl.getMainVoltageControl(), creationContext));
             }
         }
     }
@@ -51,12 +52,12 @@ public class AcEquationSystemUpdater extends AbstractEquationSystemUpdater<AcVar
 
     @Override
     public void onTransformerPhaseControlChange(LfBranch controllerBranch, boolean newPhaseControlEnabled) {
-        AcEquationSystemCreator.updateTransformerPhaseControlEquations(controllerBranch.getPhaseControl().orElseThrow(), equationSystem);
+        AcEquationSystemCreator.updateTransformerPhaseControlEquations(controllerBranch.getPhaseControl().orElseThrow(), creationContext);
     }
 
     @Override
     public void onGeneratorReactivePowerControlChange(LfBus controllerBus, boolean newReactiveControllerEnabled) {
-        controllerBus.getGeneratorReactivePowerControl().ifPresent(generatorReactivePowerControl -> AcEquationSystemCreator.updateGeneratorReactivePowerControlBranchEquations(generatorReactivePowerControl, equationSystem));
+        controllerBus.getGeneratorReactivePowerControl().ifPresent(generatorReactivePowerControl -> AcEquationSystemCreator.updateGeneratorReactivePowerControlBranchEquations(generatorReactivePowerControl, creationContext));
     }
 
     @Override
@@ -106,14 +107,14 @@ public class AcEquationSystemUpdater extends AbstractEquationSystemUpdater<AcVar
                 bus.getGeneratorVoltageControl().ifPresent(vc -> updateVoltageControls(vc.getControlledBus()));
                 bus.getTransformerVoltageControl().ifPresent(vc -> updateVoltageControls(vc.getControlledBus()));
                 bus.getShuntVoltageControl().ifPresent(vc -> updateVoltageControls(vc.getControlledBus()));
-                bus.getGeneratorReactivePowerControl().ifPresent(reactivePowerControl -> AcEquationSystemCreator.updateGeneratorReactivePowerControlBranchEquations(reactivePowerControl, equationSystem));
+                bus.getGeneratorReactivePowerControl().ifPresent(reactivePowerControl -> AcEquationSystemCreator.updateGeneratorReactivePowerControlBranchEquations(reactivePowerControl, creationContext));
                 break;
             case BRANCH:
                 LfBranch branch = (LfBranch) element;
                 AcEquationSystemCreator.updateBranchEquations(branch);
                 branch.getVoltageControl().ifPresent(vc -> updateVoltageControls(vc.getControlledBus()));
-                branch.getPhaseControl().ifPresent(phaseControl -> AcEquationSystemCreator.updateTransformerPhaseControlEquations(phaseControl, equationSystem));
-                branch.getGeneratorReactivePowerControl().ifPresent(reactivePowerControl -> AcEquationSystemCreator.updateGeneratorReactivePowerControlBranchEquations(reactivePowerControl, equationSystem));
+                branch.getPhaseControl().ifPresent(phaseControl -> AcEquationSystemCreator.updateTransformerPhaseControlEquations(phaseControl, creationContext));
+                branch.getGeneratorReactivePowerControl().ifPresent(reactivePowerControl -> AcEquationSystemCreator.updateGeneratorReactivePowerControlBranchEquations(reactivePowerControl, creationContext));
                 break;
             case SHUNT_COMPENSATOR:
                 LfShunt shunt = (LfShunt) element;
@@ -131,13 +132,13 @@ public class AcEquationSystemUpdater extends AbstractEquationSystemUpdater<AcVar
         for (LfBus bus : network.getGraph().vertexSet()) {
             bus.getGeneratorVoltageControl()
                     .filter(voltageControl -> voltageControl.getMergeStatus() == VoltageControl.MergeStatus.MAIN)
-                    .ifPresent(voltageControl -> AcEquationSystemCreator.recreateReactivePowerDistributionEquations(bus.getNetwork(), voltageControl, equationSystem, parameters));
+                    .ifPresent(voltageControl -> creator.recreateReactivePowerDistributionEquations(voltageControl, creationContext));
             bus.getTransformerVoltageControl()
                     .filter(voltageControl -> voltageControl.getMergeStatus() == VoltageControl.MergeStatus.MAIN)
-                    .ifPresent(voltageControl -> AcEquationSystemCreator.recreateR1DistributionEquations(bus.getNetwork(), voltageControl, equationSystem));
+                    .ifPresent(voltageControl -> AcEquationSystemCreator.recreateR1DistributionEquations(network.getNetwork(), voltageControl, creationContext));
             bus.getShuntVoltageControl()
                     .filter(voltageControl -> voltageControl.getMergeStatus() == VoltageControl.MergeStatus.MAIN)
-                    .ifPresent(voltageControl -> AcEquationSystemCreator.recreateShuntSusceptanceDistributionEquations(bus.getNetwork(), voltageControl, equationSystem));
+                    .ifPresent(voltageControl -> AcEquationSystemCreator.recreateShuntSusceptanceDistributionEquations(network.getNetwork(), voltageControl, creationContext));
         }
     }
 

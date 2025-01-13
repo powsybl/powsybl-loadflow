@@ -78,7 +78,7 @@ public class LfShuntImpl extends AbstractLfShunt {
         // if withVoltageControl equals to true, all shunt compensators that are listed must control voltage.
         // if withVoltageControl equals to false, all shunt compensators that are listed will be treated as fixed shunt
         // compensators.
-        super(network);
+        super(bus, network);
         shuntCompensatorsRefs = Objects.requireNonNull(shuntCompensators).stream()
                 .map(sc -> Ref.create(sc, parameters.isCacheEnabled()))
                 .collect(Collectors.toList());

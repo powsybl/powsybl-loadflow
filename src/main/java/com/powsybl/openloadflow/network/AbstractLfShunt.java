@@ -10,17 +10,27 @@ package com.powsybl.openloadflow.network;
 import com.powsybl.openloadflow.util.Evaluable;
 import com.powsybl.openloadflow.util.EvaluableConstants;
 
+import java.util.Objects;
+
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 public abstract class AbstractLfShunt extends AbstractElement implements LfShunt {
 
+    private final LfBus bus;
+
     private Evaluable q = EvaluableConstants.NAN;
 
     private Evaluable p = EvaluableConstants.NAN;
 
-    protected AbstractLfShunt(LfNetwork network) {
+    protected AbstractLfShunt(LfBus bus, LfNetwork network) {
         super(network);
+        this.bus = Objects.requireNonNull(bus);
+    }
+
+    @Override
+    public LfBus getBus() {
+        return bus;
     }
 
     @Override
