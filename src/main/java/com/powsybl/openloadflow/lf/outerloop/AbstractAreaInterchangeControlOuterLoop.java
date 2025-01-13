@@ -41,8 +41,7 @@ public abstract class AbstractAreaInterchangeControlOuterLoop<
             P extends AbstractLoadFlowParameters<P>,
             C extends LoadFlowContext<V, E, P>,
             O extends AbstractOuterLoopContext<V, E, P, C>>
-        extends AbstractActivePowerDistributionOuterLoop<V, E, P, C, O>
-        implements OuterLoop<V, E, P, C, O>, ActivePowerDistributionOuterLoop<V, E, P, C, O> {
+        extends AbstractActivePowerDistributionOuterLoop<V, E, P, C, O> {
 
     private final Logger logger;
 

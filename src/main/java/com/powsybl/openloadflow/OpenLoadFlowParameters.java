@@ -24,13 +24,17 @@ import com.powsybl.openloadflow.ac.equations.AcEquationSystemCreationParameters;
 import com.powsybl.openloadflow.ac.solver.*;
 import com.powsybl.openloadflow.ac.outerloop.AcOuterLoop;
 import com.powsybl.openloadflow.ac.outerloop.ReactiveLimitsOuterLoop;
+import com.powsybl.openloadflow.dc.DcAreaInterchangeControlOuterLoop;
+import com.powsybl.openloadflow.dc.DcIncrementalPhaseControlOuterLoop;
 import com.powsybl.openloadflow.dc.DcLoadFlowParameters;
+import com.powsybl.openloadflow.dc.DcOuterLoop;
 import com.powsybl.openloadflow.dc.DcValueVoltageInitializer;
 import com.powsybl.openloadflow.dc.equations.DcApproximationType;
 import com.powsybl.openloadflow.dc.equations.DcEquationSystemCreationParameters;
 import com.powsybl.openloadflow.graph.GraphConnectivityFactory;
 import com.powsybl.openloadflow.lf.AbstractLoadFlowParameters;
 import com.powsybl.openloadflow.network.*;
+import com.powsybl.openloadflow.network.util.ActivePowerDistribution;
 import com.powsybl.openloadflow.network.util.PreviousValueVoltageInitializer;
 import com.powsybl.openloadflow.network.util.UniformValueVoltageInitializer;
 import com.powsybl.openloadflow.network.util.VoltageInitializer;
@@ -1816,7 +1820,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
         return acParameters;
     }
 
-    static List<AcOuterLoop> createOuterLoops(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt) {
+    static List<AcOuterLoop> createAcOuterLoops(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt) {
         AcOuterLoopConfig outerLoopConfig = AcOuterLoopConfig.findOuterLoopConfig()
                 .orElseGet(() -> parametersExt.getOuterLoopNames() != null ? new ExplicitAcOuterLoopConfig()
                                                                            : new DefaultAcOuterLoopConfig());
@@ -1835,7 +1839,7 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
 
         VoltageInitializer voltageInitializer = getExtendedVoltageInitializer(parameters, parametersExt, networkParameters, matrixFactory);
 
-        List<AcOuterLoop> outerLoops = createOuterLoops(parameters, parametersExt);
+        List<AcOuterLoop> outerLoops = createAcOuterLoops(parameters, parametersExt);
 
         AcSolverFactory solverFactory = AcSolverFactory.find(parametersExt.getAcSolverType());
 
@@ -1849,6 +1853,20 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
                 .setAsymmetrical(parametersExt.isAsymmetrical())
                 .setSlackDistributionFailureBehavior(parametersExt.getSlackDistributionFailureBehavior())
                 .setSolverFactory(solverFactory, parameters);
+    }
+
+    static List<DcOuterLoop> createDcOuterLoops(LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt) {
+        List<DcOuterLoop> outerLoops = new ArrayList<>();
+        if (parameters.isPhaseShifterRegulationOn()) {
+            DcIncrementalPhaseControlOuterLoop phaseShifterControlOuterLoop = new DcIncrementalPhaseControlOuterLoop();
+            outerLoops.add(phaseShifterControlOuterLoop);
+        }
+        if (parametersExt.isAreaInterchangeControl()) {
+            ActivePowerDistribution activePowerDistribution = ActivePowerDistribution.create(parameters.getBalanceType(), false, parametersExt.isUseActiveLimits());
+            DcAreaInterchangeControlOuterLoop areaInterchangeControlOuterLoop = new DcAreaInterchangeControlOuterLoop(activePowerDistribution, parametersExt.getSlackBusPMaxMismatch(), parametersExt.getAreaInterchangePMaxMismatch());
+            outerLoops.add(areaInterchangeControlOuterLoop);
+        }
+        return outerLoops;
     }
 
     public static DcLoadFlowParameters createDcParameters(Network network, LoadFlowParameters parameters, OpenLoadFlowParameters parametersExt,
@@ -1911,9 +1929,9 @@ public class OpenLoadFlowParameters extends AbstractExtension<LoadFlowParameters
                 .setSlackDistributionFailureBehavior(parametersExt.getSlackDistributionFailureBehavior())
                 .setMatrixFactory(matrixFactory)
                 .setDistributedSlack(parameters.isDistributedSlack())
-                .setAreaInterchangeControl(parametersExt.isAreaInterchangeControl())
                 .setBalanceType(parameters.getBalanceType())
                 .setSetVToNan(true)
+                .setOuterLoops(createDcOuterLoops(parameters, parametersExt))
                 .setMaxOuterLoopIterations(parametersExt.getMaxOuterLoopIterations())
                 .setSlackBusPMaxMismatch(parametersExt.getSlackBusPMaxMismatch())
                 .setAreaInterchangePMaxMismatch(parametersExt.getAreaInterchangePMaxMismatch());
