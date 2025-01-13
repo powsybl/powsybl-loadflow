@@ -78,7 +78,7 @@ public class ContingencyTripping {
         Objects.requireNonNull(network);
         Objects.requireNonNull(bbs);
 
-        NodeBreakerTraverserFactory minimalTraverserFactory = (stoppingSwitches, neighbourTerminals, traversedTerminals, nbv) ->
+        NodeBreakerTraverserFactory minimalTraverserFactory = (stoppingSwitches, traversedTerminals, neighbourTerminals, nbv) ->
             // To have the minimal tripping ("no propagation") with a busbar section we still need to traverse the
             // voltage level starting from that busbar section, stopping at first switch encountered (which will be
             // marked as retained afterwards), in order to have the smallest lost bus in breaker view
