@@ -8,6 +8,7 @@
 package com.powsybl.openloadflow.ac;
 
 import com.powsybl.openloadflow.ac.equations.asym.AsymmetricalAcEquationSystemCreator;
+import com.powsybl.openloadflow.ac.outerloop.AcOuterLoop;
 import com.powsybl.openloadflow.equations.JacobianMatrix;
 import com.powsybl.openloadflow.lf.AbstractLoadFlowContext;
 import com.powsybl.openloadflow.ac.equations.AcEquationSystemCreator;
@@ -17,6 +18,9 @@ import com.powsybl.openloadflow.equations.EquationSystem;
 import com.powsybl.openloadflow.equations.EquationVector;
 import com.powsybl.openloadflow.equations.TargetVector;
 import com.powsybl.openloadflow.network.LfNetwork;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -30,6 +34,8 @@ public class AcLoadFlowContext extends AbstractLoadFlowContext<AcVariableType, A
     private AcLoadFlowResult result;
 
     private boolean networkUpdated = true;
+
+    private Map<Class<? extends AcOuterLoop>, Object> outerLoopInitData = new HashMap<>();
 
     public AcLoadFlowContext(LfNetwork network, AcLoadFlowParameters parameters) {
         super(network, parameters);
@@ -82,6 +88,14 @@ public class AcLoadFlowContext extends AbstractLoadFlowContext<AcVariableType, A
 
     public void setNetworkUpdated(boolean networkUpdated) {
         this.networkUpdated = networkUpdated;
+    }
+
+    public Object getOuterLoopInitData(Class<? extends AcOuterLoop> outerLoopClass) {
+        return outerLoopInitData.get(outerLoopClass);
+    }
+
+    public void setOuterLoopInitData(Map<Class<? extends AcOuterLoop>, Object> outerLoopInitData) {
+        this.outerLoopInitData = outerLoopInitData;
     }
 
     @Override

@@ -24,6 +24,7 @@ import com.powsybl.openloadflow.network.impl.Networks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -120,7 +121,10 @@ public class AcLoadFlowFromCache {
             context.setNetworkUpdated(false);
             return result;
         }
-        return new AcLoadFlowResult(context.getNetwork(), 0, 0, AcSolverStatus.CONVERGED, OuterLoopResult.stable(), 0d, 0d);
+        return new AcLoadFlowResult(context.getNetwork(), 0,
+                0, AcSolverStatus.CONVERGED, OuterLoopResult.stable(),
+                0d, 0d,
+                Collections.EMPTY_MAP);
     }
 
     public List<AcLoadFlowResult> run() {

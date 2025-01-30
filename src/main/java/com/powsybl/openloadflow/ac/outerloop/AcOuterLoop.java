@@ -14,8 +14,17 @@ import com.powsybl.openloadflow.ac.equations.AcEquationType;
 import com.powsybl.openloadflow.ac.equations.AcVariableType;
 import com.powsybl.openloadflow.lf.outerloop.OuterLoop;
 
+import java.util.Optional;
+
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 public interface AcOuterLoop extends OuterLoop<AcVariableType, AcEquationType, AcLoadFlowParameters, AcLoadFlowContext, AcOuterLoopContext> {
+
+    /**
+     * Returns data needed to initialize the outerloop for a rerun from previous values.
+     */
+    default Optional<Object> getInitData(AcOuterLoopContext context) {
+        return Optional.empty();
+    }
 }

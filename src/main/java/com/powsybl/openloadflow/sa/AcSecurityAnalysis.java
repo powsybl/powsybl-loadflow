@@ -112,4 +112,9 @@ public class AcSecurityAnalysis extends AbstractSecurityAnalysis<AcVariableType,
     protected void beforeActionLoadFlowRun(AcLoadFlowContext context) {
         context.getParameters().setVoltageInitializer(new PreviousValueVoltageInitializer(true));
     }
+
+    @Override
+    protected void updateContext(AcLoadFlowResult result, AcLoadFlowContext context) {
+        context.setOuterLoopInitData(result.getOuterLoopInitData());
+    }
 }

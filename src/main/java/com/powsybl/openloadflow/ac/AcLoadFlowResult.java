@@ -8,6 +8,7 @@
 package com.powsybl.openloadflow.ac;
 
 import com.powsybl.loadflow.LoadFlowResult;
+import com.powsybl.openloadflow.ac.outerloop.AcOuterLoop;
 import com.powsybl.openloadflow.ac.solver.AcSolverStatus;
 import com.powsybl.openloadflow.lf.AbstractLoadFlowResult;
 import com.powsybl.openloadflow.lf.outerloop.OuterLoopResult;
@@ -15,6 +16,8 @@ import com.powsybl.openloadflow.lf.outerloop.OuterLoopStatus;
 import com.powsybl.openloadflow.network.LfNetwork;
 import com.powsybl.openloadflow.util.PerUnit;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -23,19 +26,24 @@ import java.util.Objects;
 public class AcLoadFlowResult extends AbstractLoadFlowResult {
 
     public static AcLoadFlowResult createNoCalculationResult(LfNetwork network) {
-        return new AcLoadFlowResult(network, 0, 0, AcSolverStatus.NO_CALCULATION, OuterLoopResult.stable(), Double.NaN, Double.NaN);
+        return new AcLoadFlowResult(network, 0, 0, AcSolverStatus.NO_CALCULATION, OuterLoopResult.stable(), Double.NaN, Double.NaN,
+                Collections.EMPTY_MAP);
     }
 
     private final int solverIterations;
 
     private final AcSolverStatus solverStatus;
 
+    private final Map<Class<? extends AcOuterLoop>, Object> outerLoopInitData;
+
     public AcLoadFlowResult(LfNetwork network, int outerLoopIterations, int solverIterations,
                             AcSolverStatus solverStatus, OuterLoopResult outerLoopResult,
-                            double slackBusActivePowerMismatch, double distributedActivePower) {
+                            double slackBusActivePowerMismatch, double distributedActivePower,
+                            Map<Class<? extends AcOuterLoop>, Object> outerLoopInitData) {
         super(network, slackBusActivePowerMismatch, outerLoopIterations, outerLoopResult, distributedActivePower);
         this.solverIterations = solverIterations;
         this.solverStatus = Objects.requireNonNull(solverStatus);
+        this.outerLoopInitData = outerLoopInitData;
     }
 
     public int getSolverIterations() {
@@ -77,6 +85,10 @@ public class AcLoadFlowResult extends AbstractLoadFlowResult {
                 case NO_CALCULATION -> new Status(LoadFlowResult.ComponentResult.Status.NO_CALCULATION, "No calculation");
             };
         }
+    }
+
+    public Map<Class<? extends AcOuterLoop>, Object> getOuterLoopInitData() {
+        return outerLoopInitData;
     }
 
     @Override

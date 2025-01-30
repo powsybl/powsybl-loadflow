@@ -56,6 +56,14 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
 
         private final Map<String, MutableInt> pvPqSwitchCount = new HashMap<>();
 
+        public ContextData(Optional<Object> initData) {
+            initData.ifPresent(d -> {
+                if (d instanceof Map map) {
+                    pvPqSwitchCount.putAll(map);
+                }
+            });
+        }
+
         void incrementPvPqSwitchCount(String busId) {
             pvPqSwitchCount.computeIfAbsent(busId, k -> new MutableInt(0))
                     .increment();
@@ -163,7 +171,7 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
 
     @Override
     public void initialize(AcOuterLoopContext context) {
-        context.setData(new ContextData());
+        context.setData(new ContextData(context.getOuterLoopInitData()));
     }
 
     private static boolean switchPqPv(List<PqToPvBus> pqToPvBuses, ContextData contextData, ReportNode reportNode, int maxPqPvSwitch) {
@@ -348,5 +356,10 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
             status = OuterLoopStatus.UNSTABLE;
         }
         return new OuterLoopResult(this, status);
+    }
+
+    @Override
+    public Optional<Object> getInitData(AcOuterLoopContext context) {
+        return Optional.of(Collections.unmodifiableMap(((ContextData) context.getData()).pvPqSwitchCount));
     }
 }

@@ -1818,7 +1818,9 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
 
     private AcLoadFlowResult buildTestAcLoadFlowResult(AcSolverStatus solverStatus, OuterLoopStatus outerLoopStatus) {
         LfNetwork lfNetwork = Mockito.mock(LfNetwork.class);
-        return new AcLoadFlowResult(lfNetwork, 0, 0, solverStatus, new OuterLoopResult("", outerLoopStatus), 0d, 0d);
+        return new AcLoadFlowResult(lfNetwork, 0, 0,
+                solverStatus, new OuterLoopResult("", outerLoopStatus),
+                0d, 0d, Collections.EMPTY_MAP);
     }
 
     @Test

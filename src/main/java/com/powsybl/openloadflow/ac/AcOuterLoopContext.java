@@ -13,15 +13,23 @@ import com.powsybl.openloadflow.ac.solver.AcSolverResult;
 import com.powsybl.openloadflow.lf.outerloop.AbstractOuterLoopContext;
 import com.powsybl.openloadflow.network.LfNetwork;
 
+import java.util.Optional;
+
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 public class AcOuterLoopContext extends AbstractOuterLoopContext<AcVariableType, AcEquationType, AcLoadFlowParameters, AcLoadFlowContext> {
 
     private AcSolverResult lastSolverResult;
+    private Object outerLoopInitData;
 
-    AcOuterLoopContext(LfNetwork network) {
+    AcOuterLoopContext(LfNetwork network, Object dataForRunFromPreviousValues) {
         super(network);
+        this.outerLoopInitData = dataForRunFromPreviousValues;
+    }
+
+    public Optional<Object> getOuterLoopInitData() {
+        return Optional.ofNullable(outerLoopInitData);
     }
 
     public AcSolverResult getLastSolverResult() {
