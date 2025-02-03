@@ -7,6 +7,7 @@
  */
 package com.powsybl.openloadflow.network;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -78,6 +79,25 @@ public class GeneratorVoltageControl extends VoltageControl<LfBus> {
         for (int i = 0; i < controllerBuses.size(); i++) {
             LfBus controllerBus = controllerBuses.get(i);
             controllerBus.setRemoteControlReactivePercent(reactiveKeysSum == 0 ? 0 : reactiveKeys[i] / reactiveKeysSum);
+        }
+    }
+
+    /**
+     * Returns itself in case of local control, split into several local voltage controls in case of remote control.
+     */
+    public List<GeneratorVoltageControl> toLocalVoltageControls() {
+        if (isLocalControl()) {
+            return List.of(this);
+        } else {
+            List<GeneratorVoltageControl> generatorVoltageControls = new ArrayList<>(controllerElements.size());
+            // create one (local) generator control per controller bus and remove this one
+            controlledBus.setGeneratorVoltageControl(null);
+            for (LfBus controllerBus : controllerElements) {
+                var generatorVoltageControl = new GeneratorVoltageControl(controllerBus, targetPriority, targetValue);
+                generatorVoltageControl.addControllerElement(controllerBus);
+                generatorVoltageControls.add(generatorVoltageControl);
+            }
+            return generatorVoltageControls;
         }
     }
 }

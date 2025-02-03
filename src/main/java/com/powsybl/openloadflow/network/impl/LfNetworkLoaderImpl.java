@@ -1105,11 +1105,20 @@ public class LfNetworkLoaderImpl implements LfNetworkLoader<Network> {
                     // filter missing control units and find corresponding primary voltage control, controlled bus
                     Set<GeneratorVoltageControl> generatorVoltageControls = findControlZoneGeneratorVoltageControl(network, parameters, lfNetwork, controlZone);
                     if (!generatorVoltageControls.isEmpty()) {
+                        // remove remote control for generators that belongs to a secondary voltage control zone because
+                        // - it does not make sens to mix generator remote control plus pilot point remote control
+                        // - it cannot work in case of generator shared voltage control (no way to align K of generators
+                        //   for a given shared voltage control as a unique controlled bus cannot help to align reactive
+                        //   power of generators)
+                        Set<GeneratorVoltageControl> splitGeneratorVoltageControls = generatorVoltageControls.stream()
+                                .flatMap(vc -> vc.toLocalVoltageControls().stream())
+                                .collect(Collectors.toCollection(LinkedHashSet::new));
+
                         Set<String> participatingControlUnitIds = controlZone.getControlUnits().stream()
                                 .filter(ControlUnit::isParticipate)
                                 .map(ControlUnit::getId).collect(Collectors.toSet());
                         var lfSvc = new LfSecondaryVoltageControl(controlZone.getName(), lfPilotBus, targetV,
-                                participatingControlUnitIds, generatorVoltageControls);
+                                participatingControlUnitIds, splitGeneratorVoltageControls);
                         lfNetwork.addSecondaryVoltageControl(lfSvc);
                     }
                 }

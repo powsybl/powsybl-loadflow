@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2024, Coreso SA (https://www.coreso.eu/) and TSCNET Services GmbH (https://www.tscnet.eu/)
+/*
+ * Copyright (c) 2024-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -375,11 +375,9 @@ public class WoodburyDcSecurityAnalysis extends DcSecurityAnalysis {
         filterActions(actions);
         Map<String, Action> actionsById = indexActionsById(actions);
         Set<Action> neededActions = new HashSet<>(actionsById.size());
-        OpenSecurityAnalysisParameters securityAnalysisParametersExt = securityAnalysisParameters.getExtension(OpenSecurityAnalysisParameters.class);
-        boolean tolerateMissingContingencies = securityAnalysisParametersExt != null && securityAnalysisParametersExt.getThreadCount() > 1;
 
         Map<String, List<OperatorStrategy>> operatorStrategiesByContingencyId =
-                indexOperatorStrategiesByContingencyId(propagatedContingencies, operatorStrategies, actionsById, neededActions, tolerateMissingContingencies);
+                indexOperatorStrategiesByContingencyId(propagatedContingencies, operatorStrategies, actionsById, neededActions, true);
 
         Map<String, LfAction> lfActionById = createLfActions(lfNetwork, neededActions, network, dcParameters.getNetworkParameters()); // only convert needed actions
 

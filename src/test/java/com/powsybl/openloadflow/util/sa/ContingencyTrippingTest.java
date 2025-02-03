@@ -46,6 +46,19 @@ class ContingencyTrippingTest {
     }
 
     @Test
+    void testBusbarSectionTripping() {
+        Network network = NodeBreakerNetworkFactory.create();
+
+        Set<Switch> switchesToOpen = new HashSet<>();
+        Set<Terminal> terminalsToDisconnect = new HashSet<>();
+
+        ContingencyTripping.createBusbarSectionMinimalTripping(network, network.getBusbarSection("BBS3"))
+                .traverse(switchesToOpen, terminalsToDisconnect);
+        checkSwitches(switchesToOpen, "B3", "B4");
+        checkTerminalIds(terminalsToDisconnect, "LD", "BBS3");
+    }
+
+    @Test
     void testUnconnectedVoltageLevel() {
         Network network = NodeBreakerNetworkFactory.create();
         Exception unknownVl = assertThrows(PowsyblException.class,

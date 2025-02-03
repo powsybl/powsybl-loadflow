@@ -23,6 +23,7 @@ import com.powsybl.openloadflow.ac.equations.AcVariableType;
 import com.powsybl.openloadflow.ac.solver.AcSolverStatus;
 import com.powsybl.openloadflow.ac.solver.AcSolverUtil;
 import com.powsybl.openloadflow.graph.GraphConnectivityFactory;
+import com.powsybl.openloadflow.lf.outerloop.OuterLoopStatus;
 import com.powsybl.openloadflow.network.*;
 import com.powsybl.openloadflow.network.impl.LfNetworkList;
 import com.powsybl.openloadflow.network.impl.Networks;
@@ -145,16 +146,20 @@ public class AcSensitivityAnalysis extends AbstractSensitivityAnalysis<AcVariabl
         calculateSensitivityValues(lfFactors, factorGroups, factorsStates, contingencyIndex, resultWriter);
     }
 
-    private static boolean runLoadFlow(AcLoadFlowContext context, boolean throwsExceptionIfNoConvergence) {
+    private static boolean runLoadFlow(AcLoadFlowContext context, boolean isRunningBaseSituation) {
         AcLoadFlowResult result = new AcloadFlowEngine(context)
                 .run();
         if (result.isSuccess() || result.getSolverStatus() == AcSolverStatus.NO_CALCULATION) {
             return true;
         } else {
-            if (throwsExceptionIfNoConvergence) {
-                throw new PowsyblException("Load flow ended with status " + result.getSolverStatus());
+            if (isRunningBaseSituation) {
+                if (result.getOuterLoopResult().status() != OuterLoopStatus.STABLE) {
+                    throw new PowsyblException("Initial load flow of base situation ended with outer loop status " + result.getOuterLoopResult().statusText());
+                } else {
+                    throw new PowsyblException("Initial load flow of base situation ended with solver status " + result.getSolverStatus());
+                }
             } else {
-                LOGGER.warn("Load flow ended with status {}", result.getSolverStatus());
+                LOGGER.warn("Load flow failed with result={}", result);
                 return false;
             }
         }

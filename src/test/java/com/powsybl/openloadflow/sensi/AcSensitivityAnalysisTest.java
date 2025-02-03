@@ -1515,4 +1515,31 @@ class AcSensitivityAnalysisTest extends AbstractSensitivityAnalysisTest {
         e = assertThrows(CompletionException.class, () -> sensiRunner.run(network, factors2, contingencies, variableSets, sensiParameters));
         assertEquals("Variable type INJECTION_ACTIVE_POWER not supported with function type BUS_VOLTAGE", e.getCause().getMessage());
     }
+
+    @Test
+    void testFailingLf() {
+        Network network = TwoBusNetworkFactory.create();
+        network.getLoad("l1").setP0(3.0);
+        List<SensitivityFactor> factors = List.of(new SensitivityFactor(SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+                "l12",
+                SensitivityVariableType.INJECTION_ACTIVE_POWER,
+                "g1",
+                false,
+                ContingencyContext.all()));
+        List<Contingency> contingencies = Collections.emptyList();
+        List<SensitivityVariableSet> variableSets = Collections.emptyList();
+        SensitivityAnalysisParameters sensiParameters = createParameters(false, "b1_vl_0");
+        sensiParameters.getLoadFlowParameters().setDistributedSlack(true);
+
+        OpenLoadFlowParameters olfParameters = sensiParameters.getLoadFlowParameters().getExtension(OpenLoadFlowParameters.class);
+        olfParameters.setMaxNewtonRaphsonIterations(1);
+        CompletionException e = assertThrows(CompletionException.class, () -> sensiRunner.run(network, factors, contingencies, variableSets, sensiParameters));
+        assertEquals("Initial load flow of base situation ended with solver status MAX_ITERATION_REACHED", e.getCause().getMessage());
+
+        olfParameters.setMaxNewtonRaphsonIterations(10)
+                .setSlackBusPMaxMismatch(0.00001)
+                .setMaxOuterLoopIterations(1);
+        e = assertThrows(CompletionException.class, () -> sensiRunner.run(network, factors, contingencies, variableSets, sensiParameters));
+        assertEquals("Initial load flow of base situation ended with outer loop status UNSTABLE", e.getCause().getMessage());
+    }
 }

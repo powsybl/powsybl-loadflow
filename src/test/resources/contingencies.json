@@ -1,0 +1,28 @@
+{
+  "type" : "default",
+  "version" : "1.0",
+  "name" : "",
+  "contingencies" : [ {
+    "id" : "L2",
+    "elements" : [ {
+      "id" : "L2",
+      "type" : "BRANCH"
+    } ],
+    "extensions" : {
+      "contingency-load-flow-parameters" : {
+        "distributedSlack" : false,
+        "areaInterchangeControl" : true,
+        "balanceType" : "PROPORTIONAL_TO_LOAD"
+      }
+    }
+  }, {
+    "id" : "L5",
+    "elements" : [ {
+      "id" : "L5",
+      "type" : "BRANCH"
+    } ],
+    "extensions" : {
+      "contingency-load-flow-parameters" : { }
+    }
+  } ]
+}

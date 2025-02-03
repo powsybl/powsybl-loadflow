@@ -39,7 +39,7 @@ public abstract class AbstractIncrementalPhaseControlOuterLoop<V extends Enum<V>
     public static final double MIN_TARGET_DEADBAND = 1 / PerUnit.SB; // 1 MW
     public static final double SENSI_EPS = 1e-6;
     public static final double PHASE_SHIFT_CROSS_IMPACT_MARGIN = 0.75;
-
+    public static final String NAME = "IncrementalPhaseControl";
     protected final Logger logger;
 
     protected AbstractIncrementalPhaseControlOuterLoop(Logger logger) {
@@ -61,6 +61,11 @@ public abstract class AbstractIncrementalPhaseControlOuterLoop<V extends Enum<V>
 
     public static double getHalfTargetDeadband(TransformerPhaseControl phaseControl) {
         return Math.max(phaseControl.getTargetDeadband(), MIN_TARGET_DEADBAND) / 2;
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
     }
 
     public abstract static class AbstractSensitivityContext<V extends Enum<V> & Quantity, E extends Enum<E> & Quantity> {

@@ -35,11 +35,6 @@ public class DcIncrementalPhaseControlOuterLoop
         super(LoggerFactory.getLogger(DcIncrementalPhaseControlOuterLoop.class));
     }
 
-    @Override
-    public String getName() {
-        return "DC Incremental phase control";
-    }
-
     public static class DcSensitivityContext extends AbstractSensitivityContext<DcVariableType, DcEquationType> {
         public DcSensitivityContext(LfNetwork network, List<LfBranch> controllerBranches, EquationSystem<DcVariableType, DcEquationType> equationSystem, JacobianMatrix<DcVariableType, DcEquationType> jacobianMatrix) {
             super(network, controllerBranches, equationSystem, jacobianMatrix);

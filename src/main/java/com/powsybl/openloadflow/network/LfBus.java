@@ -90,6 +90,8 @@ public interface LfBus extends LfElement {
 
     double getTargetQ();
 
+    void invalidateLoadTargetP();
+
     double getLoadTargetP();
 
     double getNonFictitiousLoadTargetP();

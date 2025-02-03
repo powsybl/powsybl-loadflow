@@ -1037,8 +1037,8 @@ public class AcEquationSystemCreator {
             for (int i = 1; i < slackBuses.size(); i++) {
                 LfBus slackBus = slackBuses.get(i);
                 // example for 3 slack buses
-                // target_p2 = slack_p2 - slack_p1
-                // target_p3 = slack_p3 - slack_p1
+                // target_p2 - target_p1 = slack_p2 - slack_p1
+                // target_p3 - target_p1 = slack_p3 - slack_p1
                 equationSystem.createEquation(slackBus, AcEquationType.BUS_DISTR_SLACK_P)
                         .addTerms(createActiveInjectionTerms(firstSlackBus, equationSystem.getVariableSet()).stream()
                                 .map(EquationTerm::minus)

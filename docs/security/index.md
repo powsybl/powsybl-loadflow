@@ -7,4 +7,5 @@ hidden: true
 ---
 security.md
 parameters.md
+inputs.md
 ```
