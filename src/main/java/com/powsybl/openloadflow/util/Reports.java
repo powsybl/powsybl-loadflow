@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2022, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2022-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,8 +19,8 @@ import java.util.Map;
  */
 public final class Reports {
 
-    private static final String NETWORK_NUM_CC = "networkNumCc";
-    private static final String NETWORK_NUM_SC = "networkNumSc";
+    public static final String NETWORK_NUM_CC = "networkNumCc";
+    public static final String NETWORK_NUM_SC = "networkNumSc";
     private static final String ITERATION = "iteration";
     private static final String ITERATION_COUNT = "iterationCount";
     private static final String NETWORK_ID = "networkId";
@@ -33,6 +33,9 @@ public final class Reports {
     private static final String CONTROLLER_BUS_ID = "controllerBusId";
     private static final String CONTROLLED_BUS_ID = "controlledBusId";
     public static final String MISMATCH = "mismatch";
+
+    public static final String LF_NETWORK_KEY = "lfNetwork";
+    public static final String POST_CONTINGENCY_SIMULATION_KEY = "postContingencySimulation";
 
     public record BusReport(String busId, double mismatch, double nominalV, double v, double phi, double p, double q) {
     }
@@ -404,7 +407,7 @@ public final class Reports {
 
     public static ReportNode createRootLfNetworkReportNode(int networkNumCc, int networkNumSc) {
         return ReportNode.newRootReportNode()
-                .withMessageTemplate("lfNetwork", "Network CC${networkNumCc} SC${networkNumSc}")
+                .withMessageTemplate(LF_NETWORK_KEY, "Network CC${networkNumCc} SC${networkNumSc}")
                 .withUntypedValue(NETWORK_NUM_CC, networkNumCc)
                 .withUntypedValue(NETWORK_NUM_SC, networkNumSc)
                 .build();
@@ -469,10 +472,9 @@ public final class Reports {
                 .add();
     }
 
-    public static synchronized ReportNode createPostContingencySimulationMTSafe(ReportNode reportNode, String contingencyId) {
-        // This cn be called in an MT context on the same saNode
+    public static ReportNode createPostContingencySimulation(ReportNode reportNode, String contingencyId) {
         return reportNode.newReportNode()
-                .withMessageTemplate("postContingencySimulation", "Post-contingency simulation '${contingencyId}'")
+                .withMessageTemplate(POST_CONTINGENCY_SIMULATION_KEY, "Post-contingency simulation '${contingencyId}'")
                 .withUntypedValue("contingencyId", contingencyId)
                 .add();
     }

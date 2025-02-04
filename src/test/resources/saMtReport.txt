@@ -1,0 +1,249 @@
++ Test Report Node
+   + AC security analysis on network 'test'
+      + Network CC0 SC0
+         + Network info
+            Network has 4 buses and 5 branches
+            Network balance: active generation=3.0 MW, active load=5.0 MW, reactive generation=0.0 MVar, reactive load=0.0 MVar
+            Angle reference bus: b1_vl_0
+            Slack bus: b1_vl_0
+         + Pre-contingency simulation
+            + Outer loop DistributedSlack
+               + Outer loop iteration 1
+                  Slack bus active power (1.9989667600603087 MW) distributed in 1 distribution iteration(s)
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_0'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_0'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_1'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_1'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_2'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_2'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_3'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_3'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_4'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_4'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_5'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_5'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_6'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_6'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_7'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_7'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_8'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_8'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_9'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_9'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+      + Network CC1 SC1
+         + Network info
+            Network has 2 buses and 2 branches
+            Network balance: active generation=2.0 MW, active load=2.0 MW, reactive generation=0.0 MVar, reactive load=0.0 MVar
+            Angle reference bus: c1_vl_0
+            Slack bus: c1_vl_0
+         + Pre-contingency simulation
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_0'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_0'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_1'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_1'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_2'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_2'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_3'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_3'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_4'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_4'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_5'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_5'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_6'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_6'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_7'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_7'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_8'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_8'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+         + Post-contingency simulation 'compositeContingency_9'
+            Outer loop DistributedSlack
+            Outer loop VoltageMonitoring
+            Outer loop ReactiveLimits
+            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+            + Operator strategy simulation 'strategy_compositeContingency_9'
+               Outer loop DistributedSlack
+               Outer loop VoltageMonitoring
+               Outer loop ReactiveLimits
+               AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)

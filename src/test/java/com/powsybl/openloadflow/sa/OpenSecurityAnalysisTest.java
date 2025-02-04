@@ -3548,9 +3548,8 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
         StringWriter swTwoThreads = new StringWriter();
         reportNodeTwoThreads.print(swTwoThreads);
 
-        // The two report nodes must have the same size (but the order of contingenceis may change)
-        // The test would fail if an indentation level changes or some reports are ommited or duplicated in MT
-        assertEquals(swOneThread.toString().length(), swTwoThreads.toString().length());
+        // The two report nodes should be equals
+        assertEquals(swOneThread.toString(), swTwoThreads.toString());
     }
 
     @Test
@@ -3750,8 +3749,8 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
         // Remove Windows EOL
         String reportString = TestUtil.normalizeLineSeparator(sw.toString());
 
-        // The purpose of this test is to check that the report have the same size with one or two threadd
-        // The content should be the same, but not the order...
+        // The report should be the same with one or two threads
+        // Let's just check the size here
         assertEquals(7278, reportString.length());
         // Check also that the preCont report is before the postContResults in the second CC
         String expected =
@@ -3852,9 +3851,8 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
         reportNode.print(sw);
         // Remove Windows EOL
         String reportString = TestUtil.normalizeLineSeparator(sw.toString());
-        // The purpose of this test is to check that the report have the same size with one or two threadd
-        // The content should be the same, but not the order...
-        assertEquals(14292, reportString.length());
+        // The purpose of this test is to check that the report is the same with one or two threads
+        assertReportEquals("/saMtReport.txt", reportNode);
     }
 
 
