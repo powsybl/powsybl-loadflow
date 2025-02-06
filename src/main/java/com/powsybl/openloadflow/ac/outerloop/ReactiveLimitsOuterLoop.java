@@ -198,7 +198,6 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
                 controllerBus.setQLimitType(null);
                 pqPvSwitchCount++;
 
-
                 if (pqToPvBus.limitType.isMaxLimit()) {
                     pqPvNodes.add(Reports.reportPqToPvBusMaxLimit(controllerBus,
                             controllerBus.getGeneratorVoltageControl().map(VoltageControl::getControlledBus).orElse(null),

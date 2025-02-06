@@ -305,7 +305,7 @@ public final class Reports {
                         "Switch bus '${busId}' PQ -> PV, q=maxQ and v=${busV}kV > targetV=${targetV}kV")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("busV", controlledBus != null ?
-                        round4(controlledBus.getV()*controlledBus.getNominalV())
+                        round4(controlledBus.getV() * controlledBus.getNominalV())
                         :
                         Double.NaN)
                 .withUntypedValue("targetV", controlledBus != null ?
@@ -314,8 +314,9 @@ public final class Reports {
                         Double.NaN)
                 .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
                 .build();
-        if (log)
+        if (log) {
             logger.trace(result.getMessage());
+        }
         return result;
     }
 
@@ -325,7 +326,7 @@ public final class Reports {
                         "Switch bus '${busId}' PQ -> PV, q=minQ and v=${busV}kV < targetV=${targetV}kV")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("busV", controlledBus != null ?
-                        round4(controlledBus.getV()*controlledBus.getNominalV())
+                        round4(controlledBus.getV() * controlledBus.getNominalV())
                         :
                         Double.NaN)
                 .withUntypedValue("targetV", controlledBus != null ?
@@ -334,8 +335,9 @@ public final class Reports {
                         Double.NaN)
                 .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
                 .build();
-        if (log)
+        if (log) {
             logger.trace(result.getMessage());
+        }
         return result;
     }
 
@@ -346,7 +348,6 @@ public final class Reports {
                 .withSeverity(TypedValue.WARN_SEVERITY)
                 .add();
     }
-
 
     public static void reportBusesWithUpdatedQLimits(ReportNode reportNode, int numBusesWithUpdatedQLimits) {
         reportNode.newReportNode()
