@@ -136,6 +136,10 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
         if (!pvToPqBuses.isEmpty()) {
             done = true;
 
+            ReportNode summary = Reports.reportPvToPqBuses(reportNode, pvToPqBuses.size(), modifiedRemainingPvBusCount);
+
+            boolean log = LOGGER.isTraceEnabled();
+
             for (ControllerBusToPqBus pvToPqBus : pvToPqBuses) {
                 LfBus controllerBus = pvToPqBus.controllerBus;
 
@@ -146,30 +150,23 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
                 // increment PV -> PQ switch counter
                 contextData.incrementPvPqSwitchCount(controllerBus.getId());
 
-                if (LOGGER.isTraceEnabled()) {
-                    switch (pvToPqBus.limitType) {
-                        case MAX_Q :
-                            LOGGER.trace("Switch bus '{}' PV -> PQ, q={} > maxQ={}", controllerBus.getId(), pvToPqBus.q * PerUnit.SB,
-                                    pvToPqBus.qLimit * PerUnit.SB);
-                            break;
-                        case MIN_Q:
-                            LOGGER.trace("Switch bus '{}' PV -> PQ, q={} < minQ={}", controllerBus.getId(), pvToPqBus.q * PerUnit.SB,
-                                    pvToPqBus.qLimit * PerUnit.SB);
-                            break;
-                        case MIN_REALISTIC_V:
-                            LOGGER.trace("Switch bus '{}' PV -> PQ, q set to {} = targetQ - v is below realistic voltage limit ({}pu) when remote voltage target is maintained",
-                                    controllerBus.getId(), pvToPqBus.qLimit * PerUnit.SB, minRealisticVoltage);
-                            break;
-                        case MAX_REALISTIC_V:
-                            LOGGER.trace("Switch bus '{}' PV -> PQ, q set to {} = targetQ - v is above realistic voltage limits ({}pu) when remote voltage target is maintained",
-                                    controllerBus.getId(), pvToPqBus.qLimit * PerUnit.SB, maxRealisticVoltage);
-                            break;
-                    }
+                switch (pvToPqBus.limitType) {
+                    case MAX_Q :
+                        Reports.reportPvToPqMaxQ(summary, controllerBus, pvToPqBus.q, pvToPqBus.qLimit, log, LOGGER);
+                        break;
+                    case MIN_Q:
+                        Reports.reportPvToPqMinQ(summary, controllerBus, pvToPqBus.q, pvToPqBus.qLimit, log, LOGGER);
+                        break;
+                    case MIN_REALISTIC_V:
+                        Reports.reportPvToPqMinRealisticV(summary, controllerBus, pvToPqBus.qLimit, minRealisticVoltage, log, LOGGER);
+                        break;
+                    case MAX_REALISTIC_V:
+                        Reports.reportPvToPqMaxRealisticV(summary, controllerBus, pvToPqBus.qLimit, maxRealisticVoltage, log, LOGGER);
+                        break;
                 }
             }
-        }
 
-        Reports.reportPvToPqBuses(reportNode, pvToPqBuses.size(), modifiedRemainingPvBusCount);
+        }
 
         LOGGER.info("{} buses switched PV -> PQ ({} bus remains PV)", pvToPqBuses.size(), modifiedRemainingPvBusCount);
 
@@ -184,6 +181,10 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
     private static boolean switchPqPv(List<PqToPvBus> pqToPvBuses, ContextData contextData, ReportNode reportNode, int maxPqPvSwitch) {
         int pqPvSwitchCount = 0;
 
+        boolean log = LOGGER.isTraceEnabled();
+
+        List<ReportNode> pqPvNodes = new ArrayList<>();
+
         for (PqToPvBus pqToPvBus : pqToPvBuses) {
             LfBus controllerBus = pqToPvBus.controllerBus;
 
@@ -197,17 +198,25 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
                 controllerBus.setQLimitType(null);
                 pqPvSwitchCount++;
 
-                if (LOGGER.isTraceEnabled()) {
-                    if (pqToPvBus.limitType.isMaxLimit()) {
-                        LOGGER.trace("Switch bus '{}' PQ -> PV, q=maxQ and v={} > targetV={}", controllerBus.getId(), getBusV(controllerBus), getBusTargetV(controllerBus));
-                    } else {
-                        LOGGER.trace("Switch bus '{}' PQ -> PV, q=minQ and v={} < targetV={}", controllerBus.getId(), getBusV(controllerBus), getBusTargetV(controllerBus));
-                    }
+
+                if (pqToPvBus.limitType.isMaxLimit()) {
+                    pqPvNodes.add(Reports.reportPqToPvBusMaxLimit(controllerBus,
+                            controllerBus.getGeneratorVoltageControl().map(VoltageControl::getControlledBus).orElse(null),
+                            getBusTargetV(controllerBus),
+                            log,
+                            LOGGER));
+                } else {
+                    pqPvNodes.add(Reports.reportPqToPvBusMinLimit(controllerBus,
+                            controllerBus.getGeneratorVoltageControl().map(VoltageControl::getControlledBus).orElse(null),
+                            getBusTargetV(controllerBus),
+                            log,
+                            LOGGER));
                 }
             }
-        }
 
-        Reports.reportPqToPvBuses(reportNode, pqPvSwitchCount, pqToPvBuses.size() - pqPvSwitchCount);
+            ReportNode summary = Reports.reportPqToPvBuses(reportNode, pqPvSwitchCount, pqToPvBuses.size() - pqPvSwitchCount);
+            pqPvNodes.forEach(n -> summary.include(n));
+        }
 
         LOGGER.info("{} buses switched PQ -> PV ({} buses blocked PQ because have reach max number of switch)",
                 pqPvSwitchCount, pqToPvBuses.size() - pqPvSwitchCount);
@@ -321,6 +330,10 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
     private boolean switchReactiveControllerBusPq(List<ControllerBusToPqBus> reactiveControllerBusesToPqBuses, ReportNode reportNode) {
         int switchCount = 0;
 
+        ReportNode node = Reports.reportReactiveControllerBusesToPqBuses(reportNode, switchCount);
+
+        boolean log = LOGGER.isTraceEnabled();
+
         for (ControllerBusToPqBus bus : reactiveControllerBusesToPqBuses) {
             LfBus controllerBus = bus.controllerBus;
 
@@ -328,26 +341,22 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
             controllerBus.setGenerationTargetQ(bus.qLimit);
             switchCount++;
 
-            if (LOGGER.isTraceEnabled()) {
-                switch (bus.limitType) {
-                    case MAX_Q:
-                        LOGGER.trace("Remote reactive power controller bus '{}' -> PQ, q={} > maxQ={}", controllerBus.getId(), bus.q * PerUnit.SB,
-                                bus.qLimit * PerUnit.SB);
-                        break;
-                    case MIN_Q:
-                        LOGGER.trace("Remote reactive power controller bus '{}' -> PQ, q={} < minQ={}", controllerBus.getId(), bus.q * PerUnit.SB,
-                                bus.qLimit * PerUnit.SB);
-                        break;
-                    case MIN_REALISTIC_V, MAX_REALISTIC_V:
-                        LOGGER.trace("Switch bus '{}' PV -> PQ, q set to {} = targetQ - v is outside realistic voltage limits [{}pu,{}pu] when remote voltage is maintained",
-                                controllerBus.getId(), bus.qLimit * PerUnit.SB, minRealisticVoltage, maxRealisticVoltage);
+            switch (bus.limitType) {
+                case MAX_Q:
+                    Reports.reportReactiveControllerBusesToPqMaxQ(node, controllerBus, bus.q, bus.qLimit, log, LOGGER);
+                    break;
+                case MIN_Q:
+                    LOGGER.trace("Remote reactive power controller bus '{}' -> PQ, q={} < minQ={}", controllerBus.getId(), bus.q * PerUnit.SB,
+                            bus.qLimit * PerUnit.SB);
+                    break;
+                case MIN_REALISTIC_V, MAX_REALISTIC_V:
+                    LOGGER.trace("Switch bus '{}' PV -> PQ, q set to {} = targetQ - v is outside realistic voltage limits [{}pu,{}pu] when remote voltage is maintained",
+                            controllerBus.getId(), bus.qLimit * PerUnit.SB, minRealisticVoltage, maxRealisticVoltage);
 
-                        break;
-                }
+                    break;
             }
-        }
 
-        Reports.reportReactiveControllerBusesToPqBuses(reportNode, switchCount);
+        }
 
         LOGGER.info("{} remote reactive power controller buses switched PQ", switchCount);
 

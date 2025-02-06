@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2023, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2023-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,6 +8,8 @@
 package com.powsybl.openloadflow.ac;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.report.ReportNode;
+import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.PilotPoint;
@@ -26,6 +28,8 @@ import com.powsybl.openloadflow.network.impl.LfNetworkLoaderImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 
@@ -171,7 +175,7 @@ class SecondaryVoltageControlTest {
     }
 
     @Test
-    void testUnblockGeneratorFromLimit() {
+    void testUnblockGeneratorFromLimit() throws IOException {
         network.newExtension(SecondaryVoltageControlAdder.class)
                 .newControlZone()
                 .withName("z1")
@@ -187,8 +191,11 @@ class SecondaryVoltageControlTest {
 
         parametersExt.setSecondaryVoltageControl(true);
 
+        ReportNode node = ReportNode.newRootReportNode().withMessageTemplate("test", "test").build();
+
+
         // try to put g6 and g8 at qmax to see if they are correctly unblock from qmin
-        var result = loadFlowRunner.run(network, parameters);
+        var result = loadFlowRunner.run(network, network.getVariantManager().getWorkingVariantId(), LocalComputationManager.getDefault(), parameters, node);
         assertEquals(LoadFlowResult.ComponentResult.Status.CONVERGED, result.getComponentResults().get(0).getStatus());
         assertEquals(14, result.getComponentResults().get(0).getIterationCount());
 
@@ -197,6 +204,52 @@ class SecondaryVoltageControlTest {
         assertVoltageEquals(30.744, b8);
         assertReactivePowerEquals(-24, g6.getTerminal()); // [-6, 24] => qmax
         assertReactivePowerEquals(-200, g8.getTerminal()); // [-6, 200] => qmax
+
+        // Note that slack distribution fails in this test that runs with the LEAVE_ON_SLACK_BUS slack failure behaviour
+        String expected = """
+                + test
+                   + Load flow on network 'ieee14cdf'
+                      + Network CC0 SC0
+                         + Network info
+                            Network has 14 buses and 20 branches
+                            Network balance: active generation=272.4 MW, active load=258.99999999999994 MW, reactive generation=0.0 MVar, reactive load=73.5 MVar
+                            Angle reference bus: VL1_0
+                            Slack bus: VL1_0
+                         Outer loop DistributedSlack
+                         Outer loop SecondaryVoltageControl
+                         Outer loop VoltageMonitoring
+                         + Outer loop ReactiveLimits
+                            + Outer loop iteration 3
+                               + 3 buses switched PV -> PQ (2 buses remain PV)
+                                  Switch bus 'VL3_0' PV -> PQ, q=-18.05 < minQ=0.0
+                                  Switch bus 'VL6_0' PV -> PQ, q=25.33 > maxQ=24.0
+                                  Switch bus 'VL8_0' PV -> PQ, q=209.07 > maxQ=200.0
+                            + Outer loop iteration 4
+                               + 1 buses switched PV -> PQ (1 buses remain PV)
+                                  Switch bus 'VL2_0' PV -> PQ, q=-46.58 < minQ=-40.0
+                            + Outer loop iteration 5
+                               + 1 buses switched PQ -> PV (0 buses blocked PQ due to the max number of switches)
+                                  Switch bus 'VL6_0' PQ -> PV, q=maxQ and v=14.6049kV > targetV=14.5963kV
+                         + Outer loop DistributedSlack
+                            + Outer loop iteration 6
+                               Failed to distribute slack bus active power mismatch, 3.0111635276433457 MW remains
+                         Outer loop SecondaryVoltageControl
+                         Outer loop VoltageMonitoring
+                         + Outer loop ReactiveLimits
+                            + Outer loop iteration 8
+                               + 2 buses switched PV -> PQ (1 buses remain PV)
+                                  Switch bus 'VL6_0' PV -> PQ, q=24.01 > maxQ=24.0
+                                  Switch bus 'VL8_0' PV -> PQ, q=200.11 > maxQ=200.0
+                         + Outer loop DistributedSlack
+                            + Outer loop iteration 9
+                               Failed to distribute slack bus active power mismatch, 3.0165190365907257 MW remains
+                         Outer loop SecondaryVoltageControl
+                         Outer loop VoltageMonitoring
+                         Outer loop ReactiveLimits
+                         AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+                """;
+
+        assertReportEquals(new ByteArrayInputStream(expected.getBytes()), node);
     }
 
     @Test

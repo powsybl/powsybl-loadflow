@@ -10,6 +10,7 @@ package com.powsybl.openloadflow.util;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.commons.report.TypedValue;
 import com.powsybl.openloadflow.OpenLoadFlowReportConstants;
+import com.powsybl.openloadflow.network.LfBus;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -204,8 +205,8 @@ public final class Reports {
                 .add();
     }
 
-    public static void reportPvToPqBuses(ReportNode reportNode, int pvToPqBusCount, int remainingPvBusCount) {
-        reportNode.newReportNode()
+    public static ReportNode reportPvToPqBuses(ReportNode reportNode, int pvToPqBusCount, int remainingPvBusCount) {
+        return reportNode.newReportNode()
                 .withMessageTemplate("switchPvPq", "${pvToPqBusCount} buses switched PV -> PQ (${remainingPvBusCount} buses remain PV)")
                 .withUntypedValue("pvToPqBusCount", pvToPqBusCount)
                 .withUntypedValue("remainingPvBusCount", remainingPvBusCount)
@@ -213,13 +214,129 @@ public final class Reports {
                 .add();
     }
 
-    public static void reportPqToPvBuses(ReportNode reportNode, int pqToPvBusCount, int blockedPqBusCount) {
-        reportNode.newReportNode()
+    public static void reportPvToPqMaxQ(ReportNode reportNode,
+                                                             LfBus controllerBus,
+                                                             double busQ,
+                                                             double maxQ,
+                                                             boolean log,
+                                                             Logger logger) {
+        ReportNode newNode = reportNode.newReportNode()
+                .withMessageTemplate("switchPvPqQMax",
+                        "Switch bus '${busId}' PV -> PQ, q=${busQ} > maxQ=${maxQ}")
+                .withUntypedValue("busId", controllerBus.getId())
+                .withUntypedValue("busQ", round2(busQ * PerUnit.SB))
+                .withUntypedValue("maxQ", round2(maxQ * PerUnit.SB))
+                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .add();
+        if (log) {
+            logger.trace(newNode.getMessage());
+        }
+    }
+
+    public static void reportPvToPqMinQ(ReportNode reportNode,
+                                        LfBus controllerBus,
+                                        double busQ,
+                                        double minQ,
+                                        boolean log,
+                                        Logger logger) {
+        ReportNode newNode = reportNode.newReportNode()
+                .withMessageTemplate("switchPvPqQMin",
+                        "Switch bus '${busId}' PV -> PQ, q=${busQ} < minQ=${minQ}")
+                .withUntypedValue("busId", controllerBus.getId())
+                .withUntypedValue("busQ", round2(busQ * PerUnit.SB))
+                .withUntypedValue("minQ", round2(minQ * PerUnit.SB))
+                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .add();
+        if (log) {
+            logger.trace(newNode.getMessage());
+        }
+    }
+
+    public static void reportPvToPqMinRealisticV(ReportNode reportNode,
+                                        LfBus controllerBus,
+                                        double targetQ,
+                                        double minRealisticV,
+                                        boolean log,
+                                        Logger logger) {
+        ReportNode newNode = reportNode.newReportNode()
+                .withMessageTemplate("switchPvPqVMax",
+                        "Switch bus '${busId}' PV -> PQ, q set to ${targetQ} = targetQ - V < ${minRealisticV}kV when remote voltage target is maintained")
+                .withUntypedValue("busId", controllerBus.getId())
+                .withUntypedValue("targetQ", round2(targetQ * PerUnit.SB))
+                .withUntypedValue("minRealisticV", round2(minRealisticV * controllerBus.getNominalV()))
+                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .add();
+        if (log) {
+            logger.trace(newNode.getMessage());
+        }
+    }
+
+    public static void reportPvToPqMaxRealisticV(ReportNode reportNode,
+                                                 LfBus controllerBus,
+                                                 double targetQ,
+                                                 double maxRealisticV,
+                                                 boolean log,
+                                                 Logger logger) {
+        ReportNode newNode = reportNode.newReportNode()
+                .withMessageTemplate("switchPvPqVMin",
+                        "Switch bus '${busId}' PV -> PQ, q set to ${targetQ} = targetQ - V > ${maxRealisticV}kV when remote voltage target is maintained")
+                .withUntypedValue("busId", controllerBus.getId())
+                .withUntypedValue("targetQ", round2(targetQ * PerUnit.SB))
+                .withUntypedValue("maxRealisticV", round2(maxRealisticV * controllerBus.getNominalV()))
+                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .add();
+        if (log) {
+            logger.trace(newNode.getMessage());
+        }
+    }
+
+    public static ReportNode reportPqToPvBuses(ReportNode reportNode, int pqToPvBusCount, int blockedPqBusCount) {
+        return reportNode.newReportNode()
                 .withMessageTemplate("switchPqPv", "${pqToPvBusCount} buses switched PQ -> PV (${blockedPqBusCount} buses blocked PQ due to the max number of switches)")
                 .withUntypedValue("pqToPvBusCount", pqToPvBusCount)
                 .withUntypedValue("blockedPqBusCount", blockedPqBusCount)
                 .withSeverity(TypedValue.INFO_SEVERITY)
                 .add();
+    }
+
+    public static ReportNode reportPqToPvBusMaxLimit(LfBus controllerBus, LfBus controlledBus, double targetV, boolean log, Logger logger) {
+        ReportNode result = ReportNode.newRootReportNode()
+                .withMessageTemplate("reportPqToPvBus",
+                        "Switch bus '${busId}' PQ -> PV, q=maxQ and v=${busV}kV > targetV=${targetV}kV")
+                .withUntypedValue("busId", controllerBus.getId())
+                .withUntypedValue("busV", controlledBus != null ?
+                        round4(controlledBus.getV()*controlledBus.getNominalV())
+                        :
+                        Double.NaN)
+                .withUntypedValue("targetV", controlledBus != null ?
+                        round4(targetV * controlledBus.getNominalV())
+                        :
+                        Double.NaN)
+                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .build();
+        if (log)
+            logger.trace(result.getMessage());
+        return result;
+    }
+
+    public static ReportNode reportPqToPvBusMinLimit(LfBus controllerBus, LfBus controlledBus, double targetV, boolean log, Logger logger) {
+        ReportNode result = ReportNode.newRootReportNode()
+                .withMessageTemplate("reportPqToPvBus",
+                        "Switch bus '${busId}' PQ -> PV, q=minQ and v=${busV}kV < targetV=${targetV}kV")
+                .withUntypedValue("busId", controllerBus.getId())
+                .withUntypedValue("busV", controlledBus != null ?
+                        round4(controlledBus.getV()*controlledBus.getNominalV())
+                        :
+                        Double.NaN)
+                .withUntypedValue("targetV", controlledBus != null ?
+                        round4(targetV * controlledBus.getNominalV())
+                        :
+                        Double.NaN)
+                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .build();
+        if (log)
+            logger.trace(result.getMessage());
+        return result;
     }
 
     public static void reportBusForcedToBePv(ReportNode reportNode, String busId) {
@@ -230,6 +347,7 @@ public final class Reports {
                 .add();
     }
 
+
     public static void reportBusesWithUpdatedQLimits(ReportNode reportNode, int numBusesWithUpdatedQLimits) {
         reportNode.newReportNode()
                 .withMessageTemplate("busWithUpdatedQLimits", "${numBusesWithUpdatedQLimits} buses blocked at a reactive limit have been adjusted because the reactive limit changed")
@@ -238,12 +356,39 @@ public final class Reports {
                 .add();
     }
 
-    public static void reportReactiveControllerBusesToPqBuses(ReportNode reportNode, int remoteReactivePowerControllerBusToPqCount) {
-        reportNode.newReportNode()
+    public static ReportNode reportReactiveControllerBusesToPqBuses(ReportNode reportNode, int remoteReactivePowerControllerBusToPqCount) {
+        return reportNode.newReportNode()
                 .withMessageTemplate("remoteReactiveControllerBusToPq", "${remoteReactivePowerControllerBusToPqCount} bus(es) with remote reactive power controller switched PQ")
                 .withUntypedValue("remoteReactivePowerControllerBusToPqCount", remoteReactivePowerControllerBusToPqCount)
                 .withSeverity(TypedValue.INFO_SEVERITY)
                 .add();
+    }
+
+    private static double round2(double value) {
+        return Math.round(value * 100) / 100d;
+    }
+
+    private static double round4(double value) {
+        return Math.round(value * 10000) / 10000d;
+    }
+
+    public static void reportReactiveControllerBusesToPqMaxQ(ReportNode reportNode,
+                                                                   LfBus controllerBus,
+                                                                   double busQ,
+                                                                   double maxQ,
+                                                                   boolean log,
+                                                                   Logger logger) {
+        ReportNode newNode = reportNode.newReportNode()
+                .withMessageTemplate("reportReactiveControllerBusesToPqMaxQ",
+                        "Remote reactive power controller bus '${busId}' -> PQ, q=${busQ} > maxQ=${maxQ}")
+                .withUntypedValue("busId", controllerBus.getId())
+                .withUntypedValue("busQ", round2(busQ * PerUnit.SB))
+                .withUntypedValue("maxQ", round2(maxQ * PerUnit.SB))
+                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .add();
+        if (log) {
+            logger.trace(newNode.getMessage());
+        }
     }
 
     public static void reportStandByAutomatonActivation(ReportNode reportNode, String busId, double newTargetV) {
