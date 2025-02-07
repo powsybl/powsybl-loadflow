@@ -10,6 +10,8 @@ package com.powsybl.openloadflow.ac;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import com.powsybl.commons.report.ReportNode;
+import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.RemoteReactivePowerControlAdder;
 import com.powsybl.loadflow.LoadFlow;
@@ -24,6 +26,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 import static com.powsybl.openloadflow.util.LoadFlowAssert.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -76,7 +81,7 @@ class AcLoadFlowTransformerReactivePowerControlTest {
     }
 
     @Test
-    void testGeneratorRemoteReactivePowerControlOutsideReactiveLimits() {
+    void testGeneratorRemoteReactivePowerControlOutsideReactiveLimits() throws IOException {
         Network network = ReactivePowerControlNetworkFactory.create4BusNetworkWithRatioTapChanger();
 
         // controllers of reactive power
@@ -125,11 +130,110 @@ class AcLoadFlowTransformerReactivePowerControlTest {
         parametersExt.setGeneratorReactivePowerRemoteControl(true)
                 .setTransformerReactivePowerControl(true);
 
-        result = loadFlowRunner.run(network, parameters);
+        ReportNode report = ReportNode.newRootReportNode().withMessageTemplate("test", "test").build();
+
+        result = loadFlowRunner.run(network, network.getVariantManager().getWorkingVariantId(), LocalComputationManager.getDefault(), parameters, report);
         assertTrue(result.isFullyConverged());
         assertReactivePowerEquals(-5.0, g4.getTerminal()); // limit of generator
         assertReactivePowerEquals(gTargetQ, regulatedTerminal); // targetQ of generator is held
         assertEquals(0, t2wt.getRatioTapChanger().getTapPosition());
+
+        // Test the report
+        String expected = """
+                + test
+                   + Load flow on network 'test'
+                      + Network CC0 SC0
+                         + Network info
+                            Network has 4 buses and 5 branches
+                            Network balance: active generation=3.0 MW, active load=5.0 MW, reactive generation=0.0 MVar, reactive load=0.0 MVar
+                            Angle reference bus: b1_vl_0
+                            Slack bus: b1_vl_0
+                         Outer loop VoltageMonitoring
+                         + Outer loop ReactiveLimits
+                            + Outer loop iteration 1
+                               + 1 bus(es) with remote reactive power controller switched PQ
+                                  Remote reactive power controller bus 'b4_vl_0' -> PQ, q=6.39 > maxQ=5.0
+                         + Outer loop IncrementalTransformerReactivePowerControl
+                            + Outer loop iteration 2
+                               1 reactive power-controlled branches are outside of their target deadbands
+                               1 transformers changed tap position
+                               1 transformers reached their tap maximum position
+                            + Outer loop iteration 3
+                               1 reactive power-controlled branches are outside of their target deadbands
+                         Outer loop VoltageMonitoring
+                         Outer loop ReactiveLimits
+                         + Outer loop IncrementalTransformerReactivePowerControl
+                            + Outer loop iteration 3
+                               1 reactive power-controlled branches are outside of their target deadbands
+                         AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+                """;
+
+        assertReportEquals(new ByteArrayInputStream(expected.getBytes()), report);
+    }
+
+    @Test
+    void testGeneratorRemoteReactivePowerControlBelowReactiveLimits() throws IOException {
+        Network network = ReactivePowerControlNetworkFactory.create4BusNetworkWithRatioTapChanger();
+
+        // controllers of reactive power
+        Generator g4 = network.getGenerator("g4");
+        TwoWindingsTransformer t2wt = network.getTwoWindingsTransformer("l34");
+
+        double gTargetQ = -1;
+        double t2wtTargetQ = 1;
+        Terminal regulatedTerminal = t2wt.getTerminal2();
+
+        g4.setTargetQ(0.0).setVoltageRegulatorOn(false);
+        g4.newExtension(RemoteReactivePowerControlAdder.class)
+                .withTargetQ(gTargetQ)
+                .withRegulatingTerminal(regulatedTerminal)
+                .withEnabled(true).add();
+        g4.newMinMaxReactiveLimits().setMinQ(-3.0).setMaxQ(5.0).add();
+
+        t2wt.getRatioTapChanger()
+                .setLoadTapChangingCapabilities(true)
+                .setRegulationMode(RatioTapChanger.RegulationMode.REACTIVE_POWER)
+                .setTargetDeadband(0)
+                .setRegulationValue(t2wtTargetQ)
+                .setRegulationTerminal(regulatedTerminal)
+                .setRegulating(true);
+
+        // without transformer regulating, generator does not hold its target
+        parameters.setUseReactiveLimits(true);
+        parametersExt.setGeneratorReactivePowerRemoteControl(true);
+
+        ReportNode report = ReportNode.newRootReportNode()
+                .withMessageTemplate("test", "test")
+                .build();
+
+        LoadFlowResult result = loadFlowRunner.run(network, network.getVariantManager().getWorkingVariantId(), LocalComputationManager.getDefault(),
+                parameters, report);
+        assertTrue(result.isFullyConverged());
+        assertReactivePowerEquals(3.0, g4.getTerminal());
+        assertReactivePowerEquals(-0.750, regulatedTerminal); // not targetQ
+
+        // Test the report
+        String expected = """
+                + test
+                   + Load flow on network 'test'
+                      + Network CC0 SC0
+                         + Network info
+                            Network has 4 buses and 5 branches
+                            Network balance: active generation=3.0 MW, active load=5.0 MW, reactive generation=0.0 MVar, reactive load=0.0 MVar
+                            Angle reference bus: b1_vl_0
+                            Slack bus: b1_vl_0
+                         Outer loop VoltageMonitoring
+                         + Outer loop ReactiveLimits
+                            + Outer loop iteration 1
+                               + 1 bus(es) with remote reactive power controller switched PQ
+                                  Remote reactive power controller bus 'b4_vl_0' -> PQ, q=-3.49 < minQ=-3.0
+                         Outer loop VoltageMonitoring
+                         Outer loop ReactiveLimits
+                         AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+                """;
+
+        assertReportEquals(new ByteArrayInputStream(expected.getBytes()), report);
+
     }
 
     @Test

@@ -190,8 +190,7 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
 
             int pvPqSwitchCount = contextData.getPvPqSwitchCount(controllerBus.getId());
             if (pvPqSwitchCount >= maxPqPvSwitch) {
-                LOGGER.trace("Bus '{}' blocked PQ as it has reach its max number of PQ -> PV switch ({})",
-                        controllerBus.getId(), pvPqSwitchCount);
+                pqPvNodes.add(Reports.reportPqSwitchLimit(controllerBus, pvPqSwitchCount, log, LOGGER));
             } else {
                 controllerBus.setGeneratorVoltageControlEnabled(true);
                 controllerBus.setGenerationTargetQ(0);
@@ -329,7 +328,7 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
     private boolean switchReactiveControllerBusPq(List<ControllerBusToPqBus> reactiveControllerBusesToPqBuses, ReportNode reportNode) {
         int switchCount = 0;
 
-        ReportNode node = Reports.reportReactiveControllerBusesToPqBuses(reportNode, switchCount);
+        List<ReportNode> switchedNodes = new ArrayList<>();
 
         boolean log = LOGGER.isTraceEnabled();
 
@@ -342,18 +341,21 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
 
             switch (bus.limitType) {
                 case MAX_Q:
-                    Reports.reportReactiveControllerBusesToPqMaxQ(node, controllerBus, bus.q, bus.qLimit, log, LOGGER);
+                    switchedNodes.add(Reports.reportReactiveControllerBusesToPqMaxQ(controllerBus, bus.q, bus.qLimit, log, LOGGER));
                     break;
                 case MIN_Q:
-                    LOGGER.trace("Remote reactive power controller bus '{}' -> PQ, q={} < minQ={}", controllerBus.getId(), bus.q * PerUnit.SB,
-                            bus.qLimit * PerUnit.SB);
+                    switchedNodes.add(Reports.reportReactiveControllerBusesToPqMinQ(controllerBus, bus.q, bus.qLimit, log, LOGGER));
                     break;
                 case MIN_REALISTIC_V, MAX_REALISTIC_V:
+                    // Note: never happens for now. Robust mode applies only to remote voltage control generators
                     LOGGER.trace("Switch bus '{}' PV -> PQ, q set to {} = targetQ - v is outside realistic voltage limits [{}pu,{}pu] when remote voltage is maintained",
                             controllerBus.getId(), bus.qLimit * PerUnit.SB, minRealisticVoltage, maxRealisticVoltage);
 
                     break;
             }
+
+            ReportNode node = Reports.reportReactiveControllerBusesToPqBuses(reportNode, switchCount);
+            switchedNodes.forEach(n -> node.include(n));
 
         }
 
