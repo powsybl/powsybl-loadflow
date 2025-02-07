@@ -7,7 +7,6 @@
  */
 package com.powsybl.openloadflow.ac;
 
-
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import com.powsybl.commons.report.ReportNode;

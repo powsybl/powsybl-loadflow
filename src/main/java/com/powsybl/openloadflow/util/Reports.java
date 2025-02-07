@@ -226,7 +226,7 @@ public final class Reports {
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("busQ", round2(busQ * PerUnit.SB))
                 .withUntypedValue("maxQ", round2(maxQ * PerUnit.SB))
-                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .withSeverity(TypedValue.TRACE_SEVERITY)
                 .add();
         if (log) {
             logger.trace(newNode.getMessage());
@@ -245,7 +245,7 @@ public final class Reports {
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("busQ", round2(busQ * PerUnit.SB))
                 .withUntypedValue("minQ", round2(minQ * PerUnit.SB))
-                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .withSeverity(TypedValue.TRACE_SEVERITY)
                 .add();
         if (log) {
             logger.trace(newNode.getMessage());
@@ -264,7 +264,7 @@ public final class Reports {
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("targetQ", round2(targetQ * PerUnit.SB))
                 .withUntypedValue("minRealisticV", round2(minRealisticV * controllerBus.getNominalV()))
-                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .withSeverity(TypedValue.TRACE_SEVERITY)
                 .add();
         if (log) {
             logger.trace(newNode.getMessage());
@@ -283,7 +283,7 @@ public final class Reports {
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("targetQ", round2(targetQ * PerUnit.SB))
                 .withUntypedValue("maxRealisticV", round2(maxRealisticV * controllerBus.getNominalV()))
-                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .withSeverity(TypedValue.TRACE_SEVERITY)
                 .add();
         if (log) {
             logger.trace(newNode.getMessage());
@@ -305,7 +305,7 @@ public final class Reports {
                         "Bus '${busId}' blocked PQ as it has reach its max number of PQ -> PV switch (${limit})")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("limit", limit)
-                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .withSeverity(TypedValue.TRACE_SEVERITY)
                 .build();
         if (log) {
             logger.trace(result.getMessage());
@@ -326,7 +326,7 @@ public final class Reports {
                         round4(targetV * controlledBus.getNominalV())
                         :
                         Double.NaN)
-                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .withSeverity(TypedValue.TRACE_SEVERITY)
                 .build();
         if (log) {
             logger.trace(result.getMessage());
@@ -347,7 +347,7 @@ public final class Reports {
                         round4(targetV * controlledBus.getNominalV())
                         :
                         Double.NaN)
-                .withSeverity(TypedValue.TRACE_SEVERITY) // TODO change to DETAIL when available and compatible with INFO parent
+                .withSeverity(TypedValue.TRACE_SEVERITY)
                 .build();
         if (log) {
             logger.trace(result.getMessage());
