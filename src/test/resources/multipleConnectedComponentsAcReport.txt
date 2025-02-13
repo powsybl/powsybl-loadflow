@@ -3,7 +3,7 @@
       + Network CC0 SC0
          + Network info
             Network has 3 buses and 4 branches
-            Network balance: active generation=3.0 MW, active load=2.0 MW, reactive generation=0.0 MVar, reactive load=0.0 MVar
+            Network balance: active generation=3 MW, active load=2 MW, reactive generation=0 MVar, reactive load=0 MVar
             Angle reference bus: b1_vl_0
             Slack bus: b1_vl_0
          Outer loop DistributedSlack

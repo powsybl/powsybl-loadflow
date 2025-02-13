@@ -3,13 +3,13 @@
       + Network CC0 SC0
          + Network info
             Network has 4 buses and 3 branches
-            Network balance: active generation=140.0 MW, active load=110.0 MW, reactive generation=0.0 MVar, reactive load=15.0 MVar
+            Network balance: active generation=140 MW, active load=110 MW, reactive generation=0 MVar, reactive load=15 MVar
             Angle reference bus: bx1_vl_0
             Slack bus: bx1_vl_0
          + Outer loop AreaInterchangeControl
             + Outer loop iteration 1
-               Area a1 interchange mismatch (10.000000416666666 MW) distributed in 1 distribution iteration(s)
-               Area a2 interchange mismatch (-40.00000000651042 MW) distributed in 1 distribution iteration(s)
+               Area a1 interchange mismatch (10 MW) distributed in 1 distribution iteration(s)
+               Area a2 interchange mismatch (-40 MW) distributed in 1 distribution iteration(s)
          Outer loop VoltageMonitoring
          Outer loop ReactiveLimits
          Outer loop AreaInterchangeControl

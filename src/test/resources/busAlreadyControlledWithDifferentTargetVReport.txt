@@ -1,8 +1,8 @@
 + Test Report
    + Network CC0 SC0
-      Bus vl1_0 controls voltage of bus vl2_0 which is already controlled by buses [vl2_0, vl1_0] with a different target voltage: 412.0 kV (kept) and 413.0 kV (ignored)
+      Bus vl1_0 controls voltage of bus vl2_0 which is already controlled by buses [vl2_0, vl1_0] with a different target voltage: 412 kV (kept) and 413 kV (ignored)
       + Network info
          Network has 3 buses and 2 branches
-         Network balance: active generation=200.0 MW, active load=99.9 MW, reactive generation=0.0 MVar, reactive load=80.0 MVar
+         Network balance: active generation=200 MW, active load=99.9 MW, reactive generation=0 MVar, reactive load=80 MVar
          Angle reference bus: vl2_0
          Slack bus: vl2_0

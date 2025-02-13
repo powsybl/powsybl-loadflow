@@ -4,7 +4,7 @@
          Controlled branch l34 is controlled at both sides. Controlled side TWO (kept) side ONE (rejected).
          + Network info
             Network has 4 buses and 5 branches
-            Network balance: active generation=3.0 MW, active load=5.0 MW, reactive generation=0.0 MVar, reactive load=0.0 MVar
+            Network balance: active generation=3 MW, active load=5 MW, reactive generation=0 MVar, reactive load=0 MVar
             Angle reference bus: b1_vl_0
             Slack bus: b1_vl_0
          Outer loop VoltageMonitoring

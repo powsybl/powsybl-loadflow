@@ -4,12 +4,12 @@
          1 transformers have been discarded from voltage control because targetV is inconsistent
          + Network info
             Network has 3 buses and 2 branches
-            Network balance: active generation=25.0 MW, active load=16.2 MW, reactive generation=0.0 MVar, reactive load=7.5 MVar
+            Network balance: active generation=25 MW, active load=16.2 MW, reactive generation=0 MVar, reactive load=7.5 MVar
             Angle reference bus: VL_2_0
             Slack bus: VL_2_0
          + Outer loop DistributedSlack
             + Outer loop iteration 1
-               Slack bus active power (-2.8882610545475753 MW) distributed in 1 distribution iteration(s)
+               Slack bus active power (-2.888261 MW) distributed in 1 distribution iteration(s)
          Outer loop VoltageMonitoring
          Outer loop ReactiveLimits
          Outer loop SimpleTransformerVoltageControl

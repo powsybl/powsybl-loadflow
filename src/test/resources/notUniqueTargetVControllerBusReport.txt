@@ -1,8 +1,8 @@
 + Test Report
    + Network CC0 SC0
-      Generators [g1, g2] are connected to the same bus vl1_0 with different target voltages: 23.0 kV (kept) and 22.0 kV (rejected)
+      Generators [g1, g2] are connected to the same bus vl1_0 with different target voltages: 23 kV (kept) and 22 kV (rejected)
       + Network info
          Network has 2 buses and 1 branches
-         Network balance: active generation=200.0 MW, active load=99.9 MW, reactive generation=0.0 MVar, reactive load=80.0 MVar
+         Network balance: active generation=200 MW, active load=99.9 MW, reactive generation=0 MVar, reactive load=80 MVar
          Angle reference bus: vl1_0
          Slack bus: vl1_0

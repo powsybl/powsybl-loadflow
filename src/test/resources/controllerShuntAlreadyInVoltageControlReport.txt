@@ -4,7 +4,7 @@
          Controller shunt vl3_0_controller_shunt_compensators is already in a shunt voltage control. The second controlled bus vl2_0 is ignored
          + Network info
             Network has 3 buses and 2 branches
-            Network balance: active generation=101.36639999999998 MW, active load=101.0 MW, reactive generation=0.0 MVar, reactive load=150.0 MVar
+            Network balance: active generation=101.3664 MW, active load=101 MW, reactive generation=0 MVar, reactive load=150 MVar
             Angle reference bus: vl2_0
             Slack bus: vl2_0
          Outer loop DistributedSlack

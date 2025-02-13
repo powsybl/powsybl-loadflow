@@ -3,13 +3,13 @@
       + Network CC0 SC0
          + Network info
             Network has 4 buses and 4 branches
-            Network balance: active generation=607.0 MW, active load=600.0 MW, reactive generation=0.0 MVar, reactive load=200.0 MVar
+            Network balance: active generation=607 MW, active load=600 MW, reactive generation=0 MVar, reactive load=200 MVar
             Angle reference bus: VLHV1_0
             Slack bus: VLHV1_0
          + Pre-contingency simulation
             + Outer loop DistributedSlack
                + Outer loop iteration 1
-                  Slack bus active power (-1.4404045651219555 MW) distributed in 1 distribution iteration(s)
+                  Slack bus active power (-1.440405 MW) distributed in 1 distribution iteration(s)
             Outer loop VoltageMonitoring
             Outer loop ReactiveLimits
             Outer loop DistributedSlack
@@ -19,7 +19,7 @@
          + Post-contingency simulation 'NHV1_NHV2_2'
             + Outer loop DistributedSlack
                + Outer loop iteration 1
-                  Slack bus active power (5.803741102800952 MW) distributed in 1 distribution iteration(s)
+                  Slack bus active power (5.803741 MW) distributed in 1 distribution iteration(s)
             Outer loop VoltageMonitoring
             Outer loop ReactiveLimits
             Outer loop DistributedSlack

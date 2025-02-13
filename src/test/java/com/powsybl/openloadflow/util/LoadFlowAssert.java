@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -102,21 +104,29 @@ public final class LoadFlowAssert {
         assertReportEquals(LoadFlowAssert.class.getResourceAsStream(refResourceName), reportNode);
     }
 
-    public static void assertReportEquals(InputStream ref, ReportNode reportNode) throws IOException {
+    private static String reportToString(ReportNode reportNode) throws IOException {
         StringWriter sw = new StringWriter();
-        reportNode.print(sw);
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        symbols.setDecimalSeparator('.');
+        DecimalFormat decimalFormat = new DecimalFormat("#.######", symbols);
+        reportNode.print(sw, typedValue -> {
+            if (typedValue.getValue() instanceof Double) {
+                return decimalFormat.format(typedValue.getValue());
+            }
+            return typedValue.toString();
+        });
+        return sw.toString();
+    }
 
+    public static void assertReportEquals(InputStream ref, ReportNode reportNode) throws IOException {
         String refLogExport = normalizeLineSeparator(new String(ByteStreams.toByteArray(ref), StandardCharsets.UTF_8));
-        String logExport = normalizeLineSeparator(sw.toString());
+        String logExport = normalizeLineSeparator(reportToString(reportNode));
         assertEquals(refLogExport, logExport);
     }
 
     public static void assertTxtReportEquals(String reportTxt, ReportNode reportNode) throws IOException {
-        StringWriter sw = new StringWriter();
-        reportNode.print(sw);
-
         String refLogExport = normalizeLineSeparator(reportTxt);
-        String logExport = normalizeLineSeparator(sw.toString());
+        String logExport = normalizeLineSeparator(reportToString(reportNode));
         assertEquals(refLogExport, logExport);
     }
 

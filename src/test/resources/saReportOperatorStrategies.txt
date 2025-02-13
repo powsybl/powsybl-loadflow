@@ -3,7 +3,7 @@
       + Network CC0 SC0
          + Network info
             Network has 4 buses and 5 branches
-            Network balance: active generation=600.0 MW, active load=600.0 MW, reactive generation=0.0 MVar, reactive load=200.0 MVar
+            Network balance: active generation=600 MW, active load=600 MW, reactive generation=0 MVar, reactive load=200 MVar
             Angle reference bus: VL2_0
             Slack bus: VL2_0
          + Pre-contingency simulation

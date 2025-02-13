@@ -3,17 +3,17 @@
       + Network CC0 SC0
          + Network info
             Network has 3 buses and 4 branches
-            Network balance: active generation=3.0 MW, active load=2.0 MW, reactive generation=0.0 MVar, reactive load=0.0 MVar
+            Network balance: active generation=3 MW, active load=2 MW, reactive generation=0 MVar, reactive load=0 MVar
             Angle reference bus: b1_vl_0
             Slack bus: b1_vl_0
-         Slack bus active power (-0.9999999999999997 MW) distributed in 1 distribution iteration(s)
+         Slack bus active power (-1 MW) distributed in 1 distribution iteration(s)
          DC load flow completed (solverSuccess=true, outerloopStatus=STABLE)
       + Network CC1 SC1
          + Network info
             Network has 3 buses and 4 branches
-            Network balance: active generation=2.0 MW, active load=4.0 MW, reactive generation=0.0 MVar, reactive load=0.0 MVar
+            Network balance: active generation=2 MW, active load=4 MW, reactive generation=0 MVar, reactive load=0 MVar
             Angle reference bus: b5_vl_0
             Slack bus: b5_vl_0
-         Slack bus active power (2.0 MW) distributed in 1 distribution iteration(s)
+         Slack bus active power (2 MW) distributed in 1 distribution iteration(s)
          DC load flow completed (solverSuccess=true, outerloopStatus=STABLE)
       No calculation will be done on 1 network(s) that have no generators
