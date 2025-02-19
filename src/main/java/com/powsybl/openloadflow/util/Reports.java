@@ -207,7 +207,7 @@ public final class Reports {
 
     public static ReportNode reportPvToPqBuses(ReportNode reportNode, int pvToPqBusCount, int remainingPvBusCount) {
         return reportNode.newReportNode()
-                .withMessageTemplate("switchPvPq", "${pvToPqBusCount} buses switched PV -> PQ (${remainingPvBusCount} buses remain PV)")
+                .withMessageTemplate("PvToPqBuses", "${pvToPqBusCount} buses switched PV -> PQ (${remainingPvBusCount} buses remain PV)")
                 .withUntypedValue("pvToPqBusCount", pvToPqBusCount)
                 .withUntypedValue("remainingPvBusCount", remainingPvBusCount)
                 .withSeverity(TypedValue.INFO_SEVERITY)
@@ -221,7 +221,7 @@ public final class Reports {
                                         boolean log,
                                         Logger logger) {
         ReportNode newNode = reportNode.newReportNode()
-                .withMessageTemplate("switchPvPqQMax",
+                .withMessageTemplate("PvToPqMaxQ",
                         "Switch bus '${busId}' PV -> PQ, q=${busQ} > maxQ=${maxQ}")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("busQ", round2(busQ * PerUnit.SB))
@@ -240,7 +240,7 @@ public final class Reports {
                                         boolean log,
                                         Logger logger) {
         ReportNode newNode = reportNode.newReportNode()
-                .withMessageTemplate("switchPvPqQMin",
+                .withMessageTemplate("PvToPqMinQ",
                         "Switch bus '${busId}' PV -> PQ, q=${busQ} < minQ=${minQ}")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("busQ", round2(busQ * PerUnit.SB))
@@ -259,7 +259,7 @@ public final class Reports {
                                                  boolean log,
                                                  Logger logger) {
         ReportNode newNode = reportNode.newReportNode()
-                .withMessageTemplate("switchPvPqVMax",
+                .withMessageTemplate("PvToPqMinRealisticV",
                         "Switch bus '${busId}' PV -> PQ, q set to ${targetQ} = targetQ - V < ${minRealisticV}kV when remote voltage target is maintained")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("targetQ", round2(targetQ * PerUnit.SB))
@@ -278,7 +278,7 @@ public final class Reports {
                                                  boolean log,
                                                  Logger logger) {
         ReportNode newNode = reportNode.newReportNode()
-                .withMessageTemplate("switchPvPqVMin",
+                .withMessageTemplate("PvToPqMaxRealisticV",
                         "Switch bus '${busId}' PV -> PQ, q set to ${targetQ} = targetQ - V > ${maxRealisticV}kV when remote voltage target is maintained")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("targetQ", round2(targetQ * PerUnit.SB))
@@ -292,7 +292,7 @@ public final class Reports {
 
     public static ReportNode reportPqToPvBuses(ReportNode reportNode, int pqToPvBusCount, int blockedPqBusCount) {
         return reportNode.newReportNode()
-                .withMessageTemplate("switchPqPv", "${pqToPvBusCount} buses switched PQ -> PV (${blockedPqBusCount} buses blocked PQ due to the max number of switches)")
+                .withMessageTemplate("PqToPvBuses", "${pqToPvBusCount} buses switched PQ -> PV (${blockedPqBusCount} buses blocked PQ due to the max number of switches)")
                 .withUntypedValue("pqToPvBusCount", pqToPvBusCount)
                 .withUntypedValue("blockedPqBusCount", blockedPqBusCount)
                 .withSeverity(TypedValue.INFO_SEVERITY)
@@ -301,7 +301,7 @@ public final class Reports {
 
     public static ReportNode reportPqSwitchLimit(LfBus controllerBus, int limit, boolean log, Logger logger) {
         ReportNode result = ReportNode.newRootReportNode()
-                .withMessageTemplate("reportPqSwitchLimit",
+                .withMessageTemplate("PqSwitchLimit",
                         "Bus '${busId}' blocked PQ as it has reach its max number of PQ -> PV switch (${limit})")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("limit", limit)
@@ -315,7 +315,7 @@ public final class Reports {
 
     public static ReportNode reportPqToPvBusMaxLimit(LfBus controllerBus, LfBus controlledBus, double targetV, boolean log, Logger logger) {
         ReportNode result = ReportNode.newRootReportNode()
-                .withMessageTemplate("reportPqToPvBus",
+                .withMessageTemplate("PqToPvBusMaxLimit",
                         "Switch bus '${busId}' PQ -> PV, q=maxQ and v=${busV}kV > targetV=${targetV}kV")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("busV", controlledBus != null ?
@@ -336,7 +336,7 @@ public final class Reports {
 
     public static ReportNode reportPqToPvBusMinLimit(LfBus controllerBus, LfBus controlledBus, double targetV, boolean log, Logger logger) {
         ReportNode result = ReportNode.newRootReportNode()
-                .withMessageTemplate("reportPqToPvBus",
+                .withMessageTemplate("PqToPvBusMinLimit",
                         "Switch bus '${busId}' PQ -> PV, q=minQ and v=${busV}kV < targetV=${targetV}kV")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("busV", controlledBus != null ?
@@ -373,7 +373,7 @@ public final class Reports {
 
     public static ReportNode reportReactiveControllerBusesToPqBuses(ReportNode reportNode, int remoteReactivePowerControllerBusToPqCount) {
         return reportNode.newReportNode()
-                .withMessageTemplate("remoteReactiveControllerBusToPq", "${remoteReactivePowerControllerBusToPqCount} bus(es) with remote reactive power controller switched PQ")
+                .withMessageTemplate("reactiveControllerBusesToPqBuses", "${remoteReactivePowerControllerBusToPqCount} bus(es) with remote reactive power controller switched PQ")
                 .withUntypedValue("remoteReactivePowerControllerBusToPqCount", remoteReactivePowerControllerBusToPqCount)
                 .withSeverity(TypedValue.INFO_SEVERITY)
                 .add();
@@ -393,7 +393,7 @@ public final class Reports {
                                                                    boolean log,
                                                                    Logger logger) {
         ReportNode result = ReportNode.newRootReportNode()
-                .withMessageTemplate("reportReactiveControllerBusesToPqMaxQ",
+                .withMessageTemplate("reactiveControllerBusesToPqMaxQ",
                         "Remote reactive power controller bus '${busId}' -> PQ, q=${busQ} > maxQ=${maxQ}")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("busQ", round2(busQ * PerUnit.SB))
@@ -412,7 +412,7 @@ public final class Reports {
                                                              boolean log,
                                                              Logger logger) {
         ReportNode result = ReportNode.newRootReportNode()
-                .withMessageTemplate("reportReactiveControllerBusesToPqMinQ",
+                .withMessageTemplate("reactiveControllerBusesToPqMinQ",
                         "Remote reactive power controller bus '${busId}' -> PQ, q=${busQ} < minQ=${minQ}")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("busQ", round2(busQ * PerUnit.SB))
