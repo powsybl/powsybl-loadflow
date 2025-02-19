@@ -318,14 +318,8 @@ public final class Reports {
                 .withMessageTemplate("PqToPvBusMaxLimit",
                         "Switch bus '${busId}' PQ -> PV, q=maxQ and v=${busV}kV > targetV=${targetV}kV")
                 .withUntypedValue("busId", controllerBus.getId())
-                .withUntypedValue("busV", controlledBus != null ?
-                        round4(controlledBus.getV() * controlledBus.getNominalV())
-                        :
-                        Double.NaN)
-                .withUntypedValue("targetV", controlledBus != null ?
-                        round4(targetV * controlledBus.getNominalV())
-                        :
-                        Double.NaN)
+                .withUntypedValue("busV", round4(controlledBus.getV() * controlledBus.getNominalV()))
+                .withUntypedValue("targetV", round4(targetV * controlledBus.getNominalV()))
                 .withSeverity(TypedValue.TRACE_SEVERITY)
                 .build();
         if (log) {
@@ -339,14 +333,8 @@ public final class Reports {
                 .withMessageTemplate("PqToPvBusMinLimit",
                         "Switch bus '${busId}' PQ -> PV, q=minQ and v=${busV}kV < targetV=${targetV}kV")
                 .withUntypedValue("busId", controllerBus.getId())
-                .withUntypedValue("busV", controlledBus != null ?
-                        round4(controlledBus.getV() * controlledBus.getNominalV())
-                        :
-                        Double.NaN)
-                .withUntypedValue("targetV", controlledBus != null ?
-                        round4(targetV * controlledBus.getNominalV())
-                        :
-                        Double.NaN)
+                .withUntypedValue("busV", round4(controlledBus.getV() * controlledBus.getNominalV()))
+                .withUntypedValue("targetV", round4(targetV * controlledBus.getNominalV()))
                 .withSeverity(TypedValue.TRACE_SEVERITY)
                 .build();
         if (log) {
