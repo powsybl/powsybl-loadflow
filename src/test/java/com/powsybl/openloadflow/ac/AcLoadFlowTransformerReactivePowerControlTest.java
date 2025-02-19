@@ -173,15 +173,15 @@ class AcLoadFlowTransformerReactivePowerControlTest {
 
     @Test
     void testGeneratorRemoteReactivePowerControlBelowReactiveLimits() throws IOException {
-        Network network = ReactivePowerControlNetworkFactory.create4BusNetworkWithRatioTapChanger();
+        Network myNetwork = ReactivePowerControlNetworkFactory.create4BusNetworkWithRatioTapChanger();
 
         // controllers of reactive power
-        Generator g4 = network.getGenerator("g4");
-        TwoWindingsTransformer t2wt = network.getTwoWindingsTransformer("l34");
+        Generator g4 = myNetwork.getGenerator("g4");
+        TwoWindingsTransformer twoWindingsTransformer = myNetwork.getTwoWindingsTransformer("l34");
 
         double gTargetQ = -1;
         double t2wtTargetQ = 1;
-        Terminal regulatedTerminal = t2wt.getTerminal2();
+        Terminal regulatedTerminal = twoWindingsTransformer.getTerminal2();
 
         g4.setTargetQ(0.0).setVoltageRegulatorOn(false);
         g4.newExtension(RemoteReactivePowerControlAdder.class)
@@ -190,7 +190,7 @@ class AcLoadFlowTransformerReactivePowerControlTest {
                 .withEnabled(true).add();
         g4.newMinMaxReactiveLimits().setMinQ(-3.0).setMaxQ(5.0).add();
 
-        t2wt.getRatioTapChanger()
+        twoWindingsTransformer.getRatioTapChanger()
                 .setLoadTapChangingCapabilities(true)
                 .setRegulationMode(RatioTapChanger.RegulationMode.REACTIVE_POWER)
                 .setTargetDeadband(0)
@@ -206,7 +206,7 @@ class AcLoadFlowTransformerReactivePowerControlTest {
                 .withMessageTemplate("test", "test")
                 .build();
 
-        LoadFlowResult result = loadFlowRunner.run(network, network.getVariantManager().getWorkingVariantId(), LocalComputationManager.getDefault(),
+        LoadFlowResult result = loadFlowRunner.run(myNetwork, myNetwork.getVariantManager().getWorkingVariantId(), LocalComputationManager.getDefault(),
                 parameters, report);
         assertTrue(result.isFullyConverged());
         assertReactivePowerEquals(3.0, g4.getTerminal());

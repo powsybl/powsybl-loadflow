@@ -392,46 +392,48 @@ class OpenSecurityAnalysisWithActionsTest extends AbstractOpenSecurityAnalysisTe
         assertEquals(639.268, network.getLine("S_SO_2").getTerminal1().getI(), LoadFlowAssert.DELTA_I);
 
         // Test the report
-        String expected = "+ test\n" +
-                "   + Load flow on network 'MetrixTutorialSixBuses'\n" +
-                "      + Network CC0 SC0\n" +
-                "         + Network info\n" +
-                "            Network has 6 buses and 12 branches\n" +
-                "            Network balance: active generation=1539.9999999999998 MW, active load=960.0 MW, reactive generation=0.0 MVar, reactive load=14.40000057220459 MVar\n" +
-                "            Angle reference bus: NE_poste_0\n" +
-                "            Slack bus: NE_poste_0\n" +
-                "         + Outer loop DistributedSlack\n" +
-                "            + Outer loop iteration 1\n" +
-                "               Slack bus active power (-67.60468719400451 MW) distributed in 1 distribution iteration(s)\n" +
-                "            + Outer loop iteration 2\n" +
-                "               Slack bus active power (12.547029144320575 MW) distributed in 1 distribution iteration(s)\n" +
-                "            + Outer loop iteration 3\n" +
-                "               Slack bus active power (-2.4798788939831895 MW) distributed in 1 distribution iteration(s)\n" +
-                "         Outer loop VoltageMonitoring\n" +
-                "         + Outer loop ReactiveLimits\n" +
-                "            + Outer loop iteration 4\n" +
-                "               All PV buses should switch PQ, strongest one will stay PV: SO_poste_0\n" +
-                "               + 2 buses switched PV -> PQ (1 buses remain PV)\n" +
-                "                  Switch bus 'SE_poste_0' PV -> PQ, q=4309.36 > maxQ=200.0\n" +
-                "                  Switch bus 'N_poste_0' PV -> PQ, q=-416.06 < minQ=-200.0\n" +
-                "            + Outer loop iteration 5\n" +
-                "               + 1 buses switched PQ -> PV (0 buses blocked PQ due to the max number of switches)\n" +
-                "                  Switch bus 'N_poste_0' PQ -> PV, q=minQ and v=401.2337kV < targetV=406.45kV\n" +
-                "            + Outer loop iteration 6\n" +
-                "               All PV buses should switch PQ, strongest one will stay PV: SO_poste_0\n" +
-                "               + 1 buses switched PV -> PQ (1 buses remain PV)\n" +
-                "                  Switch bus 'N_poste_0' PV -> PQ, q=2356.06 > maxQ=200.0\n" +
-                "         + Outer loop DistributedSlack\n" +
-                "            + Outer loop iteration 7\n" +
-                "               Slack bus active power (-499.78881432143316 MW) distributed in 1 distribution iteration(s)\n" +
-                "            + Outer loop iteration 8\n" +
-                "               Slack bus active power (-6.4816461240698064 MW) distributed in 1 distribution iteration(s)\n" +
-                "         Outer loop VoltageMonitoring\n" +
-                "         Outer loop ReactiveLimits\n" +
-                "         Outer loop DistributedSlack\n" +
-                "         Outer loop VoltageMonitoring\n" +
-                "         Outer loop ReactiveLimits\n" +
-                "         AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)\n";
+        String expected = """
+                + test
+                   + Load flow on network 'MetrixTutorialSixBuses'
+                      + Network CC0 SC0
+                         + Network info
+                            Network has 6 buses and 12 branches
+                            Network balance: active generation=1539.9999999999998 MW, active load=960.0 MW, reactive generation=0.0 MVar, reactive load=14.40000057220459 MVar
+                            Angle reference bus: NE_poste_0
+                            Slack bus: NE_poste_0
+                         + Outer loop DistributedSlack
+                            + Outer loop iteration 1
+                               Slack bus active power (-67.60468719400451 MW) distributed in 1 distribution iteration(s)
+                            + Outer loop iteration 2
+                               Slack bus active power (12.547029144320575 MW) distributed in 1 distribution iteration(s)
+                            + Outer loop iteration 3
+                               Slack bus active power (-2.4798788939831895 MW) distributed in 1 distribution iteration(s)
+                         Outer loop VoltageMonitoring
+                         + Outer loop ReactiveLimits
+                            + Outer loop iteration 4
+                               All PV buses should switch PQ, strongest one will stay PV: SO_poste_0
+                               + 2 buses switched PV -> PQ (1 buses remain PV)
+                                  Switch bus 'SE_poste_0' PV -> PQ, q=4309.36 > maxQ=200.0
+                                  Switch bus 'N_poste_0' PV -> PQ, q=-416.06 < minQ=-200.0
+                            + Outer loop iteration 5
+                               + 1 buses switched PQ -> PV (0 buses blocked PQ due to the max number of switches)
+                                  Switch bus 'N_poste_0' PQ -> PV, q=minQ and v=401.2337kV < targetV=406.45kV
+                            + Outer loop iteration 6
+                               All PV buses should switch PQ, strongest one will stay PV: SO_poste_0
+                               + 1 buses switched PV -> PQ (1 buses remain PV)
+                                  Switch bus 'N_poste_0' PV -> PQ, q=2356.06 > maxQ=200.0
+                         + Outer loop DistributedSlack
+                            + Outer loop iteration 7
+                               Slack bus active power (-499.78881432143316 MW) distributed in 1 distribution iteration(s)
+                            + Outer loop iteration 8
+                               Slack bus active power (-6.4816461240698064 MW) distributed in 1 distribution iteration(s)
+                         Outer loop VoltageMonitoring
+                         Outer loop ReactiveLimits
+                         Outer loop DistributedSlack
+                         Outer loop VoltageMonitoring
+                         Outer loop ReactiveLimits
+                         AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+                """;
 
         assertReportEquals(new ByteArrayInputStream(expected.getBytes()), reportNode);
 

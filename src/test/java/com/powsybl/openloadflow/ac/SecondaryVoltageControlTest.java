@@ -283,39 +283,41 @@ class SecondaryVoltageControlTest {
         assertReactivePowerEquals(-200, g8.getTerminal()); // [-6, 200] => qmax
 
         // Note that slack distribution fails in this test that runs with the LEAVE_ON_SLACK_BUS slack failure behaviour
-        String expected = "+ test\n" +
-                "   + Load flow on network 'ieee14cdf'\n" +
-                "      + Network CC0 SC0\n" +
-                "         + Network info\n" +
-                "            Network has 14 buses and 20 branches\n" +
-                "            Network balance: active generation=272.4 MW, active load=258.99999999999994 MW, reactive generation=0.0 MVar, reactive load=73.5 MVar\n" +
-                "            Angle reference bus: VL1_0\n" +
-                "            Slack bus: VL1_0\n" +
-                "         Outer loop DistributedSlack\n" +
-                "         Outer loop SecondaryVoltageControl\n" +
-                "         Outer loop VoltageMonitoring\n" +
-                "         + Outer loop ReactiveLimits\n" +
-                "            + Outer loop iteration 3\n" +
-                "               + 3 buses switched PV -> PQ (2 buses remain PV)\n" +
-                "                  Switch bus 'VL3_0' PV -> PQ, q=-18.05 < minQ=0.0\n" +
-                "                  Switch bus 'VL6_0' PV -> PQ, q=25.33 > maxQ=24.0\n" +
-                "                  Switch bus 'VL8_0' PV -> PQ, q=209.07 > maxQ=200.0\n" +
-                "            + Outer loop iteration 4\n" +
-                "               + 1 buses switched PV -> PQ (1 buses remain PV)\n" +
-                "                  Switch bus 'VL2_0' PV -> PQ, q=-46.58 < minQ=-40.0\n" +
-                "            + Outer loop iteration 5\n" +
-                "               + 0 buses switched PQ -> PV (1 buses blocked PQ due to the max number of switches)\n" +
-                "                  Bus 'VL6_0' blocked PQ as it has reached its max number of PQ -> PV switch (1)\n" +
-                "         + Outer loop DistributedSlack\n" +
-                "            + Outer loop iteration 5\n" +
-                "               Failed to distribute slack bus active power mismatch, 3.013536027711483 MW remains\n" +
-                "         Outer loop SecondaryVoltageControl\n" +
-                "         Outer loop VoltageMonitoring\n" +
-                "         + Outer loop ReactiveLimits\n" +
-                "            + Outer loop iteration 5\n" +
-                "               + 0 buses switched PQ -> PV (1 buses blocked PQ due to the max number of switches)\n" +
-                "                  Bus 'VL6_0' blocked PQ as it has reached its max number of PQ -> PV switch (1)\n" +
-                "         AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)\n";
+        String expected = """
+                + test
+                   + Load flow on network 'ieee14cdf'
+                      + Network CC0 SC0
+                         + Network info
+                            Network has 14 buses and 20 branches
+                            Network balance: active generation=272.4 MW, active load=258.99999999999994 MW, reactive generation=0.0 MVar, reactive load=73.5 MVar
+                            Angle reference bus: VL1_0
+                            Slack bus: VL1_0
+                         Outer loop DistributedSlack
+                         Outer loop SecondaryVoltageControl
+                         Outer loop VoltageMonitoring
+                         + Outer loop ReactiveLimits
+                            + Outer loop iteration 3
+                               + 3 buses switched PV -> PQ (2 buses remain PV)
+                                  Switch bus 'VL3_0' PV -> PQ, q=-18.05 < minQ=0.0
+                                  Switch bus 'VL6_0' PV -> PQ, q=25.33 > maxQ=24.0
+                                  Switch bus 'VL8_0' PV -> PQ, q=209.07 > maxQ=200.0
+                            + Outer loop iteration 4
+                               + 1 buses switched PV -> PQ (1 buses remain PV)
+                                  Switch bus 'VL2_0' PV -> PQ, q=-46.58 < minQ=-40.0
+                            + Outer loop iteration 5
+                               + 0 buses switched PQ -> PV (1 buses blocked PQ due to the max number of switches)
+                                  Bus 'VL6_0' blocked PQ as it has reached its max number of PQ -> PV switch (1)
+                         + Outer loop DistributedSlack
+                            + Outer loop iteration 5
+                               Failed to distribute slack bus active power mismatch, 3.013536027711483 MW remains
+                         Outer loop SecondaryVoltageControl
+                         Outer loop VoltageMonitoring
+                         + Outer loop ReactiveLimits
+                            + Outer loop iteration 5
+                               + 0 buses switched PQ -> PV (1 buses blocked PQ due to the max number of switches)
+                                  Bus 'VL6_0' blocked PQ as it has reached its max number of PQ -> PV switch (1)
+                         AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+                """;
 
         assertReportEquals(new ByteArrayInputStream(expected.getBytes()), node);
     }
