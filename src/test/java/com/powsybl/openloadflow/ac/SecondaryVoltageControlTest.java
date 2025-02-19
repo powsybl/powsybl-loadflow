@@ -305,7 +305,7 @@ class SecondaryVoltageControlTest {
                 "                  Switch bus 'VL2_0' PV -> PQ, q=-46.58 < minQ=-40.0\n" +
                 "            + Outer loop iteration 5\n" +
                 "               + 0 buses switched PQ -> PV (1 buses blocked PQ due to the max number of switches)\n" +
-                "                  Bus 'VL6_0' blocked PQ as it has reach its max number of PQ -> PV switch (1)\n" +
+                "                  Bus 'VL6_0' blocked PQ as it has reached its max number of PQ -> PV switch (1)\n" +
                 "         + Outer loop DistributedSlack\n" +
                 "            + Outer loop iteration 5\n" +
                 "               Failed to distribute slack bus active power mismatch, 3.013536027711483 MW remains\n" +
@@ -314,7 +314,7 @@ class SecondaryVoltageControlTest {
                 "         + Outer loop ReactiveLimits\n" +
                 "            + Outer loop iteration 5\n" +
                 "               + 0 buses switched PQ -> PV (1 buses blocked PQ due to the max number of switches)\n" +
-                "                  Bus 'VL6_0' blocked PQ as it has reach its max number of PQ -> PV switch (1)\n" +
+                "                  Bus 'VL6_0' blocked PQ as it has reached its max number of PQ -> PV switch (1)\n" +
                 "         AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)\n";
 
         assertReportEquals(new ByteArrayInputStream(expected.getBytes()), node);

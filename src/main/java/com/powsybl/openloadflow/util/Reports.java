@@ -260,7 +260,7 @@ public final class Reports {
                                                  Logger logger) {
         ReportNode newNode = reportNode.newReportNode()
                 .withMessageTemplate("PvToPqMinRealisticV",
-                        "Switch bus '${busId}' PV -> PQ, q set to ${targetQ} = targetQ - V < ${minRealisticV}kV when remote voltage target is maintained")
+                        "Switch bus '${busId}' PV -> PQ, q set to ${targetQ} = targetQ - because V < ${minRealisticV}kV when remote voltage target is maintained")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("targetQ", round2(targetQ * PerUnit.SB))
                 .withUntypedValue("minRealisticV", round2(minRealisticV * controllerBus.getNominalV()))
@@ -279,7 +279,7 @@ public final class Reports {
                                                  Logger logger) {
         ReportNode newNode = reportNode.newReportNode()
                 .withMessageTemplate("PvToPqMaxRealisticV",
-                        "Switch bus '${busId}' PV -> PQ, q set to ${targetQ} = targetQ - V > ${maxRealisticV}kV when remote voltage target is maintained")
+                        "Switch bus '${busId}' PV -> PQ, q set to ${targetQ} = targetQ - because V > ${maxRealisticV}kV when remote voltage target is maintained")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("targetQ", round2(targetQ * PerUnit.SB))
                 .withUntypedValue("maxRealisticV", round2(maxRealisticV * controllerBus.getNominalV()))
@@ -299,10 +299,10 @@ public final class Reports {
                 .add();
     }
 
-    public static ReportNode reportPqSwitchLimit(LfBus controllerBus, int limit, boolean log, Logger logger) {
+    public static ReportNode reportPvPqSwitchLimit(LfBus controllerBus, int limit, boolean log, Logger logger) {
         ReportNode result = ReportNode.newRootReportNode()
-                .withMessageTemplate("PqSwitchLimit",
-                        "Bus '${busId}' blocked PQ as it has reach its max number of PQ -> PV switch (${limit})")
+                .withMessageTemplate("PvPqSwitchLimit",
+                        "Bus '${busId}' blocked PQ as it has reached its max number of PQ -> PV switch (${limit})")
                 .withUntypedValue("busId", controllerBus.getId())
                 .withUntypedValue("limit", limit)
                 .withSeverity(TypedValue.TRACE_SEVERITY)

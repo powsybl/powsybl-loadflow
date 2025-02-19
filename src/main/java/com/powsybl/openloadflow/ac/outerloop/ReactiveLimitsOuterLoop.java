@@ -11,10 +11,7 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.openloadflow.ac.AcOuterLoopContext;
 import com.powsybl.openloadflow.lf.outerloop.OuterLoopResult;
 import com.powsybl.openloadflow.lf.outerloop.OuterLoopStatus;
-import com.powsybl.openloadflow.network.GeneratorVoltageControl;
-import com.powsybl.openloadflow.network.LfBus;
-import com.powsybl.openloadflow.network.LfNetwork;
-import com.powsybl.openloadflow.network.VoltageControl;
+import com.powsybl.openloadflow.network.*;
 import com.powsybl.openloadflow.util.PerUnit;
 import com.powsybl.openloadflow.util.Reports;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -190,7 +187,7 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
 
             int pvPqSwitchCount = contextData.getPvPqSwitchCount(controllerBus.getId());
             if (pvPqSwitchCount >= maxPqPvSwitch) {
-                pqPvNodes.add(Reports.reportPqSwitchLimit(controllerBus, pvPqSwitchCount, log, LOGGER));
+                pqPvNodes.add(Reports.reportPvPqSwitchLimit(controllerBus, pvPqSwitchCount, log, LOGGER));
             } else {
                 controllerBus.setGeneratorVoltageControlEnabled(true);
                 controllerBus.setGenerationTargetQ(0);
@@ -213,7 +210,7 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
             }
 
             ReportNode summary = Reports.reportPqToPvBuses(reportNode, pqPvSwitchCount, pqToPvBuses.size() - pqPvSwitchCount);
-            pqPvNodes.forEach(n -> summary.include(n));
+            pqPvNodes.forEach(summary::include);
         }
 
         LOGGER.info("{} buses switched PQ -> PV ({} buses blocked PQ because have reach max number of switch)",
@@ -276,7 +273,7 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
     }
 
     private double getInitialGenerationTargetQ(LfBus controllerBus) {
-        return controllerBus.getGenerators().stream().mapToDouble(g -> g.getTargetQ()).sum();
+        return controllerBus.getGenerators().stream().mapToDouble(LfGenerator::getTargetQ).sum();
     }
 
     private boolean isGeneratorRemoteController(LfBus controllerBus) {
@@ -355,7 +352,7 @@ public class ReactiveLimitsOuterLoop implements AcOuterLoop {
             }
 
             ReportNode node = Reports.reportReactiveControllerBusesToPqBuses(reportNode, switchCount);
-            switchedNodes.forEach(n -> node.include(n));
+            switchedNodes.forEach(node::include);
 
         }
 

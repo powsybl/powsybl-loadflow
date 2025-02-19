@@ -287,7 +287,7 @@ class GeneratorRemoteControlPQSwitchTest {
                              + Outer loop ReactiveLimits
                                 + Outer loop iteration 2
                                    + 1 buses switched PV -> PQ (1 buses remain PV)
-                                      Switch bus 'vl1_0' PV -> PQ, q set to 10.0 = targetQ - V < 16.0kV when remote voltage target is maintained
+                                      Switch bus 'vl1_0' PV -> PQ, q set to 10.0 = targetQ - because V < 16.0kV when remote voltage target is maintained
                              + Outer loop DistributedSlack
                                 + Outer loop iteration 3
                                    Slack bus active power (-22.091657952625134 MW) distributed in 1 distribution iteration(s)
@@ -340,7 +340,7 @@ class GeneratorRemoteControlPQSwitchTest {
                              + Outer loop ReactiveLimits
                                 + Outer loop iteration 2
                                    + 1 buses switched PV -> PQ (1 buses remain PV)
-                                      Switch bus 'vl1_0' PV -> PQ, q set to 10.0 = targetQ - V > 24.0kV when remote voltage target is maintained
+                                      Switch bus 'vl1_0' PV -> PQ, q set to 10.0 = targetQ - because V > 24.0kV when remote voltage target is maintained
                              + Outer loop DistributedSlack
                                 + Outer loop iteration 3
                                    Slack bus active power (-18.012289682379112 MW) distributed in 1 distribution iteration(s)
