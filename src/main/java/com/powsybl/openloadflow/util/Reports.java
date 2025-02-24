@@ -20,8 +20,8 @@ import java.util.Map;
  */
 public final class Reports {
 
-    private static final String NETWORK_NUM_CC = "networkNumCc";
-    private static final String NETWORK_NUM_SC = "networkNumSc";
+    public static final String NETWORK_NUM_CC = "networkNumCc";
+    public static final String NETWORK_NUM_SC = "networkNumSc";
     private static final String ITERATION = "iteration";
     private static final String ITERATION_COUNT = "iterationCount";
     private static final String NETWORK_ID = "networkId";
@@ -35,6 +35,9 @@ public final class Reports {
     private static final String CONTROLLER_BUS_ID = "controllerBusId";
     private static final String CONTROLLED_BUS_ID = "controlledBusId";
     public static final String MISMATCH = "mismatch";
+
+    public static final String LF_NETWORK_KEY = "lfNetwork";
+    public static final String POST_CONTINGENCY_SIMULATION_KEY = "postContingencySimulation";
 
     public record BusReport(String busId, double mismatch, double nominalV, double v, double phi, double p, double q) {
     }
@@ -455,7 +458,7 @@ public final class Reports {
 
     public static ReportNode createRootLfNetworkReportNode(int networkNumCc, int networkNumSc) {
         return ReportNode.newRootReportNode()
-                .withMessageTemplate("lfNetwork", "Network CC${networkNumCc} SC${networkNumSc}")
+                .withMessageTemplate(LF_NETWORK_KEY, "Network CC${networkNumCc} SC${networkNumSc}")
                 .withUntypedValue(NETWORK_NUM_CC, networkNumCc)
                 .withUntypedValue(NETWORK_NUM_SC, networkNumSc)
                 .build();
@@ -522,7 +525,7 @@ public final class Reports {
 
     public static ReportNode createPostContingencySimulation(ReportNode reportNode, String contingencyId) {
         return reportNode.newReportNode()
-                .withMessageTemplate("postContingencySimulation", "Post-contingency simulation '${contingencyId}'")
+                .withMessageTemplate(POST_CONTINGENCY_SIMULATION_KEY, "Post-contingency simulation '${contingencyId}'")
                 .withUntypedValue("contingencyId", contingencyId)
                 .add();
     }

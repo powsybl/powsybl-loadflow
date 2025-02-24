@@ -172,10 +172,10 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
             operatorStrategies.stream()
                     .filter(o -> !hasValidContingency(o, contingencyIds))
                     .findAny()
-                    .ifPresent(o -> throwMissingOperatorStrategyContingency(o));
+                    .ifPresent(AbstractSecurityAnalysis::throwMissingOperatorStrategyContingency);
             // Check action ids to report exception to the main thread
             final Set<String> actionIds = actions.stream().map(Action::getId).collect(Collectors.toSet());
-            operatorStrategies.stream()
+            operatorStrategies
                     .forEach(o -> findMissingActionId(o, actionIds)
                             .ifPresent(id -> throwMissingOperatorStrategyAction(o, id)));
 
@@ -183,6 +183,7 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
             // so that we always get results in the same order whatever threads completion order is.
             List<SecurityAnalysisResult> partitionResults = Collections.synchronizedList(new ArrayList<>(Collections.nCopies(contingenciesPartitions.size(), createNoResult()))); // init to no result in case of cancel
             List<LfNetworkList> lfNetworksList = new ArrayList<>();
+            List<ReportNode> reportNodes = new ArrayList<>(contingenciesPartitions.size());
 
             boolean oldAllowVariantMultiThreadAccess = network.getVariantManager().isVariantMultiThreadAccessAllowed();
             network.getVariantManager().allowVariantMultiThreadAccess(true);
@@ -216,8 +217,14 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
 
                             parameters = createParameters(lfParameters, lfParametersExt, partitionTopoConfig.isBreaker(), isAreaInterchangeControl(lfParametersExt, contingencies));
 
+                            ReportNode threadRootNode = partitionNum == 0 ? saReportNode :
+                                    ReportNode.newRootReportNode()
+                                            .withMessageTemplate("threadRoot", "threadRoot")
+                                            .build();
+                            reportNodes.add(partitionNum, threadRootNode);
+
                             // create networks including all necessary switches
-                            lfNetworks = Networks.load(network, parameters.getNetworkParameters(), partitionTopoConfig, saReportNode);
+                            lfNetworks = Networks.load(network, parameters.getNetworkParameters(), partitionTopoConfig, threadRootNode);
                             lfNetworksList.add(0, lfNetworks); // FIXME to workaround variant removal bug, to fix in core
                         } finally {
                             networkLock.unlock();
@@ -246,8 +253,13 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                 network.getVariantManager().allowVariantMultiThreadAccess(oldAllowVariantMultiThreadAccess);
             }
 
+            int networkRank = 0;
             for (var lfNetworks : lfNetworksList) {
+                if (networkRank != 0) {
+                    mergeReportThreadResults(saReportNode, reportNodes.get(networkRank));
+                }
                 lfNetworks.close();
+                networkRank += 1;
             }
 
             // we just need to merge post contingency and operator strategy results, all pre contingency are the same
@@ -265,6 +277,39 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                 stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         return new SecurityAnalysisReport(finalResult);
+    }
+
+    private record LfNetworkId(Object numCC, Object numSC) {
+    }
+
+    private void mergeReportThreadResults(ReportNode mainReport, ReportNode toMerge) {
+
+        Map<LfNetworkId, ReportNode> mainNodes = mainReport.getChildren().stream()
+                .filter(r -> r.getMessageKey().equals(Reports.LF_NETWORK_KEY))
+                .collect(Collectors.toMap(
+                        n -> new LfNetworkId(n.getValue(Reports.NETWORK_NUM_CC).orElseThrow().getValue(),
+                                                       n.getValue(Reports.NETWORK_NUM_SC).orElseThrow().getValue()),
+                                  n -> n));
+
+        Map<LfNetworkId, ReportNode> toMergeNodes = toMerge.getChildren().stream()
+                .filter(r -> r.getMessageKey().equals(Reports.LF_NETWORK_KEY))
+                .collect(Collectors.toMap(
+                        n -> new LfNetworkId(n.getValue(Reports.NETWORK_NUM_CC).orElseThrow().getValue(),
+                                n.getValue(Reports.NETWORK_NUM_SC).orElseThrow().getValue()),
+                        n -> n));
+
+        // By construction all threads should have the same lfNetwork List
+        // So the merge is just about appending relevant data to lfNetwork nodes of the
+        // main thread
+
+        for (LfNetworkId key : mainNodes.keySet()) {
+            // Both should exist
+            ReportNode mainReportNode = mainNodes.get(key);
+            ReportNode toMergeNode = toMergeNodes.get(key);
+            toMergeNode.getChildren().stream()
+                    .filter(n -> n.getMessageKey().equals(Reports.POST_CONTINGENCY_SIMULATION_KEY))
+                    .forEach(n -> mainReportNode.copy(n));
+        }
     }
 
     SecurityAnalysisResult runSimulationsOnAllComponents(LfNetworkList networks, List<PropagatedContingency> propagatedContingencies, P parameters,
@@ -536,6 +581,7 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
                                                                                               Map<String, Action> actionsById,
                                                                                               Set<Action> neededActions,
                                                                                               boolean checkOperatorStrategies) {
+
         Set<String> contingencyIds = propagatedContingencies.stream().map(propagatedContingency -> propagatedContingency.getContingency().getId()).collect(Collectors.toSet());
         Map<String, List<OperatorStrategy>> operatorStrategiesByContingencyId = new HashMap<>();
         Set<String> actionIds = actionsById.keySet();
@@ -692,6 +738,7 @@ public abstract class AbstractSecurityAnalysis<V extends Enum<V> & Quantity, E e
         Map<String, List<OperatorStrategy>> operatorStrategiesByContingencyId =
                 indexOperatorStrategiesByContingencyId(propagatedContingencies, operatorStrategies, actionsById, neededActions,
                         checkOperatorStrategies);
+
         Map<String, LfAction> lfActionById = createLfActions(lfNetwork, neededActions, network, acParameters.getNetworkParameters()); // only convert needed actions
 
         LoadFlowParameters loadFlowParameters = securityAnalysisParameters.getLoadFlowParameters();
