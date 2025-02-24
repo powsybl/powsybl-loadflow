@@ -89,7 +89,7 @@ The following contingency types are supported:
 
 Latest version of the documentation is available [here](https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/stable/).
 
-To contribute to the documentation follow the instructions in the [documentation README](https://github.com/powsybl/powsybl-open-loadflow/tree/main/docs) page.
+To contribute to the documentation follow the instructions in the [documentation README](https://github.com/powsybl/powsybl-open-loadflow/blob/main/docs/README.md) page.
 
 ## Getting started
 

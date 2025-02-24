@@ -18,3 +18,4 @@ org.eclipse.jdt.groovy.core.prefs
 
 # Generated readthedocs pages
 /docs/_build
+build-docs/

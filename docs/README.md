@@ -9,15 +9,18 @@ They are published on [powsybl-open-loadflow.readthedocs.io](http://powsybl-open
 
 When modifying the website content, you can easily preview the result on your PC.
 
-### From a terminal
+Navigate to the "docs" directory of the project:
+~~~bash
+cd docs
+~~~
 
-Navigate to the root of the project and run the following commands:
+Run the following commands:
 
-Install the requirements the first time:
+- Install the requirements the first time
 ~~~bash
 pip install -r requirements.txt
 ~~~
-Build the documentation:
+- Build the documentation
 ~~~bash
 sphinx-build -a . ./_build/html
 ~~~
@@ -25,20 +28,9 @@ Or
 ~~~bash
 make html
 ~~~
-Or to build in latex format
+Or to build the documentation in latex format:
 ~~~bash
 make latexpdf
-~~~
-
-### From your IDE GUI
-
-Install the requirements the first time:
-~~~bash
-pip install -r requirements.txt
-~~~
-
-~~~bash
-sphinx-build -a . _build/html
 ~~~
 
 ### Preview the result
