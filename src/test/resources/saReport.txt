@@ -37,11 +37,11 @@
             Outer loop ReactiveLimits
             AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
          + Post-contingency simulation 'NGEN_NHV1'
-            Contingency caused the loss of 605.559595434878 MW injection: 0.0 MW distributed, 605.559595434878 MW remaining.
+            Contingency caused the loss of 605.56 MW injection: 0.00 MW distributed, 605.56 MW remaining.
             Network must have at least one bus with generator voltage control enabled
             AC load flow completed with error (solverStatus=SOLVER_FAILED, outerloopStatus=STABLE)
          + Post-contingency simulation 'NHV2_NLOAD'
-            Contingency caused the loss of -600.0 MW injection: -600.0 MW distributed, 0.0 MW remaining.
+            Contingency caused the loss of -600.00 MW injection: -600.00 MW distributed, 0.00 MW remaining.
             + Outer loop DistributedSlack
                + Outer loop iteration 1
                   Slack bus active power (-5.4942194604343655 MW) distributed in 1 distribution iteration(s)

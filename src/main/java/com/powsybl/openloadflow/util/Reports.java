@@ -13,6 +13,7 @@ import com.powsybl.openloadflow.OpenLoadFlowReportConstants;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -697,9 +698,9 @@ public final class Reports {
     public static void reportContingencyActivePowerLossDistribution(ReportNode reportNode, double mismatch, double remaining) {
         reportNode.newReportNode()
                 .withMessageTemplate("contingencyActivePowerLossDistribution", "Contingency caused the loss of ${mismatch} MW injection: ${distributed} MW distributed, ${remaining} MW remaining.")
-                .withUntypedValue(MISMATCH, mismatch)
-                .withUntypedValue("distributed", mismatch - remaining)
-                .withUntypedValue("remaining", remaining)
+                .withUntypedValue(MISMATCH, String.format(Locale.UK, "%.2f", mismatch))
+                .withUntypedValue("distributed", String.format(Locale.UK, "%.2f", mismatch - remaining))
+                .withUntypedValue("remaining", String.format(Locale.UK, "%.2f", remaining))
                 .withSeverity(TypedValue.INFO_SEVERITY)
                 .add();
     }
