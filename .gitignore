@@ -17,5 +17,5 @@ org.eclipse.jdt.groovy.core.prefs
 .mvn/wrapper/*.jar
 
 # Generated readthedocs pages
+/docs/_build
 build-docs/
-

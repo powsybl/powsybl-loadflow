@@ -84,6 +84,13 @@ The following contingency types are supported:
 - Load and generator contingencies,
 - HVDC line contingency.
 
+
+## Documentation
+
+Latest version of the documentation is available [here](https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/stable/).
+
+To contribute to the documentation follow the instructions in the [documentation README](https://github.com/powsybl/powsybl-open-loadflow/blob/main/docs/README.md) page.
+
 ## Getting started
 
 Running a load flow with PowSyBl Open Load Flow is easy. First let's start loading a IEEE 14 bus network. We first add a few Maven 
