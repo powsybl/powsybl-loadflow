@@ -332,7 +332,7 @@ public class DcSensitivityAnalysis extends AbstractSensitivityAnalysis<DcVariabl
         // we need to recompute the participating elements because the connectivity changed
         if (rhsChanged) {
             participatingElementsForThisConnectivity = lfParameters.isDistributedSlack()
-                    ? getParticipatingElements(connectivityAnalysisResult.getSlackConnectedComponent(), lfParameters.getBalanceType(), lfParametersExt) // will also be used to recompute the loadflow
+                    ? getParticipatingElements(connectivityAnalysisResult.getSlackConnectedComponentBuses(), lfParameters.getBalanceType(), lfParametersExt) // will also be used to recompute the loadflow
                     : Collections.emptyList();
         }
 
