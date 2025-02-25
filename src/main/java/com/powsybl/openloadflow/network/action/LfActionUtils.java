@@ -14,7 +14,9 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.openloadflow.graph.GraphConnectivity;
 import com.powsybl.openloadflow.network.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import static com.powsybl.openloadflow.network.action.AbstractLfBranchAction.updateBusesAndBranchStatus;
 
@@ -36,9 +38,9 @@ public final class LfActionUtils {
         Objects.requireNonNull(action);
         Objects.requireNonNull(network);
         return switch (action.getType()) {
-            case SwitchAction.NAME -> new LfSwitchAction(action.getId(), (SwitchAction) action);
+            case SwitchAction.NAME -> new LfSwitchAction(action.getId(), (SwitchAction) action, lfNetwork);
             case TerminalsConnectionAction.NAME ->
-                new LfTerminalsConnectionAction(action.getId(), (TerminalsConnectionAction) action);
+                new LfTerminalsConnectionAction(action.getId(), (TerminalsConnectionAction) action, lfNetwork);
             case PhaseTapChangerTapPositionAction.NAME ->
                 new LfPhaseTapChangerAction(action.getId(), (PhaseTapChangerTapPositionAction) action, lfNetwork);
             case RatioTapChangerTapPositionAction.NAME ->
@@ -56,6 +58,10 @@ public final class LfActionUtils {
     }
 
     public static void applyListOfActions(List<LfAction> actions, LfNetwork network, LfContingency contingency, LfNetworkParameters networkParameters, ReportNode node) {
+        applyListOfActions(actions, network, contingency, contingency.getDisabledNetwork().getBranches(), networkParameters, node);
+    }
+
+    public static void applyListOfActions(List<LfAction> actions, LfNetwork network, LfContingency contingency, Set<LfBranch> branchesToOpen, LfNetworkParameters networkParameters, ReportNode node) {
         Objects.requireNonNull(actions);
         Objects.requireNonNull(network);
 
@@ -63,31 +69,31 @@ public final class LfActionUtils {
         List<LfAction> branchActions = actions.stream()
             .filter(action -> action instanceof AbstractLfBranchAction<?>)
             .toList();
-        updateConnectivity(branchActions, network, contingency, node);
+        updateConnectivity(branchActions, network, branchesToOpen, contingency.getId(), node);
 
         // then process remaining changes of actions
         actions.stream()
-            .filter(action -> !(action instanceof AbstractLfBranchAction<?>))
-            .forEach(action -> {
-                if (!action.apply(network, contingency, networkParameters)) {
-                    reportActionApplicationFailure(action.getId(), contingency.getId(), node);
-                }
-            });
+                .filter(action -> !(action instanceof AbstractLfBranchAction<?>))
+                .forEach(action -> {
+                    if (!action.apply(network, contingency, networkParameters)) {
+                        reportActionApplicationFailure(action.getId(), contingency.getId(), node);
+                    }
+                });
     }
 
-    private static void updateConnectivity(List<LfAction> branchActions, LfNetwork network, LfContingency contingency, ReportNode node) {
+    private static void updateConnectivity(List<LfAction> branchActions, LfNetwork network, Set<LfBranch> branchesToRemove, String contingencyId, ReportNode node) {
         GraphConnectivity<LfBus, LfBranch> connectivity = network.getConnectivity();
 
         // re-update connectivity according to post contingency state (revert after LfContingency apply)
         connectivity.startTemporaryChanges();
-        contingency.getDisabledNetwork().getBranches().forEach(connectivity::removeEdge);
+        branchesToRemove.forEach(connectivity::removeEdge);
 
         // update connectivity according to post action state
         connectivity.startTemporaryChanges();
 
         branchActions.forEach(action -> {
-            if (!((AbstractLfBranchAction<?>) action).applyOnConnectivity(network, connectivity)) {
-                reportActionApplicationFailure(action.getId(), contingency.getId(), node);
+            if (!((AbstractLfBranchAction<?>) action).applyOnConnectivity(connectivity)) {
+                reportActionApplicationFailure(action.getId(), contingencyId, node);
             }
         });
 

@@ -11,13 +11,16 @@ import com.powsybl.openloadflow.dc.equations.ClosedBranchSide1DcFlowEquationTerm
 import com.powsybl.openloadflow.dc.equations.DcEquationType;
 import com.powsybl.openloadflow.dc.equations.DcVariableType;
 import com.powsybl.openloadflow.equations.EquationSystem;
+import com.powsybl.openloadflow.graph.GraphConnectivity;
 import com.powsybl.openloadflow.network.ElementType;
+import com.powsybl.openloadflow.network.LfBranch;
+import com.powsybl.openloadflow.network.LfBus;
 import com.powsybl.openloadflow.network.TapPositionChange;
 
 /**
  * @author Pierre Arvy {@literal <pierre.arvy@artelys.com>}
  */
-public final class ComputedTapPositionChangeElement extends ComputedElement {
+public final class ComputedTapPositionChangeElement extends AbstractComputedElement {
 
     private final TapPositionChange tapPositionChange;
 
@@ -28,5 +31,10 @@ public final class ComputedTapPositionChangeElement extends ComputedElement {
 
     public TapPositionChange getTapPositionChange() {
         return tapPositionChange;
+    }
+
+    @Override
+    public void applyToConnectivity(GraphConnectivity<LfBus, LfBranch> connectivity) {
+        // nothing to do
     }
 }
