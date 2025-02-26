@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2019-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -38,6 +38,8 @@ public class EquationSystem<V extends Enum<V> & Quantity, E extends Enum<E> & Qu
     private final StateVector stateVector = new StateVector();
 
     private final EquationSystemIndex<V, E> index;
+
+    private VectorEngine vectorEngine;
 
     public EquationSystem() {
         this(new VariableSet<>());
@@ -228,6 +230,14 @@ public class EquationSystem<V extends Enum<V> & Quantity, E extends Enum<E> & Qu
         Objects.requireNonNull(term);
         Objects.requireNonNull(eventType);
         listeners.forEach(listener -> listener.onEquationTermChange(term, eventType));
+    }
+
+    public VectorEngine<V> getVectorEngine() {
+        return vectorEngine;
+    }
+
+    public void setVectorEngine(VectorEngine vectorEngine) {
+        this.vectorEngine = vectorEngine;
     }
 
     public void write(Writer writer, boolean writeInactiveEquations) {

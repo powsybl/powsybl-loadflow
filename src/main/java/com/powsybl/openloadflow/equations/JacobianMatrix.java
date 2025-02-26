@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2019-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -38,6 +38,8 @@ public class JacobianMatrix<V extends Enum<V> & Quantity, E extends Enum<E> & Qu
 
     private LUDecomposition lu;
 
+    private final VectorEngine<V> vectorEngine;
+
     protected enum Status {
         VALID,
         VALUES_INVALID, // same structure but values have to be updated
@@ -52,6 +54,7 @@ public class JacobianMatrix<V extends Enum<V> & Quantity, E extends Enum<E> & Qu
         this.matrixFactory = Objects.requireNonNull(matrixFactory);
         equationSystem.getIndex().addListener(this);
         equationSystem.getStateVector().addListener(this);
+        vectorEngine = equationSystem.getVectorEngine();
     }
 
     protected void updateStatus(Status status) {
@@ -93,12 +96,16 @@ public class JacobianMatrix<V extends Enum<V> & Quantity, E extends Enum<E> & Qu
         int estimatedNonZeroValueCount = rowCount * 3;
         matrix = matrixFactory.create(rowCount, columnCount, estimatedNonZeroValueCount);
 
-        for (Equation<V, E> eq : equationSystem.getIndex().getSortedEquationsToSolve()) {
-            int column = eq.getColumn();
-            eq.der((variable, value, matrixElementIndex) -> {
-                int row = variable.getRow();
-                return matrix.addAndGetIndex(row, column, value);
-            });
+        if (vectorEngine != null) {
+            vectorEngine.der(false, matrix);
+        } else {
+            for (Equation<V, E> eq : equationSystem.getIndex().getSortedEquationsToSolve()) {
+                int column = eq.getColumn();
+                eq.der((variable, value, matrixElementIndex) -> {
+                    int row = variable.getRow();
+                    return matrix.addAndGetIndex(row, column, value);
+                });
+            }
         }
 
         LOGGER.debug(PERFORMANCE_MARKER, "Jacobian matrix built in {} us", stopwatch.elapsed(TimeUnit.MICROSECONDS));
@@ -120,11 +127,16 @@ public class JacobianMatrix<V extends Enum<V> & Quantity, E extends Enum<E> & Qu
         Stopwatch stopwatch = Stopwatch.createStarted();
 
         matrix.reset();
-        for (Equation<V, E> eq : equationSystem.getIndex().getSortedEquationsToSolve()) {
-            eq.der((variable, value, matrixElementIndex) -> {
-                matrix.addAtIndex(matrixElementIndex, value);
-                return matrixElementIndex; // don't change element index
-            });
+
+        if (vectorEngine != null) {
+            vectorEngine.der(true, matrix);
+        } else {
+            for (Equation<V, E> eq : equationSystem.getIndex().getSortedEquationsToSolve()) {
+                eq.der((variable, value, matrixElementIndex) -> {
+                    matrix.addAtIndex(matrixElementIndex, value);
+                    return matrixElementIndex; // don't change element index
+                });
+            }
         }
 
         LOGGER.debug(PERFORMANCE_MARKER, "Jacobian matrix values updated in {} us", stopwatch.elapsed(TimeUnit.MICROSECONDS));

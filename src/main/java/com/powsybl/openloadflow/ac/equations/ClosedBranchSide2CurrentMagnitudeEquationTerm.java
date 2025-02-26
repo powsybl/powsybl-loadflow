@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2019-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,6 +7,7 @@
  */
 package com.powsybl.openloadflow.ac.equations;
 
+import com.powsybl.openloadflow.ac.equations.vector.AcVectorEngine;
 import com.powsybl.openloadflow.equations.Variable;
 import com.powsybl.openloadflow.equations.VariableSet;
 import com.powsybl.openloadflow.network.LfBranch;
@@ -26,8 +27,8 @@ import static com.powsybl.openloadflow.network.PiModel.R2;
 public class ClosedBranchSide2CurrentMagnitudeEquationTerm extends AbstractClosedBranchAcFlowEquationTerm {
 
     public ClosedBranchSide2CurrentMagnitudeEquationTerm(LfBranch branch, LfBus bus1, LfBus bus2, VariableSet<AcVariableType> variableSet,
-                                                         boolean deriveA1, boolean deriveR1) {
-        super(branch, bus1, bus2, variableSet, deriveA1, deriveR1, Fortescue.SequenceType.POSITIVE);
+                                                         boolean deriveA1, boolean deriveR1, AcVectorEngine acVectorEnginee) {
+        super(branch, bus1, bus2, variableSet, deriveA1, deriveR1, Fortescue.SequenceType.POSITIVE, acVectorEnginee);
     }
 
     public static double calculateSensi(double y, double ksi, double g2, double b2,
@@ -45,7 +46,7 @@ public class ClosedBranchSide2CurrentMagnitudeEquationTerm extends AbstractClose
 
     @Override
     protected double calculateSensi(double dph1, double dph2, double dv1, double dv2, double da1, double dr1) {
-        return calculateSensi(y, ksi, g2, b2, v1(), ph1(), r1(), a1(), v2(), ph2(), dph1, dph2, dv1, dv2, da1, dr1);
+        return calculateSensi(y(), ksi(), g2(), b2(), v1(), ph1(), r1(), a1(), v2(), ph2(), dph1, dph2, dv1, dv2, da1, dr1);
     }
 
     private static double theta(double ksi, double ph1, double a1) {
@@ -135,22 +136,22 @@ public class ClosedBranchSide2CurrentMagnitudeEquationTerm extends AbstractClose
 
     @Override
     public double eval() {
-        return i2(y, ksi, g2, b2, v1(), ph1(), r1(), a1(), v2(), ph2());
+        return i2(y(), ksi(), g2(), b2(), v1(), ph1(), r1(), a1(), v2(), ph2());
     }
 
     @Override
     public double der(Variable<AcVariableType> variable) {
         Objects.requireNonNull(variable);
         if (variable.equals(v1Var)) {
-            return di2dv1(y, ksi, g2, b2, v1(), ph1(), r1(), a1(), v2(), ph2());
+            return di2dv1(y(), ksi(), g2(), b2(), v1(), ph1(), r1(), a1(), v2(), ph2());
         } else if (variable.equals(v2Var)) {
-            return di2dv2(y, ksi, g2, b2, v1(), ph1(), r1(), a1(), v2(), ph2());
+            return di2dv2(y(), ksi(), g2(), b2(), v1(), ph1(), r1(), a1(), v2(), ph2());
         } else if (variable.equals(ph1Var)) {
-            return di2dph1(y, ksi, g2, b2, v1(), ph1(), r1(), a1(), v2(), ph2());
+            return di2dph1(y(), ksi(), g2(), b2(), v1(), ph1(), r1(), a1(), v2(), ph2());
         } else if (variable.equals(ph2Var)) {
-            return di2dph2(y, ksi, g2, b2, v1(), ph1(), r1(), a1(), v2(), ph2());
+            return di2dph2(y(), ksi(), g2(), b2(), v1(), ph1(), r1(), a1(), v2(), ph2());
         } else if (variable.equals(a1Var)) {
-            return di2da1(y, ksi, g2, b2, v1(), ph1(), r1(), a1(), v2(), ph2());
+            return di2da1(y(), ksi(), g2(), b2(), v1(), ph1(), r1(), a1(), v2(), ph2());
         } else if (variable.equals(r1Var)) {
             throw new IllegalArgumentException("Derivative with respect to r1 not implemented");
         } else {

@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2019-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -21,6 +21,8 @@ public abstract class AbstractEquationTerm<V extends Enum<V> & Quantity, E exten
     private Equation<V, E> equation;
 
     private boolean active;
+
+    private int vectorIndex = -1;
 
     protected StateVector sv;
 
@@ -60,12 +62,26 @@ public abstract class AbstractEquationTerm<V extends Enum<V> & Quantity, E exten
             this.active = active;
             equation.getEquationSystem().notifyEquationTermChange(self, active ? EquationTermEventType.EQUATION_TERM_ACTIVATED
                                                                                : EquationTermEventType.EQUATION_TERM_DEACTIVATED);
+            // TODO: Remove the trace
+            if (getVectorIndex() == 0) {
+                System.out.println(Thread.currentThread().getName() + " Active Status " + getClass().getSimpleName() + " " + getVectorIndex() + " " + active);
+            }
         }
     }
 
     @Override
     public boolean isActive() {
         return active;
+    }
+
+    @Override
+    public void setVectorIndex(int n) {
+        this.vectorIndex = n;
+    }
+
+    @Override
+    public int getVectorIndex() {
+        return vectorIndex;
     }
 
     @Override

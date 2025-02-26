@@ -1,6 +1,5 @@
-/**
- * Copyright (c) 2023, Jean-Baptiste Heyberger <jbheyberger at gmail.com>
- * Copyright (c) 2023, Geoffroy Jamgotchian <geoffroy.jamgotchian at gmail.com>
+/*
+ * Copyright (c) 2023-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,6 +7,7 @@
  */
 package com.powsybl.openloadflow.ac.equations;
 
+import com.powsybl.openloadflow.ac.equations.vector.AcVectorEngine;
 import com.powsybl.openloadflow.equations.Variable;
 import com.powsybl.openloadflow.equations.VariableSet;
 import com.powsybl.openloadflow.network.LfBranch;
@@ -24,8 +24,8 @@ import java.util.Objects;
 public class ClosedBranchI1yFlowEquationTerm extends AbstractClosedBranchAcFlowEquationTerm {
 
     public ClosedBranchI1yFlowEquationTerm(LfBranch branch, LfBus bus1, LfBus bus2, VariableSet<AcVariableType> variableSet,
-                                           boolean deriveA1, boolean deriveR1, Fortescue.SequenceType sequenceType) {
-        super(branch, bus1, bus2, variableSet, deriveA1, deriveR1, sequenceType);
+                                           boolean deriveA1, boolean deriveR1, Fortescue.SequenceType sequenceType, AcVectorEngine acVectorEnginee) {
+        super(branch, bus1, bus2, variableSet, deriveA1, deriveR1, sequenceType, acVectorEnginee);
     }
 
     public double calculateSensi(double dph1, double dph2, double dv1, double dv2, double da1, double dr1) {
@@ -61,20 +61,20 @@ public class ClosedBranchI1yFlowEquationTerm extends AbstractClosedBranchAcFlowE
 
     @Override
     public double eval() {
-        return i1y(g1, b1, v1(), ph1(), v2(), ph2(), g12, b12);
+        return i1y(g1(), b1(), v1(), ph1(), v2(), ph2(), g12(), b12());
     }
 
     @Override
     public double der(Variable<AcVariableType> variable) {
         Objects.requireNonNull(variable);
         if (variable.equals(v1Var)) {
-            return di1ydv1(g1, b1, ph1(), g12, b12);
+            return di1ydv1(g1(), b1(), ph1(), g12(), b12());
         } else if (variable.equals(v2Var)) {
-            return di1ydv2(ph2(), g12, b12);
+            return di1ydv2(ph2(), g12(), b12());
         } else if (variable.equals(ph1Var)) {
-            return di1ydph1(g1, b1, v1(), ph1(), g12, b12);
+            return di1ydph1(g1(), b1(), v1(), ph1(), g12(), b12());
         } else if (variable.equals(ph2Var)) {
-            return di1ydph2(v2(), ph2(), g12, b12);
+            return di1ydph2(v2(), ph2(), g12(), b12());
         } else {
             throw new IllegalStateException("Unexpected variable: " + variable);
         }

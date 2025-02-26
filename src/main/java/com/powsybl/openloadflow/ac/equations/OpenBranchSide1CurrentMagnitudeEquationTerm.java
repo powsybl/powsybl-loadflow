@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2019-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,6 +7,7 @@
  */
 package com.powsybl.openloadflow.ac.equations;
 
+import com.powsybl.openloadflow.ac.equations.vector.AcVectorEngine;
 import com.powsybl.openloadflow.equations.Variable;
 import com.powsybl.openloadflow.equations.VariableSet;
 import com.powsybl.openloadflow.network.LfBranch;
@@ -27,8 +28,8 @@ public class OpenBranchSide1CurrentMagnitudeEquationTerm extends AbstractOpenSid
 
     private final Variable<AcVariableType> ph2Var;
 
-    public OpenBranchSide1CurrentMagnitudeEquationTerm(LfBranch branch, LfBus bus2, VariableSet<AcVariableType> variableSet) {
-        super(branch, AcVariableType.BUS_V, bus2, variableSet);
+    public OpenBranchSide1CurrentMagnitudeEquationTerm(LfBranch branch, LfBus bus2, VariableSet<AcVariableType> variableSet, AcVectorEngine acVectorEnginee) {
+        super(branch, AcVariableType.BUS_V, bus2, variableSet, acVectorEnginee);
         v2Var = variableSet.getVariable(bus2.getNum(), AcVariableType.BUS_V);
         ph2Var = variableSet.getVariable(bus2.getNum(), AcVariableType.BUS_PHI);
     }
@@ -80,14 +81,14 @@ public class OpenBranchSide1CurrentMagnitudeEquationTerm extends AbstractOpenSid
 
     @Override
     public double eval() {
-        return i2(y, FastMath.cos(ksi), FastMath.sin(ksi), g1, b1, g2, b2, v2(), ph2());
+        return i2(y(), FastMath.cos(ksi()), FastMath.sin(ksi()), g1(), b1(), g2(), b2(), v2(), ph2());
     }
 
     @Override
     public double der(Variable<AcVariableType> variable) {
         Objects.requireNonNull(variable);
         if (variable.equals(v2Var)) {
-            return di2dv2(y, FastMath.cos(ksi), FastMath.sin(ksi), g1, b1, g2, b2, v2(), ph2());
+            return di2dv2(y(), FastMath.cos(ksi()), FastMath.sin(ksi()), g1(), b1(), g2(), b2(), v2(), ph2());
         } else if (variable.equals(ph2Var)) {
             throw new IllegalArgumentException("Derivative with respect to ph2 not implemented");
         } else {

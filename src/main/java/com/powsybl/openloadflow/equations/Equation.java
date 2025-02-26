@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2019-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -29,6 +29,8 @@ public class Equation<V extends Enum<V> & Quantity, E extends Enum<E> & Quantity
     private EquationSystem<V, E> equationSystem;
 
     private int column = -1;
+
+    private int vectorIndex = -1;
 
     /**
      * true if this equation term active, false otherwise
@@ -81,6 +83,18 @@ public class Equation<V extends Enum<V> & Quantity, E extends Enum<E> & Quantity
 
     public void setColumn(int column) {
         this.column = column;
+
+        if (equationSystem != null) {
+            equationSystem.notifyEquationChange(this, EquationEventType.EQUATION_COLUMN_CHANGED);
+        }
+    }
+
+    public int getVectorIndex() {
+        return vectorIndex;
+    }
+
+    public void setVectorIndex(int vectorIndex) {
+        this.vectorIndex = vectorIndex;
     }
 
     public boolean isActive() {
@@ -94,6 +108,19 @@ public class Equation<V extends Enum<V> & Quantity, E extends Enum<E> & Quantity
             equationSystem.notifyEquationChange(this, active ? EquationEventType.EQUATION_ACTIVATED : EquationEventType.EQUATION_DEACTIVATED);
         }
         return this;
+    }
+
+    public int getVariableCount() {
+        return termsByVariable.size();
+    }
+
+    public List<Variable<V>> getVariables() {
+        return termsByVariable.keySet().stream().toList();
+    }
+
+    public List<EquationTerm<V, E>> getTerms(Variable<V> v) {
+        List<EquationTerm<V, E>> list = termsByVariable.get(v);
+        return list == null ? Collections.emptyList() : Collections.unmodifiableList(list);
     }
 
     public Equation<V, E> addTerm(EquationTerm<V, E> term) {
@@ -144,10 +171,6 @@ public class Equation<V extends Enum<V> & Quantity, E extends Enum<E> & Quantity
                 addLeafTerms(child, leafTerms);
             }
         }
-    }
-
-    public Map<Variable<V>, List<EquationTerm<V, E>>> getTermsByVariable() {
-        return termsByVariable;
     }
 
     @Override

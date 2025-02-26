@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2019-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -53,8 +53,10 @@ class EquationSystemTest {
         equationSystem.addListener(new EquationSystemListener<>() {
             @Override
             public void onEquationChange(Equation<AcVariableType, AcEquationType> equation, EquationEventType eventType) {
-                equations.add(equation);
-                equationEventTypes.add(eventType);
+                if (eventType != EquationEventType.EQUATION_COLUMN_CHANGED) {
+                    equations.add(equation);
+                    equationEventTypes.add(eventType);
+                }
             }
 
             @Override

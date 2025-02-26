@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2022, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2022-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -44,8 +44,12 @@ public class EquationVector<V extends Enum<V> & Quantity, E extends Enum<E> & Qu
 
     private void evalLhs(double[] array, List<Equation<V, E>> equations) {
         Arrays.fill(array, 0); // necessary?
-        for (Equation<V, E> equation : equations) {
-            array[equation.getColumn()] = equation.evalLhs();
+        if (equationSystem.getVectorEngine() != null) {
+            equationSystem.getVectorEngine().evalLhs(array);
+        } else {
+            for (Equation<V, E> equation : equations) {
+                array[equation.getColumn()] = equation.evalLhs();
+            }
         }
     }
 
