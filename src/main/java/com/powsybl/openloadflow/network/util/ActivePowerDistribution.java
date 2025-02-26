@@ -39,7 +39,7 @@ public final class ActivePowerDistribution {
 
         String getElementType();
 
-        List<ParticipatingElement> getParticipatingElements(Collection<LfBus> buses);
+        List<ParticipatingElement> getParticipatingElements(Collection<LfBus> buses, double activePowerMismatch);
 
         double run(List<ParticipatingElement> participatingElements, int iteration, double remainingMismatch);
     }
@@ -61,7 +61,7 @@ public final class ActivePowerDistribution {
     }
 
     public Result run(LfGenerator referenceGenerator, Collection<LfBus> buses, double activePowerMismatch) {
-        List<ParticipatingElement> participatingElements = step.getParticipatingElements(buses);
+        List<ParticipatingElement> participatingElements = step.getParticipatingElements(buses, activePowerMismatch);
         final Map<ParticipatingElement, Double> initialP = participatingElements.stream()
                 .collect(Collectors.toUnmodifiableMap(Function.identity(), ParticipatingElement::getTargetP));
 

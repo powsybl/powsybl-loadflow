@@ -187,7 +187,7 @@ class DistributedSlackOnGenerationTest {
     }
 
     @Test
-    void testProportionalToRemainingMargin() {
+    void testProportionalToRemainingMarginUp() {
         // decrease g1 max limit power, so that distributed slack algo reach the g1 max
         g1.setMaxP(105);
 
@@ -199,6 +199,21 @@ class DistributedSlackOnGenerationTest {
         assertActivePowerEquals(-253.333, g2.getTerminal());
         assertActivePowerEquals(-122.0, g3.getTerminal());
         assertActivePowerEquals(-122.0, g4.getTerminal());
+    }
+
+    @Test
+    void testProportionalToRemainingMarginDown() {
+        // Decrease load P0, so that active mismatch is negative
+        network.getLoad("l1").setP0(400);
+
+        parameters.setBalanceType(LoadFlowParameters.BalanceType.PROPORTIONAL_TO_GENERATION_REMAINING_MARGIN);
+        LoadFlowResult result = loadFlowRunner.run(network, parameters);
+
+        assertTrue(result.isFullyConverged());
+        assertActivePowerEquals(-71.428, g1.getTerminal());
+        assertActivePowerEquals(-171.428, g2.getTerminal());
+        assertActivePowerEquals(-78.571, g3.getTerminal());
+        assertActivePowerEquals(-78.571, g4.getTerminal());
     }
 
     @Test
