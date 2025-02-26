@@ -14,8 +14,7 @@ import com.powsybl.openloadflow.ac.AcLoadFlowParameters;
 import com.powsybl.openloadflow.ac.AcOuterLoopContext;
 import com.powsybl.openloadflow.ac.equations.AcEquationType;
 import com.powsybl.openloadflow.ac.equations.AcVariableType;
-import com.powsybl.openloadflow.ac.equations.ClosedBranchSide1CurrentMagnitudeEquationTerm;
-import com.powsybl.openloadflow.ac.equations.ClosedBranchSide2CurrentMagnitudeEquationTerm;
+import com.powsybl.openloadflow.equations.EquationTerm;
 import com.powsybl.openloadflow.lf.outerloop.AbstractPhaseControlOuterLoop;
 import com.powsybl.openloadflow.lf.outerloop.OuterLoopResult;
 import com.powsybl.openloadflow.lf.outerloop.OuterLoopStatus;
@@ -124,13 +123,16 @@ public class PhaseControlOuterLoop
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     private boolean isSensitivityCurrentPerA1Positive(LfBranch controllerBranch, TwoSides controlledSide) {
         if (controlledSide == TwoSides.ONE) {
-            ClosedBranchSide1CurrentMagnitudeEquationTerm i1 = (ClosedBranchSide1CurrentMagnitudeEquationTerm) controllerBranch.getI1();
-            return i1.der(i1.getA1Var()) > 0;
+            EquationTerm<AcVariableType, AcEquationType> i1 = (EquationTerm<AcVariableType, AcEquationType>) controllerBranch.getI1();
+            var a1Var = i1.getVariables().stream().filter(v -> v.getType() == AcVariableType.BRANCH_ALPHA1).findFirst().orElseThrow();
+            return i1.der(a1Var) > 0;
         } else {
-            ClosedBranchSide2CurrentMagnitudeEquationTerm i2 = (ClosedBranchSide2CurrentMagnitudeEquationTerm) controllerBranch.getI2();
-            return i2.der(i2.getA1Var()) > 0;
+            EquationTerm<AcVariableType, AcEquationType> i2 = (EquationTerm<AcVariableType, AcEquationType>) controllerBranch.getI2();
+            var a1Var = i2.getVariables().stream().filter(v -> v.getType() == AcVariableType.BRANCH_ALPHA1).findFirst().orElseThrow();
+            return i2.der(a1Var) > 0;
         }
     }
 }

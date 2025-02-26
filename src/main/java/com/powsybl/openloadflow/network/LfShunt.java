@@ -115,6 +115,8 @@ public interface LfShunt extends LfElement {
         }
     }
 
+    LfBus getBus();
+
     double getB();
 
     default double getBMagnitude() {

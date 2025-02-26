@@ -10,7 +10,6 @@ package com.powsybl.openloadflow.ac.equations.asym;
 
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.openloadflow.ac.equations.*;
-import com.powsybl.openloadflow.equations.EquationSystem;
 import com.powsybl.openloadflow.equations.EquationTerm;
 import com.powsybl.openloadflow.network.*;
 import com.powsybl.openloadflow.util.ComplexPart;
@@ -29,8 +28,10 @@ public class AsymmetricalAcEquationSystemCreator extends AcEquationSystemCreator
     }
 
     @Override
-    protected void createBusEquation(LfBus bus, EquationSystem<AcVariableType, AcEquationType> equationSystem) {
-        super.createBusEquation(bus, equationSystem);
+    protected void createBusEquation(LfBus bus, AcEquationSystemCreationContext creationContext) {
+        super.createBusEquation(bus, creationContext);
+
+        var equationSystem = creationContext.getEquationSystem();
 
         // addition of asymmetric equations, supposing that existing v, theta, p and q are linked to the positive sequence
         LfAsymBus asymBus = bus.getAsym();
@@ -98,7 +99,9 @@ public class AsymmetricalAcEquationSystemCreator extends AcEquationSystemCreator
     }
 
     @Override
-    protected void createImpedantBranch(LfBranch branch, LfBus bus1, LfBus bus2, EquationSystem<AcVariableType, AcEquationType> equationSystem) {
+    protected void createImpedantBranch(LfBranch branch, LfBus bus1, LfBus bus2, AcEquationSystemCreationContext creationContext) {
+        var equationSystem = creationContext.getEquationSystem();
+
         // positive sequence
         EquationTerm<AcVariableType, AcEquationType> p1 = null;
         EquationTerm<AcVariableType, AcEquationType> q1 = null;
@@ -171,7 +174,7 @@ public class AsymmetricalAcEquationSystemCreator extends AcEquationSystemCreator
         }
 
         // positive
-        createImpedantBranchEquations(branch, bus1, bus2, equationSystem, p1, q1, i1, p2, q2, i2, p1, q1, i1, p2, q2, i2, null, null, null, null, null, null);
+        createImpedantBranchEquations(branch, bus1, bus2, creationContext, p1, q1, i1, p2, q2, i2, p1, q1, i1, p2, q2, i2, null, null, null, null, null, null);
 
         // zero
         if (ixz1 != null) {
@@ -217,10 +220,10 @@ public class AsymmetricalAcEquationSystemCreator extends AcEquationSystemCreator
                     .addTerm(iyn2);
         }
 
-        createGeneratorReactivePowerControlBranchEquation(branch, bus1, bus2, equationSystem, deriveA1, deriveR1);
+        createGeneratorReactivePowerControlBranchEquation(branch, bus1, bus2, creationContext, deriveA1, deriveR1);
 
-        createTransformerPhaseControlEquations(branch, bus1, bus2, equationSystem, deriveA1, deriveR1);
+        createTransformerPhaseControlEquations(branch, bus1, bus2, creationContext, deriveA1, deriveR1);
 
-        createTransformerReactivePowerControlEquations(branch, equationSystem);
+        createTransformerReactivePowerControlEquations(branch, creationContext);
     }
 }
