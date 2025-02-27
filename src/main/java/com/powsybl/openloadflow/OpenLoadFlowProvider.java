@@ -322,6 +322,11 @@ public class OpenLoadFlowProvider implements LoadFlowProvider {
     }
 
     @Override
+    public void updateSpecificParameters(Extension<LoadFlowParameters> extension, PlatformConfig config) {
+        ((OpenLoadFlowParameters) extension).update(config);
+    }
+
+    @Override
     public Optional<Class<? extends Extension<LoadFlowParameters>>> getSpecificParametersClass() {
         return Optional.of(OpenLoadFlowParameters.class);
     }

@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.powsybl.openloadflow.OpenLoadFlowParameters.MODULE_SPECIFIC_PARAMETERS;
+import static com.powsybl.openloadflow.OpenLoadFlowParameters.*;
 import static com.powsybl.openloadflow.util.LoadFlowAssert.assertVoltageEquals;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -287,6 +287,22 @@ class OpenLoadFlowParametersTest {
     }
 
     @Test
+    void testUpdateParametersFromPlatformConfig() {
+        LoadFlowParameters parameters = new LoadFlowParameters();
+        OpenLoadFlowParameters olfParameters = OpenLoadFlowParameters.create(parameters);
+
+        assertEquals(SlackBusSelectionMode.MOST_MESHED, olfParameters.getSlackBusSelectionMode());
+        assertEquals(SlackDistributionFailureBehavior.LEAVE_ON_SLACK_BUS, olfParameters.getSlackDistributionFailureBehavior());
+
+        MapModuleConfig olfModuleConfig = platformConfig.createModuleConfig(MODULE_SPECIFIC_PARAMETERS);
+        olfModuleConfig.setStringProperty(SLACK_BUS_SELECTION_MODE_PARAM_NAME, SlackBusSelectionMode.FIRST.toString());
+        olfParameters.update(platformConfig);
+
+        assertEquals(SlackBusSelectionMode.FIRST, olfParameters.getSlackBusSelectionMode());
+        assertEquals(SlackDistributionFailureBehavior.LEAVE_ON_SLACK_BUS, olfParameters.getSlackDistributionFailureBehavior());
+    }
+
+    @Test
     void testUpdateParameters() {
         Map<String, String> parametersMap = new HashMap<>();
         parametersMap.put("slackBusSelectionMode", "FIRST");
@@ -305,6 +321,27 @@ class OpenLoadFlowParametersTest {
         assertFalse(parameters.isVoltageRemoteControl());
         assertEquals(10, parameters.getMaxNewtonRaphsonIterations());
         assertFalse(parameters.isGeneratorReactivePowerRemoteControl());
+    }
+
+    @Test
+    void testParametersWithConfigAndLoader() {
+        OLFDefaultParametersLoaderMock loader = new OLFDefaultParametersLoaderMock("test");
+
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.unix());
+        InMemoryPlatformConfig platformConfig = new InMemoryPlatformConfig(fileSystem);
+        MapModuleConfig moduleConfig = platformConfig.createModuleConfig("open-loadflow-default-parameters");
+        moduleConfig.setStringProperty("maxOuterLoopIterations", "50");
+
+        LoadFlowParameters parameters = new LoadFlowParameters(List.of(loader));
+        OpenLoadFlowParameters olfParameters = parameters.getExtensionByName("open-load-flow-parameters");
+        assertNotNull(olfParameters);
+        assertEquals(SlackDistributionFailureBehavior.FAIL, olfParameters.getSlackDistributionFailureBehavior());
+        assertEquals(30, olfParameters.getMaxOuterLoopIterations());
+
+        olfParameters.update(platformConfig);
+        assertEquals(SlackDistributionFailureBehavior.FAIL, olfParameters.getSlackDistributionFailureBehavior());
+        assertEquals(50, olfParameters.getMaxOuterLoopIterations());
+
     }
 
     @Test
