@@ -23,15 +23,15 @@ public class LfTerminalsConnectionAction extends AbstractLfBranchAction<Terminal
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LfTerminalsConnectionAction.class);
 
-    public LfTerminalsConnectionAction(String id, TerminalsConnectionAction action) {
-        super(id, action);
+    public LfTerminalsConnectionAction(String id, TerminalsConnectionAction action, LfNetwork lfNetwork) {
+        super(id, action, lfNetwork);
         if (action.getSide().isPresent()) {
             throw new UnsupportedOperationException("Terminals connection action: only open or close branch at both sides is supported yet.");
         }
     }
 
     @Override
-    boolean findEnabledDisabledBranches(LfNetwork lfNetwork) {
+    void findEnabledDisabledBranches(LfNetwork lfNetwork) {
         LfBranch branch = lfNetwork.getBranchById(action.getElementId());
         if (branch != null && branch.getBus1() != null && branch.getBus2() != null) {
             if (action.isOpen()) {
@@ -39,10 +39,8 @@ public class LfTerminalsConnectionAction extends AbstractLfBranchAction<Terminal
             } else {
                 setEnabledBranch(branch);
             }
-            return true;
         } else {
             LOGGER.warn("TerminalsConnectionAction action {}: branch matching element id {} not found", action.getId(), action.getElementId());
-            return false;
         }
     }
 }

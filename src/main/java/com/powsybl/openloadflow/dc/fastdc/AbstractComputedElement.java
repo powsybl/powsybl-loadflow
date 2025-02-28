@@ -16,6 +16,7 @@ import com.powsybl.openloadflow.dc.equations.DcEquationType;
 import com.powsybl.openloadflow.dc.equations.DcVariableType;
 import com.powsybl.openloadflow.equations.Equation;
 import com.powsybl.openloadflow.equations.EquationSystem;
+import com.powsybl.openloadflow.graph.GraphConnectivity;
 import com.powsybl.openloadflow.network.LfBranch;
 import com.powsybl.openloadflow.network.LfBus;
 
@@ -25,14 +26,14 @@ import java.util.Collection;
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  * @author Gaël Macherel {@literal <gael.macherel@artelys.com>}
  */
-public class ComputedElement {
+public abstract class AbstractComputedElement {
     private int computedElementIndex = -1; // index of the element in the rhs for +1-1
     private int localIndex = -1; // local index of the element : index of the element in the matrix used in the setAlphas method
     private double alphaForWoodburyComputation = Double.NaN;
     private final LfBranch lfBranch;
     private final ClosedBranchSide1DcFlowEquationTerm branchEquation;
 
-    public ComputedElement(LfBranch lfBranch, ClosedBranchSide1DcFlowEquationTerm branchEquation) {
+    protected AbstractComputedElement(LfBranch lfBranch, ClosedBranchSide1DcFlowEquationTerm branchEquation) {
         this.lfBranch = lfBranch;
         this.branchEquation = branchEquation;
     }
@@ -69,16 +70,16 @@ public class ComputedElement {
         return branchEquation;
     }
 
-    public static void setComputedElementIndexes(Collection<? extends ComputedElement> elements) {
+    public static void setComputedElementIndexes(Collection<? extends AbstractComputedElement> elements) {
         int index = 0;
-        for (ComputedElement element : elements) {
+        for (AbstractComputedElement element : elements) {
             element.setComputedElementIndex(index++);
         }
     }
 
-    public static void setLocalIndexes(Collection<? extends ComputedElement> elements) {
+    public static void setLocalIndexes(Collection<? extends AbstractComputedElement> elements) {
         int index = 0;
-        for (ComputedElement element : elements) {
+        for (AbstractComputedElement element : elements) {
             element.setLocalIndex(index++);
         }
     }
@@ -86,8 +87,8 @@ public class ComputedElement {
     /**
      * Fills the right hand side with +1/-1 to model a branch contingency or action.
      */
-    private static void fillRhs(EquationSystem<DcVariableType, DcEquationType> equationSystem, Collection<? extends ComputedElement> computedElements, Matrix rhs) {
-        for (ComputedElement element : computedElements) {
+    private static void fillRhs(EquationSystem<DcVariableType, DcEquationType> equationSystem, Collection<? extends AbstractComputedElement> computedElements, Matrix rhs) {
+        for (AbstractComputedElement element : computedElements) {
             LfBranch lfBranch = element.getLfBranch();
             if (lfBranch.getBus1() == null || lfBranch.getBus2() == null) {
                 continue;
@@ -109,7 +110,7 @@ public class ComputedElement {
         }
     }
 
-    public static DenseMatrix initRhs(EquationSystem<DcVariableType, DcEquationType> equationSystem, Collection<? extends ComputedElement> elements) {
+    public static DenseMatrix initRhs(EquationSystem<DcVariableType, DcEquationType> equationSystem, Collection<? extends AbstractComputedElement> elements) {
         // otherwise, defining the rhs matrix will result in integer overflow
         int equationCount = equationSystem.getIndex().getSortedEquationsToSolve().size();
         int maxElements = Integer.MAX_VALUE / (equationCount * Double.BYTES);
@@ -123,9 +124,11 @@ public class ComputedElement {
         return rhs;
     }
 
-    public static DenseMatrix calculateElementsStates(DcLoadFlowContext loadFlowContext, Collection<? extends ComputedElement> computedElements) {
+    public static DenseMatrix calculateElementsStates(DcLoadFlowContext loadFlowContext, Collection<? extends AbstractComputedElement> computedElements) {
         DenseMatrix elementsStates = initRhs(loadFlowContext.getEquationSystem(), computedElements); // rhs with +1 -1 on computed elements
         loadFlowContext.getJacobianMatrix().solveTransposed(elementsStates);
         return elementsStates;
     }
+
+    public abstract void applyToConnectivity(GraphConnectivity<LfBus, LfBranch> connectivity);
 }

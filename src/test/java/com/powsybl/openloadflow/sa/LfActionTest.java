@@ -95,7 +95,7 @@ class LfActionTest extends AbstractSerDeTest {
 
             var lineAction = new TerminalsConnectionAction("A line action", "L1", ThreeSides.ONE, false);
             assertEquals("Terminals connection action: only open or close branch at both sides is supported yet.",
-                assertThrows(UnsupportedOperationException.class, () -> new LfTerminalsConnectionAction("A line action", lineAction)).getMessage());
+                assertThrows(UnsupportedOperationException.class, () -> new LfTerminalsConnectionAction("A line action", lineAction, lfNetwork)).getMessage());
         }
     }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+ * Copyright (c) 2024, Coreso SA (https://www.coreso.eu/) and TSCNET Services GmbH (https://www.tscnet.eu/)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,7 +7,6 @@
  */
 package com.powsybl.openloadflow.dc.fastdc;
 
-import com.powsybl.contingency.ContingencyElement;
 import com.powsybl.openloadflow.dc.equations.ClosedBranchSide1DcFlowEquationTerm;
 import com.powsybl.openloadflow.dc.equations.DcEquationType;
 import com.powsybl.openloadflow.dc.equations.DcVariableType;
@@ -16,31 +15,31 @@ import com.powsybl.openloadflow.graph.GraphConnectivity;
 import com.powsybl.openloadflow.network.ElementType;
 import com.powsybl.openloadflow.network.LfBranch;
 import com.powsybl.openloadflow.network.LfBus;
-import com.powsybl.openloadflow.network.LfNetwork;
 
 /**
- * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
- * @author Gaël Macherel {@literal <gael.macherel@artelys.com>}
+ * @author Pierre Arvy {@literal <pierre.arvy@artelys.com>}
  */
-public final class ComputedContingencyElement extends AbstractComputedElement {
+public final class ComputedSwitchBranchElement extends AbstractComputedElement {
 
-    private final ContingencyElement element;
+    private final boolean enabled;
 
-    public ComputedContingencyElement(final ContingencyElement element, LfNetwork lfNetwork, EquationSystem<DcVariableType, DcEquationType> equationSystem) {
-        super(lfNetwork.getBranchById(element.getId()),
-                equationSystem.getEquationTerm(ElementType.BRANCH, lfNetwork.getBranchById(element.getId()).getNum(), ClosedBranchSide1DcFlowEquationTerm.class));
-        this.element = element;
+    public ComputedSwitchBranchElement(LfBranch lfBranch, boolean enabled, EquationSystem<DcVariableType, DcEquationType> equationSystem) {
+        super(lfBranch, equationSystem.getEquationTerm(ElementType.BRANCH, lfBranch.getNum(), ClosedBranchSide1DcFlowEquationTerm.class));
+        this.enabled = enabled;
     }
 
-    public ContingencyElement getElement() {
-        return element;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    @Override
     public void applyToConnectivity(GraphConnectivity<LfBus, LfBranch> connectivity) {
         LfBranch lfBranch = getLfBranch();
         if (lfBranch.getBus1() != null && lfBranch.getBus2() != null) {
-            connectivity.removeEdge(lfBranch);
+            if (isEnabled()) {
+                connectivity.addEdge(lfBranch.getBus1(), lfBranch.getBus2(), lfBranch);
+            } else {
+                connectivity.removeEdge(lfBranch);
+            }
         }
     }
 }
