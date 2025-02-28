@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2018, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2018-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -319,6 +319,12 @@ public class OpenLoadFlowProvider implements LoadFlowProvider {
     @Override
     public void updateSpecificParameters(Extension<LoadFlowParameters> extension, Map<String, String> properties) {
         ((OpenLoadFlowParameters) extension).update(properties);
+    }
+
+    // todo ADD OVERRIDe AGAIN (commented because OLF PR merged in integration before sister is merged in core)
+    // @Override
+    public void updateSpecificParameters(Extension<LoadFlowParameters> extension, PlatformConfig config) {
+        ((OpenLoadFlowParameters) extension).update(config);
     }
 
     @Override

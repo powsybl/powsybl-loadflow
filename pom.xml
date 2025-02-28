@@ -54,7 +54,7 @@
         <slf4jtoys.version>1.6.3</slf4jtoys.version>
         <asciitable.version>0.3.2</asciitable.version>
 
-        <powsybl-core.version>6.6.0</powsybl-core.version>
+        <powsybl-core.version>6.7.0-SNAPSHOT</powsybl-core.version>
     </properties>
 
     <build>

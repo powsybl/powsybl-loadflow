@@ -1,0 +1,11 @@
+{
+  "version": "1.9",
+  "voltageInitMode" : "DC_VALUES",
+  "extensions": {
+    "open-load-flow-parameters": {
+      "slackDistributionFailureBehavior": "FAIL",
+      "maxOuterLoopIterations": 30,
+      "transformerVoltageControlMode" : "AFTER_GENERATOR_VOLTAGE_CONTROL"
+    }
+  }
+}
