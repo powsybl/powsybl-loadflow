@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2019-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -297,7 +297,10 @@ public class LfBranchImpl extends AbstractImpedantLfBranch {
                     int i = 1; // temporary limit's reductions will be stored starting from index 1
                     for (LoadingLimits.TemporaryLimit temporaryLimit : limits.getTemporaryLimits()) {
                         if (terminalLimitReduction.acceptableDuration().contains(temporaryLimit.getAcceptableDuration())) {
-                            limitReductions[i] = terminalLimitReduction.reduction();
+                            limitReductions[i] = Math.min(limitReductions[i], terminalLimitReduction.reduction());
+                            // The reduction applies also to the next limit
+
+                            limitReductions[i - 1] = Math.min(limitReductions[i - 1], terminalLimitReduction.reduction());
                         }
                         i++;
                     }

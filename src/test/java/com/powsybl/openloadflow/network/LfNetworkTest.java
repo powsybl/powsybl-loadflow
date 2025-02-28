@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2019-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -440,8 +440,8 @@ class LfNetworkTest extends AbstractSerDeTest {
         assertEquals(4, reductions.length);
         assertEquals(0.5, reductions[0], 0.001); // PATL
         assertEquals(0.8, reductions[1], 0.001); // TATL 600s
-        assertEquals(0.9, reductions[2], 0.001); // TATL 60s
-        // `terminalLimitReduction4` is declared after `terminalLimitReduction2`, so its value is used
+        assertEquals(0.87, reductions[2], 0.001); // TATL 60s // But the next tempo's reduction is stronger (than 0.9) so it is applied
+        // `terminalLimitReduction4` is stronger than`terminalLimitReduction2`, so its value is used
         assertEquals(0.87, reductions[3], 0.001); // TATL 0s
 
         limitReductionManager = new LimitReductionManager();
@@ -453,9 +453,9 @@ class LfNetworkTest extends AbstractSerDeTest {
         assertEquals(4, reductions.length);
         assertEquals(0.5, reductions[0], 0.001); // PATL
         assertEquals(0.8, reductions[1], 0.001); // TATL 600s
-        assertEquals(0.9, reductions[2], 0.001); // TATL 60s
-        // `terminalLimitReduction4` is now declared before `terminalLimitReduction2`, its value is overlapped by the one of `terminalLimitReduction2`
-        assertEquals(0.9, reductions[3], 0.001); // TATL 0s
+        assertEquals(0.87, reductions[2], 0.001); // TATL 60s
+        // `The limit reduction declaration order has no influcence. The strongest reduction is applied.
+        assertEquals(0.87, reductions[3], 0.001); // TATL 0s
     }
 
     @Test
