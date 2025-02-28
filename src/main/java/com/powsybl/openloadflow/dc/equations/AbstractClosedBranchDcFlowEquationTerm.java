@@ -68,7 +68,11 @@ public abstract class AbstractClosedBranchDcFlowEquationTerm extends AbstractEle
      * Update power only if the branch is a PiModelArray.
      */
     protected double getPower() {
-        return isPowerPreComputed ? power : computePower(useTransformerRatio, dcApproximationType, element.getPiModel());
+        return getPower(element.getPiModel());
+    }
+
+    protected double getPower(PiModel piModel) {
+        return isPowerPreComputed ? power : computePower(useTransformerRatio, dcApproximationType, piModel);
     }
 
     public static double computePower(boolean useTransformerRatio, DcApproximationType dcApproximationType, PiModel piModel) {
@@ -117,7 +121,15 @@ public abstract class AbstractClosedBranchDcFlowEquationTerm extends AbstractEle
         return ph2(sv);
     }
 
-    protected abstract double eval(double ph1, double ph2, double a1);
+    public double eval(StateVector sv, PiModel piModel) {
+        return eval(ph1(sv), ph2(sv), a1(sv), piModel);
+    }
+
+    protected double eval(double ph1, double ph2, double a1) {
+        return eval(ph1, ph2, a1, element.getPiModel());
+    }
+
+    protected abstract double eval(double ph1, double ph2, double a1, PiModel piModel);
 
     @Override
     public double eval() {

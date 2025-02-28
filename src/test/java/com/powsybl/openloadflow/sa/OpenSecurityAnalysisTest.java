@@ -4095,6 +4095,33 @@ class OpenSecurityAnalysisTest extends AbstractOpenSecurityAnalysisTest {
         assertEquals(network.getLine("l56").getTerminal1().getP(), postContingencyResult.getNetworkResult().getBranchResult("l56").getP1(), LoadFlowAssert.DELTA_POWER);
     }
 
+    @Test
+    void testDcSaHvdcLineContingency2() {
+        Network network = HvdcNetworkFactory.createNetworkWithGenerators();
+
+        SecurityAnalysisParameters securityAnalysisParameters = new SecurityAnalysisParameters();
+        securityAnalysisParameters.getLoadFlowParameters().setDc(true);
+        OpenSecurityAnalysisParameters openSecurityAnalysisParameters = new OpenSecurityAnalysisParameters();
+        openSecurityAnalysisParameters.setDcFastMode(true);
+        securityAnalysisParameters.addExtension(OpenSecurityAnalysisParameters.class, openSecurityAnalysisParameters);
+
+        List<StateMonitor> monitors = createAllBranchesMonitors(network);
+        List<Contingency> contingencies = List.of(new Contingency("l25", List.of(new LineContingency("l25"))));
+        SecurityAnalysisResult result = runSecurityAnalysis(network, contingencies, monitors, securityAnalysisParameters);
+
+        // apply contingency by hand
+        network.getLine("l25").disconnect();
+        // run load flow to compare results
+        loadFlowRunner.run(network, securityAnalysisParameters.getLoadFlowParameters());
+
+        // post-contingency tests
+        PostContingencyResult postContingencyResult = getPostContingencyResult(result, "l25");
+        assertEquals(3, postContingencyResult.getNetworkResult().getBranchResults().size()); // only branches in main synchronous component
+        assertEquals(network.getLine("l12").getTerminal1().getP(), postContingencyResult.getNetworkResult().getBranchResult("l12").getP1(), LoadFlowAssert.DELTA_POWER);
+        assertEquals(network.getLine("l13").getTerminal1().getP(), postContingencyResult.getNetworkResult().getBranchResult("l13").getP1(), LoadFlowAssert.DELTA_POWER);
+        assertEquals(network.getLine("l23").getTerminal1().getP(), postContingencyResult.getNetworkResult().getBranchResult("l23").getP1(), LoadFlowAssert.DELTA_POWER);
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     void testDcSaHvdcLineInAcEmulationContingency(boolean dcFastMode) {

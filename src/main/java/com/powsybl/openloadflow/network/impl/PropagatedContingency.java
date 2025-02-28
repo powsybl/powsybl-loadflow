@@ -162,7 +162,7 @@ public class PropagatedContingency {
         return propagatedContingency;
     }
 
-    private <K> void addBranchToOpen(K branchId, DisabledBranchStatus status, Map<K, DisabledBranchStatus> branchIdsToOpen) {
+    private static <K> void addBranchToOpen(K branchId, DisabledBranchStatus status, Map<K, DisabledBranchStatus> branchIdsToOpen) {
         DisabledBranchStatus oldStatus = branchIdsToOpen.get(branchId);
         if (oldStatus == null) {
             branchIdsToOpen.put(branchId, status);
@@ -380,10 +380,23 @@ public class PropagatedContingency {
         return branchesToOpen;
     }
 
-    record ContingencyConnectivityLossImpact(boolean ok, int createdSynchronousComponents, Set<LfBus> busesToLost, Set<LfHvdc> hvdcsWithoutPower) {
+    public record ContingencyConnectivityLossImpact(boolean ok, int createdSynchronousComponents, Set<LfBus> busesToLost, Set<LfHvdc> hvdcsWithoutPower) {
+
+        public static Set<LfHvdc> getHvdcsWithoutPower(LfNetwork network, Set<LfBus> busesToLost, GraphConnectivity<LfBus, LfBranch> connectivity) {
+            Set<LfHvdc> hvdcsWithoutFlow = new HashSet<>();
+            for (LfHvdc hvdcLine : network.getHvdcs()) {
+                if (checkIsolatedBus(hvdcLine.getBus1(), hvdcLine.getBus2(), busesToLost, connectivity)
+                        || checkIsolatedBus(hvdcLine.getBus2(), hvdcLine.getBus1(), busesToLost, connectivity)) {
+                    hvdcsWithoutFlow.add(hvdcLine);
+                }
+            }
+            return hvdcsWithoutFlow;
+        }
+
     }
 
-    private ContingencyConnectivityLossImpact findBusesAndBranchesImpactedBecauseOfConnectivityLoss(LfNetwork network, Map<LfBranch, DisabledBranchStatus> branchesToOpen, boolean relocateSlackBus) {
+    private static ContingencyConnectivityLossImpact findBusesAndBranchesImpactedBecauseOfConnectivityLoss(LfNetwork network, String contingencyId,
+                                                                                                           Map<LfBranch, DisabledBranchStatus> branchesToOpen, boolean relocateSlackBus) {
         // update connectivity with triggered branches of this network
         // note that this will define the main component as the one containing the first slack bus
         GraphConnectivity<LfBus, LfBranch> connectivity = network.getConnectivity();
@@ -395,7 +408,7 @@ public class PropagatedContingency {
 
             if (relocateSlackBus && isSlackBusIsolated(connectivity, network.getSlackBus())) {
                 LOGGER.warn("Contingency '{}' leads to an isolated slack bus: relocate slack bus inside main component",
-                        contingency.getId());
+                        contingencyId);
                 // if a contingency leads to an isolated slack bus, we need to relocate the slack bus
                 // we select a new slack bus excluding buses from isolated component
                 Set<LfBus> excludedBuses = Sets.difference(Set.copyOf(network.getBuses()), connectivity.getLargestConnectedComponent());
@@ -411,13 +424,7 @@ public class PropagatedContingency {
 
             // as we know here the connectivity after contingency, we have to reset active power flow of a hvdc line
             // if one bus of the line is lost.
-            Set<LfHvdc> hvdcsWithoutFlow = new HashSet<>();
-            for (LfHvdc hvdcLine : network.getHvdcs()) {
-                if (checkIsolatedBus(hvdcLine.getBus1(), hvdcLine.getBus2(), busesToLost, connectivity)
-                        || checkIsolatedBus(hvdcLine.getBus2(), hvdcLine.getBus1(), busesToLost, connectivity)) {
-                    hvdcsWithoutFlow.add(hvdcLine);
-                }
-            }
+            Set<LfHvdc> hvdcsWithoutFlow = ContingencyConnectivityLossImpact.getHvdcsWithoutPower(network, busesToLost, connectivity);
 
             return new ContingencyConnectivityLossImpact(true, createdSynchronousComponents, busesToLost, hvdcsWithoutFlow);
         } finally {
@@ -426,7 +433,7 @@ public class PropagatedContingency {
         }
     }
 
-    private boolean checkIsolatedBus(LfBus bus1, LfBus bus2, Set<LfBus> busesToLost, GraphConnectivity<LfBus, LfBranch> connectivity) {
+    private static boolean checkIsolatedBus(LfBus bus1, LfBus bus2, Set<LfBus> busesToLost, GraphConnectivity<LfBus, LfBranch> connectivity) {
         return busesToLost.contains(bus1) && !busesToLost.contains(bus2) && Networks.isIsolatedBusForHvdc(bus1, connectivity);
     }
 
@@ -441,16 +448,21 @@ public class PropagatedContingency {
     }
 
     public Optional<LfContingency> toLfContingency(LfNetwork network) {
-        return toLfContingency(network, true);
+        return toLfContingency(network, true, PropagatedContingency::findBusesAndBranchesImpactedBecauseOfConnectivityLoss);
     }
 
-    public Optional<LfContingency> toLfContingency(LfNetwork network, boolean relocateSlackBus) {
+    public interface ContingencyConnectivityLossImpactAnalyser {
+
+        ContingencyConnectivityLossImpact analyse(LfNetwork network, String contingencyId, Map<LfBranch, DisabledBranchStatus> branchesToOpen, boolean relocateSlackBus);
+    }
+
+    public Optional<LfContingency> toLfContingency(LfNetwork network, boolean relocateSlackBus, ContingencyConnectivityLossImpactAnalyser analyser) {
         // find branch to open because of direct impact of the contingency (including propagation is activated)
         Map<LfBranch, DisabledBranchStatus> branchesToOpen = findBranchToOpenDirectlyImpactedByContingency(network);
 
         // find branches to open and buses to lost not directly from the contingency impact but as a consequence of
         // loss of connectivity once contingency applied on the network
-        ContingencyConnectivityLossImpact connectivityLossImpact = findBusesAndBranchesImpactedBecauseOfConnectivityLoss(network, branchesToOpen, relocateSlackBus);
+        ContingencyConnectivityLossImpact connectivityLossImpact = analyser.analyse(network, contingency.getId(), branchesToOpen, relocateSlackBus);
         if (!connectivityLossImpact.ok) {
             return Optional.empty();
         }

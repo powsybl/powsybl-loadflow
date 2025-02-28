@@ -10,6 +10,7 @@ package com.powsybl.openloadflow.sa;
 import com.powsybl.contingency.Contingency;
 import com.powsybl.contingency.ContingencyElement;
 import com.powsybl.contingency.ContingencyElementType;
+import com.powsybl.openloadflow.network.LfBranch;
 import com.powsybl.openloadflow.network.LfNetwork;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.monitor.StateMonitorIndex;
@@ -18,6 +19,7 @@ import com.powsybl.security.results.BranchResult;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -37,13 +39,21 @@ public class PostContingencyNetworkResult extends AbstractNetworkResult {
         this.contingency = Objects.requireNonNull(contingency);
     }
 
+    public PostContingencyNetworkResult(LfNetwork network, StateMonitorIndex monitorIndex, boolean createResultExtension,
+                                        BranchResultCreator branchResultsCreator, PreContingencyNetworkResult preContingencyMonitorInfos,
+                                        Contingency contingency) {
+        super(network, monitorIndex, createResultExtension, branchResultsCreator);
+        this.preContingencyMonitorInfos = Objects.requireNonNull(preContingencyMonitorInfos);
+        this.contingency = Objects.requireNonNull(contingency);
+    }
+
     @Override
     protected void clear() {
         super.clear();
         branchResults.clear();
     }
 
-    public void addResults(StateMonitor monitor) {
+    public void addResults(StateMonitor monitor, Predicate<LfBranch> isDisabled) {
         addResults(monitor, branch -> {
             var preContingencyBranchResult = preContingencyMonitorInfos.getBranchResult(branch.getId());
             double preContingencyBranchP1 = preContingencyBranchResult != null ? preContingencyBranchResult.getP1() : Double.NaN;
@@ -60,18 +70,22 @@ public class PostContingencyNetworkResult extends AbstractNetworkResult {
                     }
                 }
             }
-            branchResults.addAll(branch.createBranchResult(preContingencyBranchP1, preContingencyBranchOfContingencyP1, createResultExtension));
-        });
+            branchResults.addAll(branchResultsCreator.create(branch, preContingencyBranchP1, preContingencyBranchOfContingencyP1, createResultExtension));
+        }, isDisabled);
     }
 
     @Override
     public void update() {
+        update(LfBranch::isDisabled);
+    }
+
+    public void update(Predicate<LfBranch> isDisabled) {
         clear();
         StateMonitor stateMonitor = monitorIndex.getSpecificStateMonitors().get(contingency.getId());
         if (stateMonitor != null) {
-            addResults(stateMonitor);
+            addResults(stateMonitor, isDisabled);
         } else {
-            addResults(monitorIndex.getAllStateMonitor());
+            addResults(monitorIndex.getAllStateMonitor(), isDisabled);
         }
     }
 

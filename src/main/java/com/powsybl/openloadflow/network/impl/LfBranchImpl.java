@@ -234,14 +234,13 @@ public class LfBranchImpl extends AbstractImpedantLfBranch {
 
     @Override
     public List<LfLimit> getLimits1(final LimitType type, LimitReductionManager limitReductionManager) {
-        var branch = getBranch();
         switch (type) {
             case ACTIVE_POWER:
-                return getLimits1(type, branch::getActivePowerLimits1, limitReductionManager);
+                return getLimits1(type, () -> getBranch().getActivePowerLimits1(), limitReductionManager);
             case APPARENT_POWER:
-                return getLimits1(type, branch::getApparentPowerLimits1, limitReductionManager);
+                return getLimits1(type, () -> getBranch().getApparentPowerLimits1(), limitReductionManager);
             case CURRENT:
-                return getLimits1(type, branch::getCurrentLimits1, limitReductionManager);
+                return getLimits1(type, () -> getBranch().getCurrentLimits1(), limitReductionManager);
             case VOLTAGE:
             default:
                 throw new UnsupportedOperationException(String.format("Getting %s limits is not supported.", type.name()));
@@ -250,14 +249,13 @@ public class LfBranchImpl extends AbstractImpedantLfBranch {
 
     @Override
     public List<LfLimit> getLimits2(final LimitType type, LimitReductionManager limitReductionManager) {
-        var branch = getBranch();
         switch (type) {
             case ACTIVE_POWER:
-                return getLimits2(type, branch::getActivePowerLimits2, limitReductionManager);
+                return getLimits2(type, () -> getBranch().getActivePowerLimits2(), limitReductionManager);
             case APPARENT_POWER:
-                return getLimits2(type, branch::getApparentPowerLimits2, limitReductionManager);
+                return getLimits2(type, () -> getBranch().getApparentPowerLimits2(), limitReductionManager);
             case CURRENT:
-                return getLimits2(type, branch::getCurrentLimits2, limitReductionManager);
+                return getLimits2(type, () -> getBranch().getCurrentLimits2(), limitReductionManager);
             case VOLTAGE:
             default:
                 throw new UnsupportedOperationException(String.format("Getting %s limits is not supported.", type.name()));
