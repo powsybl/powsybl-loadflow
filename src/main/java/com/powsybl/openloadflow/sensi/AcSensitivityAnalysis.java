@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2020-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -231,7 +231,8 @@ public class AcSensitivityAnalysis extends AbstractSensitivityAnalysis<AcVariabl
                 .setReferenceBusSelector(ReferenceBusSelector.DEFAULT_SELECTOR) // not supported yet
                 .setAreaInterchangeControlAreaType(lfParametersExt.getAreaInterchangeControlAreaType())
                 .setForceTargetQInReactiveLimits(lfParametersExt.isForceTargetQInReactiveLimits())
-                .setDisableInconsistentVoltageControls(lfParametersExt.isDisableInconsistentVoltageControls());
+                .setDisableInconsistentVoltageControls(lfParametersExt.isDisableInconsistentVoltageControls())
+                .setRemoteVoltageControlIgnoreQPercent(lfParametersExt.isRemoteVoltageControlIgnoreQPercent());
 
         // create networks including all necessary switches
         try (LfNetworkList lfNetworks = Networks.load(network, lfNetworkParameters, topoConfig, reportNode)) {

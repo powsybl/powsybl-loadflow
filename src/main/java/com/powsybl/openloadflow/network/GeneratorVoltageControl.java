@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2021-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -17,8 +17,11 @@ import java.util.List;
  */
 public class GeneratorVoltageControl extends VoltageControl<LfBus> {
 
-    public GeneratorVoltageControl(LfBus controlledBus, int targetPriority, double targetValue) {
+    private final boolean ignoreQPercent;
+
+    public GeneratorVoltageControl(LfBus controlledBus, int targetPriority, double targetValue, boolean ignoreQPercent) {
         super(targetValue, Type.GENERATOR, targetPriority, controlledBus);
+        this.ignoreQPercent = ignoreQPercent;
     }
 
     @Override
@@ -64,7 +67,7 @@ public class GeneratorVoltageControl extends VoltageControl<LfBus> {
     public void updateReactiveKeys() {
         List<LfBus> controllerBuses = getMergedControllerElements();
 
-        double[] reactiveKeys = createReactiveKeys(controllerBuses, LfGenerator.GeneratorControlType.VOLTAGE);
+        double[] reactiveKeys = createReactiveKeys(controllerBuses, LfGenerator.GeneratorControlType.VOLTAGE, ignoreQPercent);
 
         // no reactive dispatch on PQ buses, so we set the key to 0
         for (int i = 0; i < controllerBuses.size(); i++) {
@@ -93,7 +96,7 @@ public class GeneratorVoltageControl extends VoltageControl<LfBus> {
             // create one (local) generator control per controller bus and remove this one
             controlledBus.setGeneratorVoltageControl(null);
             for (LfBus controllerBus : controllerElements) {
-                var generatorVoltageControl = new GeneratorVoltageControl(controllerBus, targetPriority, targetValue);
+                var generatorVoltageControl = new GeneratorVoltageControl(controllerBus, targetPriority, targetValue, ignoreQPercent);
                 generatorVoltageControl.addControllerElement(controllerBus);
                 generatorVoltageControls.add(generatorVoltageControl);
             }

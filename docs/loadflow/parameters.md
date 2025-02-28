@@ -170,6 +170,12 @@ either have different target voltages, then their voltage control is disabled if
 set to `false`, then only the control of the first generator is kept and applied to all the other generators.
 The default value is `false`.
 
+**remoteVoltageControlIgnoreQPercent**  
+Whether remote voltage control should ignore the qPercent data, an optional input that provides a repartition key for reactive power
+in case several bus control the same target, and systematically use the default repartition key instead which is based on reactive 
+power range. The default value is `false`.
+
+
 **secondaryVoltageControl**  
 Whether simulation of secondary voltage control should be enabled.  
 Modeling of secondary voltage control has been designed to provide a fast, static, approximation of the equilibrium state of the generator reactive power 

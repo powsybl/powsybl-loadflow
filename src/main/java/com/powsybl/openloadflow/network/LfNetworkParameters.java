@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2020, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2020-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -154,6 +154,8 @@ public class LfNetworkParameters {
 
     private boolean disableInconsistentVoltageControls = DISABLE_INCONSISTENT_VOLTAGE_CONTROLS_DEFAULT_VALUE;
 
+    private boolean remoteVoltageControlIgnoreQPercent = OpenLoadFlowParameters.REMOTE_VOLTAGE_CONTROL_IGNORE_QPERCENT_DEFAULT_VALUE;
+
     public LfNetworkParameters() {
     }
 
@@ -201,6 +203,7 @@ public class LfNetworkParameters {
         this.areaInterchangeControl = other.areaInterchangeControl;
         this.areaInterchangeControlAreaType = other.areaInterchangeControlAreaType;
         this.forceTargetQInReactiveLimits = other.forceTargetQInReactiveLimits;
+        this.remoteVoltageControlIgnoreQPercent = other.remoteVoltageControlIgnoreQPercent;
     }
 
     public SlackBusSelector getSlackBusSelector() {
@@ -622,6 +625,15 @@ public class LfNetworkParameters {
         return this;
     }
 
+    public boolean isRemoteVoltageControlIgnoreQPercent() {
+        return remoteVoltageControlIgnoreQPercent;
+    }
+
+    public LfNetworkParameters setRemoteVoltageControlIgnoreQPercent(boolean remoteVoltageControlIgnoreQPercent) {
+        this.remoteVoltageControlIgnoreQPercent = remoteVoltageControlIgnoreQPercent;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "LfNetworkParameters(" +
@@ -665,6 +677,7 @@ public class LfNetworkParameters {
                 ", areaInterchangeControlAreaType=" + areaInterchangeControlAreaType +
                 ", forceTargetQInReactiveLimits=" + forceTargetQInReactiveLimits +
                 ", disableInconsistentVoltageControls=" + disableInconsistentVoltageControls +
+                ", ignoreQPercent=" + remoteVoltageControlIgnoreQPercent +
                 ')';
     }
 }

@@ -58,12 +58,14 @@ public class Control {
         return qKeys;
     }
 
-    static double[] createReactiveKeys(List<LfBus> controllerBuses, LfGenerator.GeneratorControlType generatorControlType) {
+    static double[] createReactiveKeys(List<LfBus> controllerBuses,
+                                       LfGenerator.GeneratorControlType generatorControlType,
+                                       boolean ignoreQPercent) {
         double[] qKeys = new double[controllerBuses.size()];
         for (int i = 0; i < controllerBuses.size(); i++) {
             LfBus controllerBus = controllerBuses.get(i);
             for (LfGenerator generator : controllerBus.getGenerators()) {
-                double qKey = generator.getRemoteControlReactiveKey().orElse(Double.NaN);
+                double qKey = ignoreQPercent ? Double.NaN : generator.getRemoteControlReactiveKey().orElse(Double.NaN);
                 if (Double.isNaN(qKey)) {
                     // in case of one missing key, we fallback to keys based on reactive power range
                     return createReactiveKeysFromMaxReactivePowerRange(controllerBuses, generatorControlType);

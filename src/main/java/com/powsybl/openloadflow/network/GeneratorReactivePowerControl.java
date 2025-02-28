@@ -17,9 +17,11 @@ import java.util.*;
 public class GeneratorReactivePowerControl extends ReactivePowerControl {
 
     private final List<LfBus> controllerBuses = new ArrayList<>();
+    private final boolean ignoreQPercent;
 
-    public GeneratorReactivePowerControl(LfBranch controlledBranch, TwoSides controlledSide, double targetValue) {
+    public GeneratorReactivePowerControl(LfBranch controlledBranch, TwoSides controlledSide, double targetValue, boolean ignoreQPercent) {
         super(controlledBranch, controlledSide, targetValue);
+        this.ignoreQPercent = ignoreQPercent;
     }
 
     public List<LfBus> getControllerBuses() {
@@ -33,7 +35,7 @@ public class GeneratorReactivePowerControl extends ReactivePowerControl {
     }
 
     public void updateReactiveKeys() {
-        double[] reactiveKeys = createReactiveKeys(controllerBuses, LfGenerator.GeneratorControlType.REMOTE_REACTIVE_POWER);
+        double[] reactiveKeys = createReactiveKeys(controllerBuses, LfGenerator.GeneratorControlType.REMOTE_REACTIVE_POWER, ignoreQPercent);
 
         // key is 0 only on disabled controllers
         for (int i = 0; i < controllerBuses.size(); i++) {
