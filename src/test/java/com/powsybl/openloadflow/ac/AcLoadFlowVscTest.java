@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2019-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -151,7 +151,7 @@ class AcLoadFlowVscTest {
     void testHvdcAcEmulation2() {
         Network network = HvdcNetworkFactory.createWithHvdcInAcEmulation();
         network.getHvdcLine("hvdc34").newExtension(HvdcAngleDroopActivePowerControlAdder.class)
-                .withDroop(180)
+                .withDroop(2)
                 .withP0(0.f)
                 .withEnabled(true)
                 .add();
@@ -166,11 +166,11 @@ class AcLoadFlowVscTest {
         assertTrue(result.isFullyConverged());
 
         VscConverterStation cs3 = network.getVscConverterStation("cs3");
-        assertActivePowerEquals(-0.114, cs3.getTerminal());
+        assertActivePowerEquals(-0.108, cs3.getTerminal());
         assertReactivePowerEquals(-4.226, cs3.getTerminal());
 
         VscConverterStation cs4 = network.getVscConverterStation("cs4");
-        assertActivePowerEquals(0.1166, cs4.getTerminal());
+        assertActivePowerEquals(0.1105, cs4.getTerminal());
         assertReactivePowerEquals(-3.600, cs4.getTerminal());
 
         network.getVscConverterStation("cs3").setVoltageRegulatorOn(false);
@@ -178,9 +178,9 @@ class AcLoadFlowVscTest {
         LoadFlowResult result2 = loadFlowRunner.run(network, parameters);
         assertTrue(result2.isFullyConverged());
 
-        assertActivePowerEquals(-0.089, cs3.getTerminal());
+        assertActivePowerEquals(-0.0853, cs3.getTerminal());
         assertReactivePowerEquals(0.0, cs3.getTerminal());
-        assertActivePowerEquals(0.0914, cs4.getTerminal());
+        assertActivePowerEquals(0.0872, cs4.getTerminal());
         assertReactivePowerEquals(0.0, cs4.getTerminal());
     }
 
@@ -505,7 +505,7 @@ class AcLoadFlowVscTest {
 
     @Test
     void testAcEmuWithOperationalLimits() {
-        Network network = HvdcNetworkFactory.createHvdcLinkedByTwoLinesAndSwitch(HvdcConverterStation.HvdcType.VSC);
+        Network network = HvdcNetworkFactory.createHvdcLinkedByTwoLinesAndSwitch(HvdcConverterStation.HvdcType.VSC, 80);
         // without limit p=195
         network.getHvdcLine("hvdc23")
                 .newExtension(HvdcOperatorActivePowerRangeAdder.class)
@@ -537,7 +537,7 @@ class AcLoadFlowVscTest {
 
     @Test
     void testAcEmuAndPMax() {
-        Network network = HvdcNetworkFactory.createHvdcLinkedByTwoLinesAndSwitch(HvdcConverterStation.HvdcType.VSC);
+        Network network = HvdcNetworkFactory.createHvdcLinkedByTwoLinesAndSwitch(HvdcConverterStation.HvdcType.VSC, 80);
         // without limit p=195
         network.getHvdcLine("hvdc23")
                 .setMaxP(170);

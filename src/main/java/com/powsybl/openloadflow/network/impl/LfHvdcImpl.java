@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2022, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2022-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -13,6 +13,8 @@ import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRange;
 import com.powsybl.openloadflow.network.*;
 import com.powsybl.openloadflow.util.Evaluable;
 import com.powsybl.openloadflow.util.PerUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
@@ -22,6 +24,8 @@ import static com.powsybl.openloadflow.util.EvaluableConstants.NAN;
  * @author Anne Tilloy {@literal <anne.tilloy at rte-france.com>}
  */
 public class LfHvdcImpl extends AbstractElement implements LfHvdc {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LfHvdcImpl.class);
 
     private final String id;
 
@@ -71,6 +75,14 @@ public class LfHvdcImpl extends AbstractElement implements LfHvdc {
         } else {
             pMaxFromCS2toCS1 = hvdcLine.getMaxP();
             pMaxFromCS1toCS2 = hvdcLine.getMaxP();
+        }
+
+        if (this.acEmulation) {
+            // power is in MW (not PU) - droop is in MW/deg
+            double operatingAngleDeg = (pMaxFromCS1toCS2 + pMaxFromCS2toCS1) / droop;
+            if (operatingAngleDeg < 4) {
+                LOGGER.warn("Small operating angle for HVDC {} : {} deg", getId(), operatingAngleDeg);
+            }
         }
     }
 

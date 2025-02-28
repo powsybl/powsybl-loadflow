@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2021, RTE (http://www.rte-france.com)
+/*
+ * Copyright (c) 2021-2025, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -603,6 +603,10 @@ public class HvdcNetworkFactory extends AbstractLoadFlowNetworkFactory {
         return network;
     }
 
+    public static Network createHvdcLinkedByTwoLinesAndSwitch(HvdcConverterStation.HvdcType type) {
+        return createHvdcLinkedByTwoLinesAndSwitch(type, 180);
+    }
+
     /**
      * <pre>
      *     g1 - b1 -- l12 -- b2 -- hvdc23 -- b3 -- l34 -- b4 - l4
@@ -615,7 +619,7 @@ public class HvdcNetworkFactory extends AbstractLoadFlowNetworkFactory {
      * </pre>
      * @return
      */
-    public static Network createHvdcLinkedByTwoLinesAndSwitch(HvdcConverterStation.HvdcType type) {
+    public static Network createHvdcLinkedByTwoLinesAndSwitch(HvdcConverterStation.HvdcType type, float droopMWPerDeg) {
         Network network = Network.create("test", "code");
         Bus b1 = createBus(network, "b1", 400);
         Bus b2 = createBus(network, "b2", 400);
@@ -636,7 +640,7 @@ public class HvdcNetworkFactory extends AbstractLoadFlowNetworkFactory {
         };
         createHvdcLine(network, "hvdc23", cs2, cs3, 400, 0.1, 200)
                 .newExtension(HvdcAngleDroopActivePowerControlAdder.class)
-                .withDroop(180)
+                .withDroop(droopMWPerDeg)
                 .withP0(200)
                 .withEnabled(true)
                 .add();
